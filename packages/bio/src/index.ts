@@ -27,9 +27,12 @@ export function jungToken(att: "I" | "E", dom: { f: Fn; a: Att }, aux: { f: Fn; 
 type Instinct = "so" | "sx" | "sp";
 export const instinctToken = (order: [Instinct, Instinct, Instinct]) => order.join("/");
 
-/** Tritype with wing. While the tritype is pending (`tri` = null) show core + wing only: `··· (1w2)`. */
-export const tritypeToken = (tri: string | null, core: number, wing: number, pending = PENDING) =>
-  `${tri ?? pending} (${core}w${wing})`;
+/**
+ * Tritype with wing. While the tritype is pending (`tri` = null) show core + wing only: `··· (1w2)`.
+ * An unresolved wing (null) prints `w?`. Tritype strings may contain `?` (unresolved center) or `(ab)` (order uncertain).
+ */
+export const tritypeToken = (tri: string | null, core: number, wing: number | null, pending = PENDING) =>
+  `${tri ?? pending} (${core}w${wing ?? "?"})`;
 
 const TEMP_ABBR = { phlegmatic: "phleg", melancholic: "mel", sanguine: "sang", choleric: "chol" } as const;
 export type Temp = keyof typeof TEMP_ABBR;

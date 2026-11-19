@@ -29,6 +29,22 @@ export const THRESHOLDS = {
    */
   jung: { resolveP: 0.6, candidateP: 0.1, letterMiddle: 0.05 },
   /**
+   * Enneagram publication (EN-01, EN-03, EN-04). All provisional.
+   * coreResolveP / candidateP: STATEMENT-ONLY model probability of a core type (the paragraph pick is reported
+   *   separately and does not enter it).
+   * wingP: share of statement-based core probability held by one neighbour versus the other (core-alternative
+   *   evidence, not a measured wing trait); below it the wing is "w?".
+   * centerResolveP: within-center share of statement-based core probability needed to name a tritype digit.
+   * orderRatio: the first secondary digit must have at least this many times the second's statement-based core
+   *   probability, otherwise their order is shown as uncertain. A heuristic, not an ordered-tritype probability.
+   */
+  ennea: { coreResolveP: 0.5, candidateP: 0.1, wingP: 0.75, centerResolveP: 0.6, orderRatio: 2 },
+  /**
+   * Shared ranking publication (EN-05, AP-03, TP-01). Units: model probability of a complete order (resolveP) or of
+   * an aspect being first (firstP). Candidates: orders with ≥ candidateP. Provisional.
+   */
+  ranking: { resolveP: 0.6, firstP: 0.6, candidateP: 0.1 },
+  /**
    * MOTIVES case and bars (MO-01, MO-03). Units: MODEL percentile Φ(θ) as a fraction (score level, not certainty).
    * Uppercase at ≥ strong (or ≤ 1 − strong), lowercase at ≥ medium (or ≤ 1 − medium), else X.
    * Bars mark one trait only when its distance from 0.5 exceeds every other trait's by ≥ dominanceGap; otherwise no
@@ -55,6 +71,9 @@ export const THRESHOLDS = {
     /** Temperament description ranking: weight for the temperament placed 1st..4th. */
     temperamentRank: [0.4, 0.3, 0.18, 0.12],
     /** Fixed-form Enneagram: P(answer 1..5 | statement is / is not from your type). */
+    // EN-02: own/other likelihood ratios are ≈ 0.18, 0.32, 0.82, 1.83, 2.85 for answers 1..5, so "Strongly disagree"
+    // is 5.5× evidence against a type while "Strongly agree" is 2.85× for it. Asymmetry is deliberate in the expert
+    // table and is NOT corrected here: changing it needs per-item, per-category estimates from respondent data.
     enneaOwn: [0.04, 0.08, 0.18, 0.33, 0.37],
     enneaOther: [0.22, 0.25, 0.22, 0.18, 0.13],
   },

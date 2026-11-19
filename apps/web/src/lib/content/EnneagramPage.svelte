@@ -51,8 +51,8 @@
 
 <TypologyLayout {t} {result} title="Enneagram"
   facts={["9 types", "3 centers", "3 instincts"]}
-  format="20 to 28 choices and rankings on one page"
-  extra="The questions find your core type, wing, instinct order and tritype.">
+  format="27 statements, 1 description choice and 4 rankings on one page"
+  extra="The statements estimate your core type. The description you choose is shown next to it as a check. Wing, instincts and tritype are shown only when the answers support them.">
 
   {#snippet overview()}
     <p>The Enneagram describes nine types. Each type is built on one core want and one core fear. The name comes from the Greek words for "nine" and "drawing", because the nine types are points on a circle.</p>
@@ -145,6 +145,8 @@
 
     <h3 class="sub">Tritype</h3>
     <ArrowRow>Your tritype is your strongest type in each center. The first number is your core type. Example: <code>127</code> is core 1 (gut), then 2 (heart), then 7 (head). The theory says that when your core strategy fails, you use the next type's strategy, in that order.</ArrowRow>
+    <ArrowRow>The test reads your tritype from how much your statements support types in the other two centers. It is a rough guide, not a measured result. A <code>?</code> means one center had no clear type, and <code>1(37)</code> means the order of the last two is unclear.</ArrowRow>
+    <ArrowRow>In this test's result, <code>?</code> means one center has no clear type, and brackets such as <code>1(37)</code> mean the order of the last two numbers is unclear. <code>1w?</code> means both wings got similar support.</ArrowRow>
   {/snippet}
 
   {#snippet read()}

@@ -12,8 +12,8 @@ estimates exist for any engine, and none were invented.
 | 2 | MOTIVES + optional prior policy | complete |
 | 3 | Four Temperaments | complete |
 | 4 | Jungian Functions | complete |
-| 5 | Enneagram | pending (next) |
-| 6 | Attitudinal Psyche + shared ranking | pending |
+| 5 | Enneagram | complete |
+| 6 | Attitudinal Psyche + shared ranking | pending (next) |
 | 7 | Temporistics + final integration | pending |
 
 ## Phase 1 — Big Five and shared result foundations
@@ -243,6 +243,95 @@ estimates exist for any engine, and none were invented.
 
 **Next phase:** Phase 5 — Enneagram.
 
+## Phase 5 — Enneagram
+
+**Engineering status:** complete (2026-11-19).
+
+**Findings addressed by code changes:** EN-01, EN-03, EN-04, EN-05. EN-02 is documented. EN-06 is reviewed and recorded. Applied X-05, X-06, X-07, X-08, X-10 and X-11 to the Enneagram.
+
+**Findings that still need respondent data or a theory decision:**
+- EN-02: per-item, per-category likelihoods.
+- An incremental likelihood for the paragraph pick, if it is ever to count as evidence.
+- EN-03: separate wing evidence conditional on the core.
+- EN-04: a justified joint model of ordered tritypes.
+- EN-06: construct fit of the statements, paragraphs and instinct contexts.
+- All new cutoffs.
+
+### Decisions and provisional assumptions
+
+- **Core from statements only (EN-01).**
+  - `corePosterior` now uses only the 27 statements.
+  - The paragraph pick is reported separately as `selfPick`. That covers the picked type, its statement-based probability, and whether it agrees with the statement core.
+  - No validated incremental likelihood exists for the pick, so it no longer carries the old 0.85 weight. `likelihood.selfCheckMatch` is now unused and stays in the thresholds file until Phase 7 cleans up stale constants.
+  - A core is named only when its statement probability is ≥ `ennea.coreResolveP` = 0.5. Otherwise the result shows `core: null` with candidates (≥ 0.1).
+  - Uniform statements plus a pick give "no clear core type", with every type at 1/9 and the pick shown separately.
+- **Statement asymmetry (EN-02).** The 5.5× vs 2.85× ratios are documented in `thresholds.ts`. Nothing was changed: correcting the asymmetry needs respondent data, and forcing symmetry would only change how it looks.
+- **Wing (EN-03).**
+  - The quantity is renamed in the metadata as "share of statement-based core probability on this neighbour vs the other (core-alternative evidence, not a measured wing trait)", with kind `heuristic`.
+  - A wing is named only at ≥ `ennea.wingP` = 0.75. Otherwise it is `w?`, in the hero, the breakdown and the bio token.
+  - This publication cutoff replaces the old adaptive `stop.wingP`.
+- **Tritype (EN-04).**
+  - Each other center's digit is named only when its within-center share is ≥ `centerResolveP` = 0.6; otherwise it shows `?`.
+  - The order of the two secondary digits is shown only when one has ≥ `orderRatio` = 2× the other's statement-based core probability. Otherwise the pair is printed in ascending order in parentheses, e.g. `1(37)`.
+  - The old `tritypeP = first.p × second.p` was removed. No probability is claimed for the tritype; center shares are labelled `heuristic`.
+  - Neighbouring-wing and one-type-per-center legality hold for all candidate structures.
+- **Instincts (EN-05).** New shared `summarizeRanking` in `rank-engine`: a complete order only at ≥ `ranking.resolveP` = 0.6, otherwise a partial result (first instinct, when P(first) ≥ `ranking.firstP` = 0.6) or unresolved. It also returns candidates, marginal positions and expected positions. Phase 6 will reuse it for AP and Temporistics.
+- **Tokens.**
+  - `bioTokens` emits an instincts token only when the order is resolved, and a tritype token only when a core is resolved.
+  - `tritypeToken` accepts a null wing and prints `w?`.
+  - The token confidence is the core probability, not a tritype product.
+- **Order invariance.** Statements and instinct rankings are sorted by item id before the products are taken.
+- **EN-06 content review.** I made no item rewrites.
+  - The paragraphs bundle several claims each, but they no longer drive the core, which limits the damage.
+  - The broad-behaviour statements (fixing errors, helping, productivity, solitude, calm) and the instinct contexts (free day, party, practical worries) may reflect circumstance, resources and opportunity.
+  - Replacing them responsibly needs cognitive interviews and a pilot, which are recorded as open. The page now says the description is a check, not the score.
+
+### Source changes
+
+- `packages/engine-sdk/src/thresholds.ts`: added `ennea` and `ranking` publication thresholds with units; documented the EN-02 asymmetry.
+- `packages/rank-engine/src/index.ts`: added `summarizeRanking` and `RankSummary`. This is additive; AP and Temporistics behaviour is unchanged until Phase 6.
+- `packages/bio/src/index.ts`: `tritypeToken` takes a nullable wing.
+- `packages/engine-enneagram/src/index.ts`:
+  - statement-only core and `selfPick`;
+  - nullable core, wing, stacking and tritype;
+  - the tritype heuristic and uncertain order;
+  - instinct summary;
+  - `ResultMeta` (scoring version `enneagram-3`) with named events and kinds;
+  - a straight-line note;
+  - validated `answer` and `deserialize`.
+- `apps/web/src/lib/results/EnneagramResult.svelte`:
+  - the hero shows "no clear core type" or a code with `?` and `w?`;
+  - the pick is shown separately with agree or differ;
+  - unresolved wing, tritype and instinct states are explained;
+  - notes say what is heuristic.
+- `EnneagramPage.svelte`: counts (27 statements, 1 choice, 4 rankings); the description choice described as a check; tritype heuristic and notation explained.
+
+### Checks performed
+
+- `pnpm test` 29/29, `pnpm typecheck` 15/15 (svelte-check 0 errors), `pnpm build` succeeds.
+- The 19 Enneagram tests pass. They cover:
+  - form structure and legality rules;
+  - the 6w5 sp/so/sx 638 persona with an agreeing pick;
+  - all nine cores reachable, with legal full or partial tritypes;
+  - 60 deterministic varied answer sets, each with a legal (possibly partial) structure. This replaces the old non-reproducible `Math.random` sort comparator.
+  - EN-01: uniform statements at 3, 4 and 2 plus a pick give no core, p = 1/9, the pick separate, no wing or tritype, and no tritype token;
+  - the pick has no effect on the statement core and is flagged as disagreeing;
+  - EN-03: tied neighbours give `w?` in the token, and the wing is labelled heuristic;
+  - EN-04: a split center gives `?`, and equal secondaries give `1(37)` with "tritype order" unresolved;
+  - EN-05: conflicting instinct rankings give no stacking, candidates and no token; consistent rankings resolve; a shared first gives the partial `sp`;
+  - answer order and replacement give identical results;
+  - malformed-state rejection;
+  - version and completion.
+- Changed expectations: the old "always a core, wing and tritype" and "random legal output" tests were replaced, because unresolved outputs are now intended.
+- Browser check: **not performed**. No browser tool is available in this session.
+
+### Remaining work
+
+- Phase 6 must reuse `summarizeRanking` for AP and keep the Enneagram instinct tests green.
+- Phase 7 removes now-stale constants: `selfCheckMatch` and the adaptive Enneagram `stop.*` values.
+
+**Next phase:** Phase 6 — Attitudinal Psyche and shared ranking behaviour.
+
 ## Finding ledger
 
 | ID | Disposition | Notes |
@@ -255,7 +344,12 @@ estimates exist for any engine, and none were invented.
 | JG-03 | Awaiting empirical data (mitigated by abstention) | Forward-only, 3 items per function. Discrimination and counter-keyed items need respondent data. |
 | JG-04 | Mitigated, with limitations stated | Separate named dominant and auxiliary events; no whole-code probability. Uses an independent-normal approximation, not a joint model. |
 | JG-05 | Rejected allegation preserved | Independent MBTI letters and the differing-code explanation kept; only the "nearest MBTI" wording corrected. |
-| EN-01 – EN-06 | Pending (Phase 5) | |
+| EN-01 | Implemented and checked | Paragraph separated from the statement core; uniform statements cannot produce a core. Cutoff provisional. |
+| EN-02 | Awaiting empirical data | Asymmetry documented, deliberately not changed. |
+| EN-03 | Mitigated, with limitations stated | Ties print `w?`; quantity named as core-alternative evidence. No separate wing measurement exists. |
+| EN-04 | Mitigated, with limitations stated | Product probability removed; named heuristic with unresolved centers and order. No joint model. |
+| EN-05 | Implemented and checked | Shared ranking summary: full, partial or unresolved stackings with candidates. |
+| EN-06 | Awaiting empirical data | Content reviewed; rewrites deferred to cognitive interviews and a pilot. The paragraph no longer drives scoring. |
 | TM-01 | Implemented and checked | Output defined as quadrant certainty; location and near-boundary reported separately. Cutoffs provisional. |
 | TM-02 | Mitigated, with limitations stated | Agreement and conflict shown; weights unchanged. Whether the ranking is independent evidence needs data. |
 | TM-03 | Rejected allegation preserved | Quadrant arithmetic unchanged; blend test retained and passing. |
@@ -270,9 +364,9 @@ estimates exist for any engine, and none were invented.
 | X-03 | Mitigated (Big Five, MOTIVES, temperament: versioned import + dependency record) | Scoring version and dependency fields exist; Big Five has no dependencies. Invalidation of dependants is pending (Phases 2–4, 7). |
 | X-04 | Mitigated (MOTIVES, Jung) | Independent policy: no unjustified prior is applied. A justified mapping with prior variance awaits data. |
 | X-05 | Awaiting empirical data | Everything is labelled `calibrated: false`; no calibration exists. |
-| X-06 | Mitigated (Big Five, MOTIVES, temperament, Jung) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
-| X-07 | Mitigated (Big Five, MOTIVES, temperament, Jung, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
-| X-08 | Mitigated (Big Five, MOTIVES, temperament, Jung) | Deterministic fixed-form fixtures added. Other engines pending. |
+| X-06 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
+| X-07 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
+| X-08 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram) | Deterministic fixed-form fixtures added. Other engines pending. |
 | X-09 | Rejected allegation preserved | Fresh `init(profileSnapshot())` at submit is unchanged. |
-| X-10 | Mitigated (Big Five, MOTIVES, temperament, Jung, Overview); Enneagram, AP and Temporistics pending (Phases 5–7) | |
+| X-10 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram, Overview); AP and Temporistics pending (Phases 6–7) | |
 | X-11 | Mitigated | The thresholds header lists the other constant sources. Removing stale adaptive constants is pending (Phase 7). |

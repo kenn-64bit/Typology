@@ -25,6 +25,35 @@ export function rankPosterior(classes: string[], rankings: string[][]): Posterio
   return p;
 }
 
+/**
+ * Shared uncertainty summary for a posterior over complete orders (EN-05, AP-03, TP-01).
+ * `order` is published only at ≥ THRESHOLDS.ranking.resolveP; otherwise null with `candidates`.
+ * `first` is the aspect whose P(first position) ≥ firstP, if any (a partial result).
+ * `positions` = expected position; `marginals[a][k]` = P(aspect a in position k+1). All under the expert model.
+ */
+export interface RankSummary {
+  order: string | null; p: number;
+  best: { order: string; p: number };
+  candidates: { order: string; p: number }[];
+  first: { aspect: string; p: number } | null;
+  positions: Record<string, number>;
+  marginals: Record<string, number[]>;
+}
+export function summarizeRanking(post: Posterior, aspects: string[], split: (cls: string) => string[] = c => [...c]): RankSummary {
+  const T = THRESHOLDS.ranking;
+  const ranked = top(post);
+  const marginals = Object.fromEntries(aspects.map(a => [a, aspects.map(() => 0)]));
+  for (const [cls, pr] of Object.entries(post)) split(cls).forEach((a, i) => (marginals[a]![i]! += pr));
+  const positions = Object.fromEntries(aspects.map(a => [a, marginals[a]!.reduce((m, p, i) => m + p * (i + 1), 0)]));
+  const lead = ranked[0]!;
+  const firstLead = aspects.map(a => ({ aspect: a, p: marginals[a]![0]! })).sort((x, y) => y.p - x.p)[0]!;
+  return {
+    order: lead.p >= T.resolveP ? lead.cls : null, p: lead.p, best: { order: lead.cls, p: lead.p },
+    candidates: ranked.filter(r => r.p >= T.candidateP).map(r => ({ order: r.cls, p: r.p })),
+    first: firstLead.p >= T.firstP ? firstLead : null, positions, marginals,
+  };
+}
+
 export function createRankEngine(cfg: {
   meta: EngineMeta; slot: Slot; aspects: string[]; tasks: RankTask[]; stopP: number; cap: number;
   aspectNames: Record<string, string>;
