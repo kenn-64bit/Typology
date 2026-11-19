@@ -171,7 +171,7 @@
   .band.gut { stroke: var(--gut); } .band.heart { stroke: var(--heart); } .band.head { stroke: var(--head); }
   .inner { fill: none; stroke: var(--meta); stroke-width: 0.8; opacity: 0.45; }
   .arrow { fill: var(--meta); opacity: 0.6; }
-  .dot { stroke: #fffaf4; stroke-width: 2; }
+  .dot { stroke: #fcfaf5; stroke-width: 2; }
   .dot.gut { fill: var(--gut); } .dot.heart { fill: var(--heart); } .dot.head { fill: var(--head); }
   .tri { fill: none; stroke: var(--text); stroke-width: 1.75; }
   .num { fill: var(--white); font: bold 13px var(--font-head); }

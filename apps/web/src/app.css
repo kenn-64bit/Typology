@@ -3,7 +3,7 @@
 :root {
   --rust: #8a2c12; --rust-dark: #6a200c; --rust-light: #a8401c;
   --header-dark: #463a36;
-  --cream: #fcebdc; --cream-dark: #f3dcc8; --panel-border: #e0c4ad;
+  --cream: #f9f6ef; --cream-dark: #eeeae0; --panel-border: #ddd7ca;
   --teal: #2ba3c4; --teal-dark: #1f86a3;
   --sky: #a9cdd8; --sky-dark: #7fb3c4; --sky-link: #1d6f8a;
   --tan: #c9a487;
@@ -12,15 +12,15 @@
   --edge: #d9d2cc;
   --white: #fff;
   /* Palette roles (result screens, buttons). Contrast on --c-surface: ink 12.1, muted 5.9, brand 8.1, accent 6.7 (white on accent 6.7). */
-  --c-page: #fcebdc;          /* page background: the cream */
-  --c-surface: #fff8f0;       /* modal surface */
+  --c-page: #f9f6ef;          /* page background: bone white */
+  --c-surface: #fcfaf5;       /* modal surface */
   --c-ink: #3b302b;           /* main text */
   --c-muted: #6e5d53;         /* labels, notes, secondary values */
   --c-brand: #8a2c12;         /* rust: titles, codes, your result */
   --c-accent: #2f5f6a;        /* deep slate-teal: links, focus, primary button */
   --c-accent-hover: #244b54;
-  --c-line: #e8d3c1;          /* hairlines (non-text) */
-  --c-track: #f1e0d0;         /* empty part of scales and bars (non-text) */
+  --c-line: #e4dfd4;          /* hairlines (non-text) */
+  --c-track: #efebe2;         /* empty part of scales and bars (non-text) */
   --font-title: "Trebuchet MS", "Lucida Grande", Verdana, sans-serif;
   --font-body: Verdana, Tahoma, Geneva, sans-serif;
   --font-head: "Trebuchet MS", Tahoma, Verdana, sans-serif;
@@ -59,7 +59,7 @@ h1, h2, h3, h4 { margin: 0; }
 .intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.4rem; padding-bottom: 1rem; border-bottom: 3px double var(--rule); margin-bottom: 1.2rem; }
 .intro p { margin: 0 0 0.6rem; font-size: 12.5px; }
 .rust-block { background: var(--rust-texture); min-height: 140px; position: relative; overflow: hidden; }
-.rust-block::before { content: ""; position: absolute; left: -20px; top: 0; width: 60px; height: 160%; background: rgb(252 235 220 / 0.85); rotate: 40deg; transform-origin: top left; }
+.rust-block::before { content: ""; position: absolute; left: -20px; top: 0; width: 60px; height: 160%; background: rgb(249 246 239 / 0.85); rotate: 40deg; transform-origin: top left; }
 
 /* Two inner columns */
 .inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.6rem; }

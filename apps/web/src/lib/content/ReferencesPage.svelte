@@ -5,7 +5,6 @@
   import Masthead from "./Masthead.svelte";
   import { REFERENCES } from "./references.ts";
   import { EVIDENCE } from "./evidence.ts";
-  import { BADGES } from "./shared.ts";
   import "./columns.css";
 </script>
 
@@ -15,10 +14,9 @@
 
 <section class="ev">
   <div class="duo">
-    <div class="ev-head"><SectionHeading text="Evidence for each system" /></div>
     {#each EVIDENCE as a (a.href)}
       <section id="ev-{a.href.slice(1)}">
-        <h3 class="sub"><a href={a.href}>{a.sys}</a> <span class="badge" title={BADGES[a.key].tip}>{BADGES[a.key].label}</span></h3>
+        <h3 class="sub"><a href={a.href}>{a.sys}</a></h3>
         <p>{a.ev}</p>
       </section>
     {/each}
@@ -42,7 +40,7 @@
 </div>
 
 <Divider />
-<p class="note">Each link opens the source or a public summary of it. Some publisher and practitioner sites sell the tests that they describe.</p>
+<p class="note">Each link opens the source or a public summary of the source. Some publisher sites and practitioner sites sell the tests that they describe.</p>
 
 <style>
   .refs { list-style: none; margin: 0; padding: 0; }
@@ -50,8 +48,6 @@
   .refs a { white-space: nowrap; }
   .ev section { scroll-margin-top: 1rem; }
   .ev p { margin: 0; }
-  .ev-head { grid-column: 1 / -1; }
   .ev .sub a { color: inherit; }
-  .badge { font: bold 10px var(--font-head); color: var(--white); background: var(--meta); padding: 0.1rem 0.45rem; margin-left: 0.3rem; vertical-align: 1px; cursor: help; }
   .note { font-size: 12px; color: var(--meta); margin: 0; }
 </style>

@@ -94,12 +94,17 @@
     const order = rankPick[item.id] ?? (answers[item.id] as string[] | undefined) ?? [];
     const k = order.indexOf(id); return k < 0 ? null : k + 1;
   };
-  /** Shown once, above the questions: the general rules plus how each question type works (only the types this test uses). */
-  const howTo = $derived([
-    ...instructions,
-    ...(form.some(v => v.format === "rank") ? ["Ordering questions: tap every box, from most like you to least like you. Tap a box again to undo it."] : []),
-    ...(form.some(v => v.format === "scenario") ? ["Description questions: choose the one that fits you best."] : []),
-  ]);
+  /** One plain paragraph above the questions, for every test: what the questions are and how to answer them. */
+  const howTo = $derived.by(() => {
+    const has = (f: string) => form.some(v => v.format === f);
+    const what = [
+      has("likert5") ? "statements about you: choose how much you agree with each one, from Strongly disagree to Strongly agree" : "",
+      has("scenario") ? "descriptions: choose the one that fits you best" : "",
+      has("rank") ? "groups of answers to put in order: tap every box, from most like you to least like you, and tap a box again to undo it" : "",
+    ].filter(Boolean);
+    const list = what.length > 1 ? `${what.slice(0, -1).join("; ")}; and ${what.at(-1)}` : what[0] ?? "";
+    return `This test has ${form.length} questions. They are ${list}. Answer for how you usually are, not how you want to be. There are no right or wrong answers, and you can change any answer before you see your result.`;
+  });
 </script>
 
 <dialog bind:this={dlg} class="quiz" aria-labelledby="quiz-title" oncancel={e => { e.preventDefault(); requestClose(); }}>
@@ -156,11 +161,7 @@
           </div>
         </section>
       {:else}
-        <aside class="howto" aria-labelledby="howto-h">
-          <h3 id="howto-h">How to answer</h3>
-          <ul>{#each howTo as line (line)}<li>{line}</li>{/each}</ul>
-          <p><strong>{form.length} questions.</strong> You can change any answer before you see your result.</p>
-        </aside>
+        <p class="howto">{howTo}</p>
         <ol class="qlist">
           {#each form as item (item.id)}
             <li class="q" id="q-{item.id}">
@@ -261,7 +262,7 @@
   .wide.many > :global(*) { flex-basis: calc((100% - 12px) / 3); min-width: min(100%, 180px); }
   .box {
     position: relative; display: grid; place-items: center; text-align: center;
-    padding: 0.35rem 0.3rem; font: 10.5px/1.25 var(--font-body); color: var(--meta); background: #f6efe9;
+    padding: 0.35rem 0.3rem; font: 10.5px/1.25 var(--font-body); color: var(--meta); background: #f3f0e8;
     border: 1px solid var(--edge); cursor: pointer;
     transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
@@ -301,8 +302,5 @@
     .qtitle { font-size: 1.6rem; }
   }
   @media (prefers-reduced-motion: reduce) { .box, .progress > span { transition: none; } .quiz, .exit { animation: none !important; } .box:active { transform: none; } }
-  .howto { max-width: 34rem; margin: 0 auto 1.8rem; padding: 0.8rem 1rem; background: var(--cream-dark); border-left: 3px solid var(--rust); font-size: 12.5px; line-height: 1.5; }
-  .howto h3 { margin: 0 0 0.4rem; font: bold 13px var(--font-head); color: var(--rust); }
-  .howto ul { margin: 0 0 0.5rem; padding-left: 1.1rem; }
-  .howto p { margin: 0; }
+  .howto { max-width: 34rem; margin: 0 auto 1.8rem; font-size: 13px; line-height: 1.6; color: var(--text); text-align: center; }
 </style>

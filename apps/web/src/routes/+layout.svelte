@@ -27,10 +27,6 @@
       .filter(([k, v]) => k.toLowerCase() === q || v.toLowerCase().includes(q))
       .map(([k, v]) => ({ id: sec.id, k, v, sys: sec.title })))).slice(0, 12);
   });
-
-  function deleteData() {
-    if (confirm("Delete all your saved results from this browser? You cannot undo this.")) app.clearAll();
-  }
 </script>
 
 <svelte:head><title>Typology</title></svelte:head>
@@ -52,14 +48,14 @@
 {#snippet keywords()}
   <h2 class="kw-head">Keywords</h2>
   <ul class="kw">
-    <li><a href="/">Overview</a></li>
-    <li>Typologies
+    <li><a class="kw-top" href="/">Overview</a></li>
+    <li><span class="kw-top">Typologies</span>
       <ul>{#each TYPOLOGIES as t (t.slug)}<li><a href="/{t.slug}">{t.navName}</a></li>{/each}</ul>
     </li>
-    <li><a href="/glossary">Glossary</a>
+    <li><a class="kw-top" href="/glossary">Glossary</a>
       <ul>{#each GLOSSARY as g (g.id)}<li><a href="/glossary#{g.id}">{g.title}</a></li>{/each}</ul>
     </li>
-    <li><a href="/references">References</a></li>
+    <li><a class="kw-top" href="/references">References</a></li>
   </ul>
 {/snippet}
 
@@ -112,19 +108,20 @@
   </div>
 
   <footer class="foot">
-    <div class="foot-text">
-      <nav aria-label="Footer" class="foot-links"><a href="/">Overview</a> | <a href="/bigfive">Big Five</a> | <a href="/glossary">Glossary</a> | <a href="/references">References</a></nav>
-      <div class="help">
-        <p><strong>If you feel depressed or think about harming yourself, talk to someone now.</strong></p>
-        <p class="foot-row"><span>Philippines: NCMH Crisis Hotline <a href="tel:1553">1553</a> · <a href="tel:+639178998727">0917 899 8727</a></span>
-          <span>Elsewhere: <a href="https://findahelpline.com" rel="noopener" target="_blank">findahelpline.com</a></span>
-          <span>Emergency: call your local emergency number</span></p>
+    <div class="foot-grid">
+      <nav aria-label="Footer">
+        <ul class="row links">
+          <li><a href="/">Overview</a></li><li><a href="/bigfive">Big Five</a></li><li><a href="/glossary">Glossary</a></li><li><a href="/references">References</a></li>
+        </ul>
+      </nav>
+
+      <div class="fine">
+        <p>A result describes preferences. It does not measure ability or mental health. Do not use it to diagnose or to hire.</p>
+        <p>Your answers stay in this browser. Nothing goes to a server.
+          <a href="https://www.privacy.gov.ph/data-privacy-act/" target="_blank" rel="noopener">Data Privacy Act of 2012 (Republic Act No. 10173)<span class="sr-only"> (opens in a new tab)</span></a></p>
+        <p class="mark">© Typology</p>
       </div>
-      <p class="foot-row"><span>A result describes preferences. It does not measure ability or mental health. Do not use it to diagnose or to hire.</span>
-        <span>Your answers stay in this browser. Nothing goes to a server.</span>
-        <button class="foot-btn" onclick={deleteData}>Delete my data</button></p>
     </div>
-    <p class="foot-mark" aria-hidden="true">Typology</p>
   </footer>
 </div>
 
@@ -154,9 +151,9 @@
   .band { background: transparent; }
   .panel {
     position: relative; z-index: 2; background: var(--cream);
-    border: 1px solid #f6dcc6; border-top: 0;
+    border: 1px solid #e8e3d8; border-top: 0;
     /* thin inner rule + drop shadow onto the sidebar, as in the reference */
-    box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 4px #e9cbb3, 4px 0 7px -1px rgb(60 30 15 / 0.35), -1px 0 0 rgb(255 255 255 / 0.35);
+    box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 4px #ddd7ca, 4px 0 7px -1px rgb(60 30 15 / 0.35), -1px 0 0 rgb(255 255 255 / 0.35);
     display: flex; flex-direction: column;
   }
   .content { padding: 0.6rem 1.3rem 1rem; flex: 1; }
@@ -173,7 +170,7 @@
   }
   .search input {
     flex: 1; min-width: 0; height: 1.45rem; padding: 0.15rem 0.35rem;
-    background: #fdf1e6; border: 1px solid #b9aa9c;
+    background: #fbf9f3; border: 1px solid #b9aa9c;
     box-shadow: inset 1px 1px 1px rgb(90 60 40 / 0.2), 0 1px 0 rgb(255 255 255 / 0.5);
   }
   .search-icon { flex: none; color: #1f5d74; }
@@ -188,28 +185,38 @@
   .kw, .kw ul { list-style: none; margin: 0; padding: 0 0 0 0.85rem; }
   .kw ul { padding-left: 0.9rem; }
   .kw li { color: #1f5d74; line-height: 1.7; }
+  /* Top-level groups: bold header, separated from the previous group by space and a hairline. */
+  .kw > li { padding: 0.45rem 0.75rem 0.45rem 0; }
+  .kw > li + li { border-top: 1px solid rgb(31 93 116 / 0.25); }
+  .kw-top { display: block; font: bold 11.5px var(--font-head); letter-spacing: 0.02em; color: #173f4f; }
+  .kw ul { margin-top: 0.15rem; }
   .kw a { color: #1f5d74; }
   .edge { background: linear-gradient(90deg, #c9c1ba, var(--edge) 4px); }
   .warn { background: var(--cream-dark); padding: 0.4rem; }
   :global(.sr-only) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  /* ---------- footer ---------- */
+  /* ---------- footer ----------
+     Centered, stacked rows (small links · fine print), on a light surface.
+     Same columns as .body so it centres under the main panel. Links: accent 6.1:1, text 11:1, muted 5.4:1 on cream. */
   .foot {
-    display: flex; justify-content: space-between; align-items: center; gap: 1.5rem;
-    background: var(--header-dark); border-top: 3px solid var(--tan); color: var(--cream);
-    padding: 0.8rem 1.5rem 0.9rem max(16px, calc(var(--band) + 1.3rem)); font: 11px/1.6 Verdana, Arial, sans-serif;
+    display: grid; grid-template-columns: var(--band) minmax(0, 1fr) var(--side) 10px;
+    background: var(--c-page); border-top: 1px solid var(--c-line); color: var(--c-ink); font: 13px/1.6 var(--font-body);
   }
-  .foot p { margin: 0.15rem 0; }
-  .foot a, .foot-btn { color: var(--cream); text-decoration: underline; }
-  .foot a, .foot-btn { transition: color var(--dur-fast) var(--ease-out); }
-  .foot a:hover, .foot-btn:hover { color: var(--sky); }
-  .help a:hover { color: var(--cream); }
-  .foot-btn { font: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-  .help, .help a { color: var(--sky); }
-  .help { margin: 0.3rem 0 0.5rem; padding: 0.4rem 0.7rem; background: rgb(0 0 0 / 0.18); border-left: 3px solid var(--sky); }
-  .foot-row { display: flex; flex-wrap: wrap; gap: 0 1.4rem; }
-  .foot-text { flex: 1 1 24rem; min-width: 0; }
-  .foot-mark { flex: none; font: 1.8rem/1 var(--font-logo); color: var(--cream); opacity: 0.9; }
+  .foot-grid { grid-column: 1 / -1; display: grid; justify-items: center; gap: 12px; padding: 20px 1.3rem 18px; text-align: center; }
+  .foot a { color: var(--c-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .foot a:hover { color: var(--c-accent-hover); text-decoration-thickness: 2px; }
+  .foot a:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+
+  /* Rows of items split by thin vertical rules (the modern take on pipes). */
+  .row { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; row-gap: 6px; }
+  .row li { padding: 0 12px; }
+  .row li + li { border-left: 1px solid var(--c-line); }
+  .links { font: 12px var(--font-head); }
+
+
+  .fine { font-size: 10.5px; color: var(--c-muted); }
+  .fine p { margin: 0 0 4px; }
+  .mark { margin-top: 6px !important; font: 11.5px Georgia, "Times New Roman", serif; color: var(--c-ink); }
 
   /* ---------- responsive ---------- */
   @media (max-width: 1600px) and (min-width: 1001px) {
@@ -225,7 +232,8 @@
     .top { grid-template-columns: minmax(0, 1fr); background: none; }
     .main-nav ul { max-width: none; padding-left: 1rem; }
     .logo { padding-top: 0.8rem; }
-    .foot { padding-left: 1.3rem; }
+    .foot { grid-template-columns: minmax(0, 1fr) var(--side); }
+    .foot-grid { grid-column: 1 / -1; }
   }
   @media (max-width: 760px) {
     /* burger replaces the nav; the sidebar moves into the menu */
@@ -254,12 +262,8 @@
     .m-side { background: var(--sky); padding: 1rem 0 1rem; font-size: 13px; box-shadow: inset 0 4px 6px -2px rgb(40 20 10 / 0.35); }
     .m-side .search { margin: 0 16px 1rem; }
     .m-side .kw-head { font-size: 14px; }
-    .foot { flex-direction: column; align-items: flex-start; gap: 0.6rem; padding: 1rem 16px 1.2rem; font-size: 12.5px; line-height: 1.7; }
-    .foot-text { flex: none; width: 100%; }
-    .foot p, .foot-links { margin: 0 0 0.6rem; }
-    .help { padding: 0.6rem 0.7rem; }
-    .foot-row { flex-direction: column; }
-    .foot-btn { margin-top: 0.3rem; }
-    .foot-mark { order: -1; font-size: 1.6rem; }
+    .foot { grid-template-columns: minmax(0, 1fr); }
+    .foot-grid { padding: 18px 16px 20px; gap: 10px; }
+    .links a { display: inline-flex; align-items: center; min-height: 44px; }
   }
 </style>
