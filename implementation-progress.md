@@ -11,8 +11,8 @@ estimates exist for any engine, and none were invented.
 | 1 | Big Five + shared result foundations | complete |
 | 2 | MOTIVES + optional prior policy | complete |
 | 3 | Four Temperaments | complete |
-| 4 | Jungian Functions | pending (next) |
-| 5 | Enneagram | pending |
+| 4 | Jungian Functions | complete |
+| 5 | Enneagram | pending (next) |
 | 6 | Attitudinal Psyche + shared ranking | pending |
 | 7 | Temporistics + final integration | pending |
 
@@ -166,6 +166,83 @@ estimates exist for any engine, and none were invented.
 
 **Next phase:** Phase 4 — Jungian Functions.
 
+## Phase 4 — Jungian Functions
+
+**Engineering status:** complete (2026-11-19).
+
+**Findings addressed by code changes:** JG-01, JG-02, JG-04. JG-03 is mitigated (abstention and absolute display) but remains open. JG-05 is preserved. Applied X-03, X-04, X-06, X-08, X-10 and X-11 to Jung.
+
+**Findings that still need respondent data or a theory decision:**
+- JG-03: whether three forward items can separate eight functions, and the design of counter-keyed function items.
+- Validity of the new preference items.
+- The independence and normality assumptions in the role probabilities.
+- The `resolveP`, `candidateP` and `letterMiddle` cutoffs.
+
+### Decisions and provisional assumptions
+
+- **Role events (JG-04).**
+  - Dominant: P(function is the highest of all eight).
+  - Auxiliary: P(function is the highest of the four on the other axis from the resolved dominant).
+  - Both are computed by deterministic quadrature (`pMaximum`) over independent normal approximations N(θ, SD²) of each function posterior. *This is an explicit approximation, not a joint model, and the docs and UI name it as one.*
+  - The UI reports the two probabilities separately and says they are not a probability for the whole code. No joint "code probability" is claimed.
+- **Publication (JG-01).**
+  - A role is named only when its probability is ≥ `THRESHOLDS.jung.resolveP` = 0.6. Candidates are functions with ≥ `candidateP` = 0.1. Both cutoffs are provisional.
+  - The code is either the full code, a partial code `IT(?) (Ti)` when the auxiliary is unresolved, or "unresolved", which the hero shows as "no clear main function".
+  - `bioTokens` emits nothing when the dominant is unresolved.
+  - Exact ties give exactly equal probabilities, so there is no alphabetical tie-breaking. The ranking order of tied functions is display-only.
+- **Bars.** Absolute model percentile Φ(θ). The old rescaling to the highest function is gone, so all-Neutral shows every function at 50%, not at full bars. Each row also shows "chance highest".
+- **Preferences (JG-02).** One original reverse item was added per scale (ei6, sn6, tf6, jp6), giving 3:3 keying. Raw uniform answering now gives θ = 0 on every scale. MBTI letters are X when the model percentile is within 5 points of the 50th. `mbtiStack` is null when any letter is X.
+- **Function items (JG-03).** These are still 3 forward items per function, by deliberate choice. Uniform agreement lifts all eight together and now yields "unresolved" rather than a type. Adding counter-keyed function items without discrimination data would be guesswork, so that stays open.
+- **Wording.** ei5 ("a day without seeing anyone feels wasted") and fi2 ("can't act against my conscience, whatever the pressure") were reworded in original, less absolute language.
+- **JG-05.** The separately measured MBTI letters and the "can differ" explanation are kept. The page's "nearest MBTI type" claim was replaced: the letters come from separate questions and are not inferred from the function code.
+- **Prior (X-04).** The Phase 2 independent policy now applies to EI too. `init` still reads the profile each time, but applies an EI prior only under the `mapped-mean` policy, so no dependency is recorded. A non-finite E is ignored.
+
+### Source changes
+
+- `packages/engine-sdk/src/thresholds.ts`: added `jung` publication thresholds (units documented).
+- `packages/engine-jung/src/index.ts`:
+  - bank of 48 items, with the balanced preference scales and reworded items above;
+  - `pMaximum`, dominant and auxiliary `Role`s, and the partial or unresolved code;
+  - absolute percentiles and `pTop`;
+  - X letters;
+  - `ResultMeta` (scoring version `jung-2`);
+  - named explanation events;
+  - validated deserialisation;
+  - the independent prior policy.
+- `apps/web/src/lib/results/JungResult.svelte`:
+  - no header confidence;
+  - absolute bars with "chance highest";
+  - an unresolved, partial or resolved explanation;
+  - separate MBTI letters with X;
+  - quality notes;
+  - a note that Big Five is not used.
+- `JungPage.svelte`, `typologies.ts`, `orchestrator`: count is 48; "nearest MBTI" corrected; "starting point" claim removed; unresolved and `(?)` explained.
+
+### Checks performed
+
+- `pnpm test` 29/29, `pnpm typecheck` 15/15 (svelte-check 0 errors), `pnpm build` succeeds.
+- The 18 Jung tests pass. They cover:
+  - bank structure, with 3:3 preference keying;
+  - letters and stack;
+  - a non-MBTI function code alongside differing MBTI letters (JG-05);
+  - all-Neutral gives "unresolved", 8 candidates, 50% bars, pTop = 1/8, XXXX, and no token;
+  - a clear dominant with tied auxiliaries gives `IT(?) (Ti)`;
+  - dominant and auxiliary report separate probabilities and named events;
+  - `pMaximum` matches the closed form Φ(Δ/√(s₁²+s₂²)) for two normals;
+  - raw all-Agree, all-Disagree, all-Strongly-agree and all-Strongly-disagree give XXXX, θ = 0, no role, and a straight-line note;
+  - no, zero and nonzero Big Five priors give identical results;
+  - answer order and replacement give identical results;
+  - malformed-state rejection;
+  - version and completion.
+- One fixture was corrected during the work: a test that gave Ti and Ne equal top scores expected a code, and now correctly returns unresolved.
+- Browser check: **not performed**. No browser tool is available in this session.
+
+### Remaining work
+
+- Saved Jung results are not yet marked outdated after a Big Five retake. Jung has no dependency now, so only general version migration applies (Phase 7).
+
+**Next phase:** Phase 5 — Enneagram.
+
 ## Finding ledger
 
 | ID | Disposition | Notes |
@@ -173,11 +250,11 @@ estimates exist for any engine, and none were invented.
 | BF-01 | Implemented and checked | Strength and lean from Φ(θ); certainty reported separately. Cutoffs provisional. |
 | BF-02 | Mitigated, with limitations stated | Token and breakdown agree; straight-line and reverse-key notes. Cannot separate sincere neutrality from disengagement; no person-fit model. |
 | BF-03 | Awaiting empirical data | Open questions: do e5/e8 (recharge, noisy-place fatigue) measure sensory sensitivity rather than E? Do a5–a7 draw socially desirable responding? Does C mix organisation, memory and impulse control into one score? Needs cognitive interviews and a pilot. Items unchanged. |
-| JG-01 | Pending (Phase 4) | |
-| JG-02 | Pending (Phase 4) | |
-| JG-03 | Pending (Phase 4) | |
-| JG-04 | Pending (Phase 4) | |
-| JG-05 | Rejected allegation preserved | The differing-code explanation is untouched. |
+| JG-01 | Implemented and checked | Tied or unresolved roles are not named; candidates shown; absolute bars. Cutoffs provisional. |
+| JG-02 | Mitigated, with limitations stated | Preference keying balanced 3:3 with original items; uniform agreement gives XXXX. New items unpiloted; acquiescence is only flagged. |
+| JG-03 | Awaiting empirical data (mitigated by abstention) | Forward-only, 3 items per function. Discrimination and counter-keyed items need respondent data. |
+| JG-04 | Mitigated, with limitations stated | Separate named dominant and auxiliary events; no whole-code probability. Uses an independent-normal approximation, not a joint model. |
+| JG-05 | Rejected allegation preserved | Independent MBTI letters and the differing-code explanation kept; only the "nearest MBTI" wording corrected. |
 | EN-01 – EN-06 | Pending (Phase 5) | |
 | TM-01 | Implemented and checked | Output defined as quadrant certainty; location and near-boundary reported separately. Cutoffs provisional. |
 | TM-02 | Mitigated, with limitations stated | Agreement and conflict shown; weights unchanged. Whether the ranking is independent evidence needs data. |
@@ -191,11 +268,11 @@ estimates exist for any engine, and none were invented.
 | X-01 | Pending (Phase 6) | |
 | X-02 | Pending (Phase 6) | |
 | X-03 | Mitigated (Big Five, MOTIVES, temperament: versioned import + dependency record) | Scoring version and dependency fields exist; Big Five has no dependencies. Invalidation of dependants is pending (Phases 2–4, 7). |
-| X-04 | Mitigated (MOTIVES); Jung pending (Phase 4) | Independent policy: no unjustified prior is applied. A justified mapping with prior variance awaits data. |
+| X-04 | Mitigated (MOTIVES, Jung) | Independent policy: no unjustified prior is applied. A justified mapping with prior variance awaits data. |
 | X-05 | Awaiting empirical data | Everything is labelled `calibrated: false`; no calibration exists. |
-| X-06 | Mitigated (Big Five, MOTIVES, temperament) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
-| X-07 | Mitigated (Big Five, MOTIVES, temperament, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
-| X-08 | Mitigated (Big Five, MOTIVES, temperament) | Deterministic fixed-form fixtures added. Other engines pending. |
+| X-06 | Mitigated (Big Five, MOTIVES, temperament, Jung) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
+| X-07 | Mitigated (Big Five, MOTIVES, temperament, Jung, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
+| X-08 | Mitigated (Big Five, MOTIVES, temperament, Jung) | Deterministic fixed-form fixtures added. Other engines pending. |
 | X-09 | Rejected allegation preserved | Fresh `init(profileSnapshot())` at submit is unchanged. |
-| X-10 | Mitigated (Big Five, MOTIVES, temperament, Overview); others pending (Phases 4, 6–7) | |
+| X-10 | Mitigated (Big Five, MOTIVES, temperament, Jung, Overview); Enneagram, AP and Temporistics pending (Phases 5–7) | |
 | X-11 | Mitigated | The thresholds header lists the other constant sources. Removing stale adaptive constants is pending (Phase 7). |

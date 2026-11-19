@@ -23,7 +23,7 @@ export const TYPOLOGIES: Typology[] = [
     measures: "Choleric (high N, high E), melancholic (high N, low E), sanguine (low N, high E), phlegmatic (low N, low E).",
     notation: ["phleg · mel · sang · chol", "[dom] = one area strongly favoured", "phleg-mel = a blend"],
     caveat: "Humoral theory is rejected; only the modern E × N version has support." },
-  { slug: "jung", questions: "44 questions", navName: "Jungian Functions", name: "Jungian Functions", short: "Jung", slots: ["jung"], evidence: "moderate", hasTest: true,
+  { slug: "jung", questions: "48 questions", navName: "Jungian Functions", name: "Jungian Functions", short: "Jung", slots: ["jung"], evidence: "moderate", hasTest: true,
     summary: "Jung's eight function-attitudes, written as a classic type code.",
     measures: "Introversion or extraversion combined with Thinking, Feeling, Sensation and iNtuition.",
     notation: ["1st letter = attitude of the dominant function (I or E)", "2nd letter = dominant function; the letter in brackets = auxiliary", "(XxYy) = the same in function shorthand", "MBTI letters are shown separately"],

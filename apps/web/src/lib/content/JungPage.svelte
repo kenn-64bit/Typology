@@ -20,8 +20,8 @@
 
 <TypologyLayout {t} {result} title="Jungian Functions"
   facts={["4 functions", "2 attitudes", "8 function-attitudes"]}
-  format="12 to 28 statements on one page"
-  extra="If you took the Big Five test, your Extraversion score gives the I/E scale a starting point.">
+  format="48 statements on one page"
+  extra="This test is scored on its own answers. A Big Five result does not change it.">
 
   {#snippet overview()}
     <p>The Swiss psychiatrist Carl Jung saw that people do two basic things all day. They take in information, and they make decisions about it. Different people do each of these in different ways.</p>
@@ -38,7 +38,8 @@
     <ChipRow label="e:" href={g}><strong>Extraverted (outer world).</strong> The function works first on the people, objects and events around you.</ChipRow>
     <ChipRow label="T, F:" href={g}><strong>Judging functions.</strong> Thinking and Feeling make decisions.</ChipRow>
     <ChipRow label="S, N:" href={g}><strong>Perceiving functions.</strong> Sensation and Intuition take in information.</ChipRow>
-    <ArrowRow>The result also gives four MBTI-style letters, each with a percentage.</ArrowRow>
+    <ArrowRow>The result also gives four MBTI-style letters from separate questions, each with a percentage. <code>X</code> means no clear preference.</ArrowRow>
+    <ArrowRow>If no function clearly scores highest, the result says so instead of giving a code. If the main function is clear but the helper is not, the helper is shown as <code>(?)</code>.</ArrowRow>
   {/snippet}
 
   {#snippet figure()}
@@ -86,8 +87,8 @@
     <ArrowRow>The letter in parentheses is your helper function. If your main function judges (T or F), the helper usually perceives (S or N). The opposite is also true.</ArrowRow>
     <ArrowRow>The shorthand gives both functions with their attitudes.</ArrowRow>
     <ArrowRow>Example: <code>IT(N) (TiNi)</code> means Introverted Thinking is the main function and Introverted Intuition is the helper. This person builds an inner system of logic and compares it with a long-term inner pattern.</ArrowRow>
-    <ArrowRow>The bars give your score for all eight functions. A low score does not mean you cannot use a function. It means you use it less often, or trust it less.</ArrowRow>
-    <ChipRow label="note:">MBTI says the main and helper functions must have opposite attitudes, for example Ti with Ne. Jung did not make this rule, so your result can be a code such as <code>(TiNi)</code>. The result then also gives the nearest MBTI type and its usual function order.</ChipRow>
+    <ArrowRow>The bars give your own score for each of the eight functions, on the same scale for all of them. A low score does not mean you cannot use a function. It means you use it less often, or trust it less.</ArrowRow>
+    <ChipRow label="note:">MBTI says the main and helper functions must have opposite attitudes, for example Ti with Ne. Jung did not make this rule, so your result can be a code such as <code>(TiNi)</code>. The result also gives MBTI letters measured by separate questions, and the usual function order for those letters. They are not inferred from your function code, so the two can differ.</ChipRow>
   {/snippet}
 
   {#snippet mixups()}

@@ -17,7 +17,7 @@ export const STEPS: StepDef[] = [
     blurb: "Seven bipolar traits in the fixed order M-O-T-I-V-E-S. Uses your Big Five result as a head start." },
   { id: "temperament", num: "3", title: "Temperament", engine: "temperament", slots: ["temperament"], example: "phleg [dom]", estItems: "1 or 9", evidence: "exploratory",
     blurb: "Derived from Big Five Extraversion × Neuroticism, plus two confirm items (pure or blend)." },
-  { id: "jung", num: "4", title: "Jung functions", engine: "jung", slots: ["jung"], example: "IT(N) (TiNi)", estItems: "12–28", evidence: "moderate",
+  { id: "jung", num: "4", title: "Jung functions", engine: "jung", slots: ["jung"], example: "IT(N) (TiNi)", estItems: "48", evidence: "moderate",
     blurb: "Classic Jungian code from function-attitude scores, with MBTI letters shown separately." },
   { id: "ennea-core", num: "5a", title: "Enneagram core + wing", engine: "enneagram", slots: ["tritype"], example: "··· (1w2)", estItems: "12–18", evidence: "mixed",
     blurb: "Your core type first, then a neighbouring wing." },

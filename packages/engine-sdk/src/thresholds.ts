@@ -22,6 +22,13 @@ export const THRESHOLDS = {
    */
   quality: { agreeMean: 3.75, disagreeMean: 2.25, minPerSide: 2 },
   /**
+   * Jung publication (JG-01, JG-04). Units: model probability that a function is the highest (of all eight for the
+   * dominant; of the four on the other axis for the auxiliary), from independent normal approximations of each
+   * function posterior. A role is named only at ≥ resolveP; candidates are functions with ≥ candidateP.
+   * letterMiddle: MBTI letter is X when its model percentile is within this distance of 0.5. All provisional.
+   */
+  jung: { resolveP: 0.6, candidateP: 0.1, letterMiddle: 0.05 },
+  /**
    * MOTIVES case and bars (MO-01, MO-03). Units: MODEL percentile Φ(θ) as a fraction (score level, not certainty).
    * Uppercase at ≥ strong (or ≤ 1 − strong), lowercase at ≥ medium (or ≤ 1 − medium), else X.
    * Bars mark one trait only when its distance from 0.5 exceeds every other trait's by ≥ dominanceGap; otherwise no
