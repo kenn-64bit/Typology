@@ -28,7 +28,12 @@ export const THRESHOLDS = {
    * bars and the leading traits are reported as tied candidates. All provisional, unpiloted.
    */
   motives: { strong: 0.8, medium: 0.6, dominanceGap: 0.05 },
-  temperament: { blendCut: 0.2 },                                // runner-up prob below this = "[dom]"
+  /**
+   * Temperament (TM-01). Units: model probability of the runner-up QUADRANT (quadrant certainty, not spatial distance).
+   * Runner-up below blendCut → "[dom]" = one quadrant strongly favoured. nearLine: a point whose E or N model
+   * percentile is within this distance of 0.5 is reported as close to a boundary, whatever the certainty. Provisional.
+   */
+  temperament: { blendCut: 0.2, nearLine: 0.1 },
   /** Prior strength when one engine reads another's published result (placeholder r, from pilot data later). */
   /**
    * Prior policy (X-04): "independent" = cross-engine Big Five priors are NOT applied to scoring. The coefficients
@@ -58,8 +63,7 @@ export const THRESHOLDS = {
     apOrderP: 0.7, apRankTasks: 4, apCap: 6,
     motivesSE: 0.40, motivesLetterP: 0.9, motivesCap: 3,          // dossier Modules 5–6
     jungFuncSE: 0.45, jungFuncCap: 3, jungFuncLetterP: 1.01, // dossier Module 2; 1.01 = no letter rule (continuous scores)
-    tempFallbackSE: 0.40, tempFallbackLetterP: 0.9, tempFallbackCap: 4, // temperament without a Big Five result
-    tempConfirmItems: 2,
+    tempFallbackSE: 0.40, // temperament without a Big Five result; the fixed form asks all 8 fallback items regardless
     temporisticsOrderP: 0.7, temporisticsCap: 6,                  // same rule as AP
     globalCap: 70,
   },

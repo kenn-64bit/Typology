@@ -5,19 +5,20 @@
   import ChipRow from "$lib/page/ChipRow.svelte";
   import { exampleFor } from "$lib/examples.ts";
   import { app } from "$lib/app.svelte.ts";
+  import { importableBigFive } from "@typo/engine-temperament";
   import type { Typology } from "$lib/typologies.ts";
   import TypologyLayout from "./TypologyLayout.svelte";
   import "./diagram.css";
 
   let { t, result }: { t: Typology; result: Snippet<[unknown, number]> } = $props();
   const g = "/glossary#temperament";
-  const hasBigFive = $derived("bigfive" in app.data.results);
+  const hasBigFive = $derived(importableBigFive(app.data.results) !== null);
 </script>
 
 <TypologyLayout {t} {result} title="Four Temperaments"
   facts={["4 temperaments", "placed on 2 Big Five traits"]}
-  format={hasBigFive ? "2 questions. Uses your Big Five scores." : "6 to 8 statements on one page"}
-  extra="If you took the Big Five test, this test uses your Extraversion and Neuroticism scores. Then 2 questions find out if your temperament is pure or a blend.">
+  format={hasBigFive ? "1 ranking question. Uses your Big Five scores." : "8 statements and 1 ranking on one page"}
+  extra="If you took the Big Five test, this test uses your Extraversion and Neuroticism scores and asks you only to rank four descriptions.">
 
   {#snippet overview()}
     <p>The four temperaments are one of the oldest ideas about personality. Ancient Greek doctors thought that four body fluids controlled mood. Too much of one fluid made a person cheerful, angry, sad or slow. Medicine rejected that idea, but the four names stayed in everyday language for more than 2,000 years.</p>
@@ -32,8 +33,8 @@
     <ChipRow label="chol:" href={g}><strong>Choleric.</strong> From the Greek word for yellow bile. Ancient doctors linked it to anger. Here it means Social and Limbic.</ChipRow>
     <ChipRow label="mel:" href={g}><strong>Melancholic.</strong> From the Greek words for black bile. Ancient doctors linked it to sadness. Here it means Reserved and Limbic.</ChipRow>
     <ChipRow label="phleg:" href={g}><strong>Phlegmatic.</strong> From the Greek word for phlegm. Ancient doctors linked it to slowness. Here it means Reserved and Calm.</ChipRow>
-    <ChipRow label="[dom]:" href={g}><strong>Pure.</strong> Your position is well inside one area of the grid. There is no second temperament.</ChipRow>
-    <ChipRow label="phleg-mel:" href={g}><strong>Blend.</strong> Your position is near the line between two areas. The first name is stronger. The second name is the area you are near.</ChipRow>
+    <ChipRow label="[dom]:" href={g}><strong>One area strongly favoured.</strong> The model is fairly sure which area of the grid you are in: any other area has under a 20% chance. This is about certainty. It does not mean you are far inside the area.</ChipRow>
+    <ChipRow label="phleg-mel:" href={g}><strong>Blend.</strong> Two areas both remain plausible. The first is more likely. This can happen when your point is near the line between them or when your scores are less precise.</ChipRow>
   {/snippet}
 
   {#snippet figure()}
@@ -64,10 +65,10 @@
 
   {#snippet read()}
     <ArrowRow>The first name is your main temperament: the area of the grid you are in.</ArrowRow>
-    <ArrowRow><code>[dom]</code> means your position is well inside one area. The description of that temperament probably fits you well.</ArrowRow>
-    <ArrowRow>A blend such as <code>phleg-mel</code> means your position is near the line between two areas. Read both descriptions. The second one may show under stress or with some people.</ArrowRow>
+    <ArrowRow><code>[dom]</code> means the model is fairly sure which area you are in. The result also says if your point is close to an edge.</ArrowRow>
+    <ArrowRow>A blend such as <code>phleg-mel</code> means two areas both remain plausible. Read both descriptions.</ArrowRow>
     <ArrowRow>Your temperament comes from your Extraversion and Neuroticism scores. If those scores change, your temperament can change too.</ArrowRow>
-    <ChipRow label="note:">The result shows your Extraversion and Neuroticism percentiles. It also says if they came from your Big Five result or from this test's own questions.</ChipRow>
+    <ChipRow label="note:">The result shows your Extraversion and Neuroticism percentiles and says if they came from your Big Five result or from this test's own questions. It also says if your description ranking agrees with your scores.</ChipRow>
   {/snippet}
 
   {#snippet mixups()}

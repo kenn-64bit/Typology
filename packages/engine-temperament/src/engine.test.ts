@@ -1,32 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { FALLBACK, RANK_ID, temperamentEngine as E, TEMPS } from "./index.ts";
+import { FALLBACK, importableBigFive, quadrant, RANK_ID, temperamentEngine as E, TEMPS } from "./index.ts";
 import type { Temp } from "@typo/bio";
 
-/** Answer the whole form at once (any order), as the UI does. */
+/** Answer the whole form at once (any order), as the UI does. lean: +1 high, −1 low, 0 neutral (raw 3). */
 function run(profile: Record<string, unknown>, lean: { E: number; N: number }, ranking: Temp[]) {
   let s = E.init(profile);
   for (const v of [...E.form(s)].reverse()) {
     if (v.id === RANK_ID) { s = E.answer(s, v.id, ranking); continue; }
     const it = FALLBACK.find(i => i.id === v.id)!;
-    const keyed = (lean as Record<string, number>)[it.scale]! > 0 ? 5 : 1;
+    const l = (lean as Record<string, number>)[it.scale]!;
+    const keyed = l > 0 ? 5 : l < 0 ? 1 : 3;
     s = E.answer(s, v.id, it.reverse ? 6 - keyed : keyed);
   }
   return s;
 }
-const bf = (E: number, N: number) => ({ bigfive: { published: { E: { theta: E, se: 0.4 }, N: { theta: N, se: 0.4 } } } });
+const bf = (E: number, N: number, se = 0.4, scoringVersion?: string) => ({
+  bigfive: { published: { E: { theta: E, se }, N: { theta: N, se } }, ...(scoringVersion ? { meta: { scoringVersion } } : {}) },
+});
+const RANK: Temp[] = ["choleric", "sanguine", "melancholic", "phlegmatic"];
 
 describe("temperament engine (fixed form)", () => {
   it("form: 8 items + 1 ranking alone; only the ranking with a Big Five result", () => {
     expect(E.form(E.init({}))).toHaveLength(9);
     expect(E.form(E.init(bf(0, 0))).map(v => v.id)).toEqual([RANK_ID]);
   });
-  it("quadrants follow E × N", () => {
+  it("quadrants follow E × N on both paths", () => {
     expect(E.result(run(bf(-1.5, -1.5), { E: 0, N: 0 }, ["phlegmatic", "melancholic", "sanguine", "choleric"])).top).toBe("phlegmatic");
     expect(E.result(run(bf(-1.5, 1.5), { E: 0, N: 0 }, ["melancholic", "phlegmatic", "sanguine", "choleric"])).top).toBe("melancholic");
     expect(E.result(run({}, { E: 1, N: -1 }, ["sanguine", "choleric", "phlegmatic", "melancholic"])).top).toBe("sanguine");
+    expect(E.result(run({}, { E: -1, N: 1 }, ["melancholic", "choleric", "phlegmatic", "sanguine"])).top).toBe("melancholic");
   });
-  it("clear profile ranked consistently → pure token; borderline E → blend", () => {
-    expect(E.result(run(bf(2, 2), { E: 0, N: 0 }, ["choleric", "sanguine", "melancholic", "phlegmatic"])).token).toBe("chol [dom]");
+  it("TM-03 preserved: a clear consistent profile is [dom]; a boundary E profile is a reachable blend", () => {
+    expect(E.result(run(bf(2, 2), { E: 0, N: 0 }, RANK)).token).toBe("chol [dom]");
     expect(E.result(run(bf(0.05, 1.5), { E: 0, N: 0 }, ["melancholic", "choleric", "sanguine", "phlegmatic"])).token).toMatch(/^(mel|chol)-(mel|chol)$/);
   });
   it("finished only when the whole form is answered; next() walks the form", () => {
@@ -39,5 +44,91 @@ describe("temperament engine (fixed form)", () => {
   });
   it("rejects an incomplete ranking", () => {
     expect(() => E.answer(E.init({}), RANK_ID, ["choleric"])).toThrow();
+  });
+});
+
+describe("TM-01: certainty is not location", () => {
+  it("same point, smaller SD → higher quadrant certainty, but the reported location is unchanged and flagged near the line", () => {
+    const wide = E.result(run(bf(0.2, 0.2, 0.6), { E: 0, N: 0 }, RANK));
+    const tight = E.result(run(bf(0.2, 0.2, 0.05), { E: 0, N: 0 }, RANK));
+    expect(tight.traitProbs.choleric).toBeGreaterThan(wide.traitProbs.choleric);
+    expect(tight.E.percentile).toBe(wide.E.percentile);
+    expect(tight.token).toBe("chol [dom]");
+    expect(tight.nearLine).toBe(true); // 58th percentile: certain quadrant, not far inside it
+    expect(wide.nearLine).toBe(true);
+  });
+  it("a far point is not near the line", () => {
+    expect(E.result(run(bf(1.5, 1.5), { E: 0, N: 0 }, RANK)).nearLine).toBe(false);
+  });
+});
+
+describe("TM-02: description agreement is shown, not forced", () => {
+  it("ranking the inherited top type last → conflicts, with the trait-only quadrant still reported", () => {
+    const r = E.result(run(bf(2, 2, 0.3), { E: 0, N: 0 }, ["phlegmatic", "melancholic", "sanguine", "choleric"]));
+    expect(r.traitTop).toBe("choleric");
+    expect(r.agreement).toEqual({ rankOfTraitTop: 4, status: "conflicts", firstChoice: "phlegmatic" });
+    expect(r.top).toBe("choleric"); // bounded ranking weights: no veto, no amplification
+  });
+  it("agrees / partly", () => {
+    expect(E.result(run(bf(2, 2), { E: 0, N: 0 }, RANK)).agreement!.status).toBe("agrees");
+    expect(E.result(run(bf(2, 2), { E: 0, N: 0 }, ["sanguine", "choleric", "melancholic", "phlegmatic"])).agreement!.status).toBe("partly");
+  });
+  it("tied quadrants: no trait-only top, no agreement claim, unresolved recorded; ranking alone decides the token", () => {
+    const r = E.result(run({}, { E: 0, N: 0 }, RANK));
+    expect(Object.values(r.traitProbs).every(p => Math.abs(p - 0.25) < 1e-9)).toBe(true);
+    expect(r.traitTop).toBeNull();
+    expect(r.agreement).toBeNull();
+    expect(r.meta.unresolved).toEqual(["trait-derived quadrant"]);
+    expect(r.top).toBe("choleric");
+    expect(r.meta.quality.map(q => q.code)).toEqual(["straight-line"]);
+  });
+});
+
+describe("fallback form and Big Five import", () => {
+  it("every fallback answer contributes", () => {
+    const pick = (id: string) => (id === "te1" || id === "tn3" ? 4 : 3);
+    let base = E.init({});
+    for (const v of E.form(base)) base = v.id === RANK_ID ? E.answer(base, v.id, RANK) : E.answer(base, v.id, pick(v.id));
+    for (const it of FALLBACK) {
+      const changed = E.answer(base, it.id, pick(it.id) === 4 ? 2 : 5);
+      expect(quadrant(changed, false), it.id).not.toEqual(quadrant(base, false));
+    }
+  });
+  it("records the Big Five dependency and version", () => {
+    const r = E.result(run(bf(1, 1, 0.4, "bigfive-2"), { E: 0, N: 0 }, RANK));
+    expect(r.meta.dependencies).toEqual([{ engine: "bigfive", scoringVersion: "bigfive-2", used: expect.stringContaining("E θ 1.000") }]);
+    expect(E.result(run(bf(1, 1), { E: 0, N: 0 }, RANK)).meta.dependencies[0]!.scoringVersion).toBe("legacy");
+    expect(E.result(run({}, { E: 1, N: 1 }, RANK)).meta.dependencies).toEqual([]);
+  });
+  it("incompatible or malformed Big Five results are not imported: the own-items form is used", () => {
+    for (const p of [bf(1, 1, 0.4, "bigfive-99"), bf(Number.NaN, 1), bf(1, 1, 0), { bigfive: "x" }, { bigfive: { published: { E: { theta: 1, se: 0.4 } } } }]) {
+      expect(importableBigFive(p)).toBeNull();
+      expect(E.form(E.init(p))).toHaveLength(9);
+    }
+  });
+  it("own answers are refused on the Big Five form", () => {
+    expect(() => E.answer(E.init(bf(1, 1)), "te1", 4)).toThrow();
+  });
+  it("completion counts the actual form", () => {
+    expect(E.result(run(bf(1, 1), { E: 0, N: 0 }, RANK)).meta.completion).toEqual({ answered: 1, total: 1, complete: true });
+    expect(E.result(run({}, { E: 1, N: 0 }, RANK)).meta.completion).toEqual({ answered: 9, total: 9, complete: true });
+  });
+});
+
+describe("saved-state validation (X-07)", () => {
+  const good = JSON.parse(E.serialize(run({}, { E: 1, N: -1 }, RANK)));
+  const bad = (f: (o: any) => void) => { const o = structuredClone(good); f(o); return JSON.stringify(o); };
+  it("accepts a valid state and migrates v2", () => {
+    expect(() => E.deserialize(JSON.stringify(good))).not.toThrow();
+    const v2 = bad(o => { o.v = 2; delete o.bigFiveVersion; });
+    expect(E.deserialize(v2).v).toBe(3);
+  });
+  it("rejects malformed states", () => {
+    expect(() => E.deserialize(bad(o => { o.answers[0].x = 9; }))).toThrow();
+    expect(() => E.deserialize(bad(o => { o.answers[0].itemId = "zz"; }))).toThrow();
+    expect(() => E.deserialize(bad(o => { o.answers.push({ ...o.answers[0] }); }))).toThrow();
+    expect(() => E.deserialize(bad(o => { o.ranking = ["choleric", "choleric", "sanguine", "phlegmatic"]; }))).toThrow();
+    expect(() => E.deserialize(bad(o => { o.fromBigFive = { E: { theta: 1, se: -1 }, N: { theta: 0, se: 1 } }; o.answers = []; }))).toThrow();
+    expect(() => E.deserialize(bad(o => { o.v = 7; }))).toThrow();
   });
 });

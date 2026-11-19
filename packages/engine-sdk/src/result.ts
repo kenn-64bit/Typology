@@ -111,3 +111,17 @@ export function likertQualityNotes(
   }
   return notes;
 }
+
+/**
+ * A saved result from another engine, accepted only when its scoring version is in `accepted` (use null to accept
+ * results saved before scoring versions existed). Returns null for missing, non-object or incompatible results so an
+ * outdated result never silently serves as an input (X-03).
+ */
+export function compatibleResult(
+  profile: Readonly<Record<string, unknown>>, id: EngineId, accepted: readonly (string | null)[],
+): { result: Record<string, unknown>; scoringVersion: string | null } | null {
+  const r = profile[id];
+  if (!r || typeof r !== "object" || Array.isArray(r)) return null;
+  const v = savedScoringVersion(r);
+  return accepted.includes(v) ? { result: r as Record<string, unknown>, scoringVersion: v } : null;
+}

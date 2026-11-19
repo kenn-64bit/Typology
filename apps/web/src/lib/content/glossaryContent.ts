@@ -35,7 +35,7 @@ export const GLOSSARY_PAGES: GlossaryPage[] = [
     ["chol", "Choleric", "Social and limbic. Driven and quick to anger."],
     ["mel", "Melancholic", "Reserved and limbic. Thoughtful and sensitive."],
     ["phleg", "Phlegmatic", "Reserved and calm. Steady and patient."],
-    ["[dom]", "Dominant (pure)", "There is no second temperament."],
+    ["[dom]", "Dominant", "The model strongly favours one area. It does not mean you are far inside it."],
     ["a-b", "Blend", "Temperament a is stronger. Temperament b is second."],
   ] },
   { id: "jung", system: "Jungian Functions", href: "/jung", rows: [

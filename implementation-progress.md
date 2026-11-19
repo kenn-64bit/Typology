@@ -10,8 +10,8 @@ estimates exist for any engine, and none were invented.
 |---|---|---|
 | 1 | Big Five + shared result foundations | complete |
 | 2 | MOTIVES + optional prior policy | complete |
-| 3 | Four Temperaments | pending (next) |
-| 4 | Jungian Functions | pending |
+| 3 | Four Temperaments | complete |
+| 4 | Jungian Functions | pending (next) |
 | 5 | Enneagram | pending |
 | 6 | Attitudinal Psyche + shared ranking | pending |
 | 7 | Temporistics + final integration | pending |
@@ -118,6 +118,54 @@ estimates exist for any engine, and none were invented.
 
 **Next phase:** Phase 3 — Four Temperaments.
 
+## Phase 3 — Four Temperaments
+
+**Engineering status:** complete (2026-11-19).
+
+**Findings addressed by code changes:** TM-01, TM-02. TM-03 is preserved. Applied X-03, X-06, X-07, X-08, X-10 and X-11 to temperament.
+
+**Findings that still need respondent data or a theory decision:** whether the description ranking is independent evidence (it decides how much `likelihood.temperamentRank` should weigh), validity of the bundled descriptions ("driven and intense", "deep and serious"), and the `blendCut` and `nearLine` cutoffs.
+
+### Decisions and provisional assumptions
+
+- **Meaning chosen for "purity" (TM-01): quadrant certainty.** `probs` is the model probability of each quadrant. `[dom]` means "runner-up quadrant < 20%": one area strongly favoured. All spatial "well inside the area" wording was replaced across the page, glossaries and engine glossary. Location is reported separately, as the E and N model percentiles and posterior SDs. `nearLine` flags a point whose E or N model percentile is within 10 points of the 50th (`THRESHOLDS.temperament.nearLine` = 0.1, provisional). The result shows a note when `[dom]` coincides with a near-boundary point, so low uncertainty is never presented as an extreme location.
+- **Ranking (TM-02).** The ranking is still scored with the existing bounded weights, so every fixed-form answer contributes. It was not amplified. The result now also reports `traitProbs` (E/N only), `traitTop`, and `agreement`: where the trait-only top was ranked, plus agrees / partly / conflicts. The UI explains a conflict and says the ranking counts only a little. Exactly tied trait quadrants give `traitTop: null`, no agreement claim, and "trait-derived quadrant" in `meta.unresolved`.
+- **Big Five import (X-03).** `importableBigFive` takes the import only through the shared `compatibleResult`. Accepted scoring versions are legacy (none recorded) and `bigfive-2`; E/N θ must be finite and SD positive. Anything else falls back to the 8 own items. The same helper sets the page's question count. The import is recorded in `meta.dependencies`, with its version and the values used. The latest saved result is read on every `init`, as before.
+- **Ranking prompt** now names its endpoints: "from most like you to least like you".
+- **X-11:** removed the unused `tempFallbackLetterP`, `tempFallbackCap` and `tempConfirmItems`. The fallback cap is now `FALLBACK.length` rather than a hardcoded 99.
+
+### Source changes
+
+- `packages/engine-sdk/src/result.ts`: added `compatibleResult`.
+- `packages/engine-sdk/src/thresholds.ts`: documented `temperament.blendCut` units, added `nearLine`, removed stale temperament stop constants.
+- `packages/engine-temperament/src/index.ts`: state v3 (with a v2 migration); versioned and validated import; `traitProbs`, `traitTop`, `agreement`, `nearLine`, E/N θ and SD; `ResultMeta` (scoring version `temperament-3`); a normaliser guard; validated deserialisation; answers refused on the Big Five form.
+- `apps/web/src/lib/results/TemperamentResult.svelte`: no header confidence; certainty-vs-location sentence; agreement/conflict explanation; near-boundary note; quality notes.
+- `TemperamentPage.svelte`, `typologies.ts`, `glossary.ts`, `glossaryContent.ts`, `orchestrator`: counts are 1 or 9; `[dom]` and blend redefined as certainty; the compatible-import check drives the count.
+
+### Checks performed
+
+- `pnpm test` 29/29 tasks, `pnpm typecheck` 15/15 (svelte-check 0 errors), `pnpm build` succeeds.
+- The 17 temperament tests pass. They cover:
+  - form lengths and quadrants on both paths;
+  - TM-03 preserved: the `chol [dom]` profile and the reachable boundary blend;
+  - same θ with a smaller SD: certainty goes up, the reported location is unchanged, `nearLine` is flagged, and a far point is not flagged;
+  - inherited top ranked last: `conflicts`, top unchanged;
+  - agrees and partly;
+  - tied quadrants: unresolved, no agreement claim, token from the ranking;
+  - every fallback item changes the trait quadrant when its answer changes;
+  - dependency and version recorded, for both legacy and `bigfive-2`;
+  - incompatible, NaN, zero-SD, non-object and partial imports rejected;
+  - completion counts;
+  - v2 migration and malformed-state rejection.
+- Browser check: **not performed**. No browser tool is available in this session.
+
+### Remaining work
+
+- Saved temperament results do not yet show as "outdated" when Big Five is retaken. Phase 7 handles invalidation of dependants and the retake check.
+- Jung still uses its EI prior (Phase 4).
+
+**Next phase:** Phase 4 — Jungian Functions.
+
 ## Finding ledger
 
 | ID | Disposition | Notes |
@@ -131,8 +179,9 @@ estimates exist for any engine, and none were invented.
 | JG-04 | Pending (Phase 4) | |
 | JG-05 | Rejected allegation preserved | The differing-code explanation is untouched. |
 | EN-01 – EN-06 | Pending (Phase 5) | |
-| TM-01, TM-02 | Pending (Phase 3) | |
-| TM-03 | Rejected allegation preserved | Quadrant arithmetic untouched. |
+| TM-01 | Implemented and checked | Output defined as quadrant certainty; location and near-boundary reported separately. Cutoffs provisional. |
+| TM-02 | Mitigated, with limitations stated | Agreement and conflict shown; weights unchanged. Whether the ranking is independent evidence needs data. |
+| TM-03 | Rejected allegation preserved | Quadrant arithmetic unchanged; blend test retained and passing. |
 | MO-01 | Implemented and checked | Case and bars from Φ(θ); certainty reported separately. Cutoffs provisional. |
 | MO-02 | Mitigated, with limitations stated | Keying balanced 2:2 with original items; raw uniform answers now give θ = 0. New items unpiloted; acquiescence is only flagged, not modelled. |
 | MO-03 | Implemented and checked | No bars on X; ties give no bars and a candidate list. Gap value provisional. |
@@ -141,12 +190,12 @@ estimates exist for any engine, and none were invented.
 | TP-01, TP-02 | Pending (Phase 7) | |
 | X-01 | Pending (Phase 6) | |
 | X-02 | Pending (Phase 6) | |
-| X-03 | Mitigated (Big Five, MOTIVES) | Scoring version and dependency fields exist; Big Five has no dependencies. Invalidation of dependants is pending (Phases 2–4, 7). |
+| X-03 | Mitigated (Big Five, MOTIVES, temperament: versioned import + dependency record) | Scoring version and dependency fields exist; Big Five has no dependencies. Invalidation of dependants is pending (Phases 2–4, 7). |
 | X-04 | Mitigated (MOTIVES); Jung pending (Phase 4) | Independent policy: no unjustified prior is applied. A justified mapping with prior variance awaits data. |
 | X-05 | Awaiting empirical data | Everything is labelled `calibrated: false`; no calibration exists. |
-| X-06 | Mitigated (Big Five, MOTIVES) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
-| X-07 | Mitigated (Big Five, MOTIVES, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
-| X-08 | Mitigated (Big Five, MOTIVES) | Deterministic fixed-form fixtures added. Other engines pending. |
+| X-06 | Mitigated (Big Five, MOTIVES, temperament) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
+| X-07 | Mitigated (Big Five, MOTIVES, temperament, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
+| X-08 | Mitigated (Big Five, MOTIVES, temperament) | Deterministic fixed-form fixtures added. Other engines pending. |
 | X-09 | Rejected allegation preserved | Fresh `init(profileSnapshot())` at submit is unchanged. |
-| X-10 | Mitigated (Big Five, MOTIVES, Overview); others pending (Phases 3–4, 6–7) | |
+| X-10 | Mitigated (Big Five, MOTIVES, temperament, Overview); others pending (Phases 4, 6–7) | |
 | X-11 | Mitigated | The thresholds header lists the other constant sources. Removing stale adaptive constants is pending (Phase 7). |

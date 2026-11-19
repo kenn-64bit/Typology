@@ -9,7 +9,7 @@ export const SLOT_INFO: Record<Slot, { system: string; meaning: string }> = {
   tritype: { system: "Enneagram tritype + core/wing",
     meaning: "One type from each center, in order of use: gut (8-9-1), heart (2-3-4), head (5-6-7). In brackets: core type with its wing, which is always a neighboring number." },
   temperament: { system: "Four temperaments",
-    meaning: "Temperament from Eysenck's Extraversion × Neuroticism grid. [dom] = pure, with no second temperament mixed in; phleg-mel = a blend." },
+    meaning: "Temperament from Eysenck's Extraversion × Neuroticism grid. [dom] = one area strongly favoured by the model; phleg-mel = two areas both plausible." },
   temporistics: { system: "Temporistics",
     meaning: "Ranks four categories of time (letters from Russian): N = present, V = eternity, B = future, P = past." },
   ap: { system: "Attitudinal Psyche",
@@ -84,7 +84,7 @@ export const GLOSSARY: GlossarySection[] = [
     { label: "Temperaments", rows: [
       ["chol", "Choleric: high Neuroticism, high Extraversion"], ["mel", "Melancholic: high Neuroticism, low Extraversion"],
       ["sang", "Sanguine: low Neuroticism, high Extraversion"], ["phleg", "Phlegmatic: low Neuroticism, low Extraversion"]] },
-    { label: "Markers", rows: [["x [dom]", "Pure: no second temperament mixed in"], ["x-y", "A blend, strongest first, e.g. mel-phleg"]] }] },
+    { label: "Markers", rows: [["x [dom]", "One area strongly favoured by the model"], ["x-y", "Two areas both plausible, more likely first, e.g. mel-phleg"]] }] },
   { id: "jung", title: "Jungian functions", intro: "Two attitudes combined with four functions give eight function-attitudes.", groups: [
     { label: "Attitudes and functions", rows: [
       ["I / E", "Introverted / Extraverted (attitude)"], ["T", "Thinking"], ["F", "Feeling"], ["S", "Sensation"], ["N", "iNtuition"]] },

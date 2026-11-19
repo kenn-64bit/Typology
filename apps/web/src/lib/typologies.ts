@@ -21,7 +21,7 @@ export const TYPOLOGIES: Typology[] = [
   { slug: "temperament", questions: "1 ranking, plus 8 questions without a Big Five result", navName: "Four Temperaments", name: "Four Temperaments", short: "Temperament", slots: ["temperament"], evidence: "exploratory", hasTest: true,
     summary: "The classic four temperaments, read through Eysenck's Extraversion × Neuroticism grid.",
     measures: "Choleric (high N, high E), melancholic (high N, low E), sanguine (low N, high E), phlegmatic (low N, low E).",
-    notation: ["phleg · mel · sang · chol", "[dom] = pure, no second temperament", "phleg-mel = a blend"],
+    notation: ["phleg · mel · sang · chol", "[dom] = one area strongly favoured", "phleg-mel = a blend"],
     caveat: "Humoral theory is rejected; only the modern E × N version has support." },
   { slug: "jung", questions: "44 questions", navName: "Jungian Functions", name: "Jungian Functions", short: "Jung", slots: ["jung"], evidence: "moderate", hasTest: true,
     summary: "Jung's eight function-attitudes, written as a classic type code.",
