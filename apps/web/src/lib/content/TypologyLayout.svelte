@@ -1,0 +1,73 @@
+<script lang="ts">
+  import type { Snippet } from "svelte";
+  import Divider from "$lib/page/Divider.svelte";
+  import InfoRow from "$lib/page/InfoRow.svelte";
+  import SectionHeading from "$lib/page/SectionHeading.svelte";
+  import Masthead from "./Masthead.svelte";
+  import QuizModal from "$lib/QuizModal.svelte";
+  import type { Typology } from "$lib/typologies.ts";
+  import "./columns.css";
+  import { TEST_BOX } from "./shared.ts";
+
+  /**
+   * Typology page layout: banner, masthead, then two fixed text columns (a grid, so no text sits beside a heading).
+   * Rows: Overview + test link | Notation; figure (full width); Each part | How to read + Mix-ups.
+   * The test instructions show inside the quiz window, not on the page.
+   */
+  let { t, result, title, facts, format, extra, overview, notation, figure, parts, read, mixups }: {
+    t: Typology; result: Snippet<[unknown, number]>; title: string; facts: string[];
+    format: string; extra?: string; overview: Snippet;
+    notation: Snippet; figure: Snippet; parts: Snippet; read: Snippet; mixups: Snippet;
+  } = $props();
+  let open = $state(false);
+  const instructions = $derived([...TEST_BOX.instructions, ...(extra ? [extra] : [])]);
+</script>
+
+<Masthead {title} />
+
+<div class="duo">
+  <section class="overview">
+    <SectionHeading icon="overview" text="Overview" />
+    <InfoRow {facts} />
+    {@render overview()}
+    <p><button class="link" onclick={() => (open = true)}>Test for {title}</button> · {format}</p>
+  </section>
+  <section>
+    <SectionHeading icon="key" text="Notation" />
+    {@render notation()}
+  </section>
+</div>
+
+<Divider />
+<figure class="fig">
+  <SectionHeading icon="chart" text="What it measures" />
+  {@render figure()}
+</figure>
+<Divider />
+
+<div class="duo">
+  <section>
+    <SectionHeading icon="puzzle" text="Each part explained" />
+    {@render parts()}
+  </section>
+  <div>
+    <section>
+      <SectionHeading icon="book" text="How to read your result" />
+      {@render read()}
+    </section>
+    <Divider />
+    <section>
+      <SectionHeading icon="warning" text="Common mix-ups" />
+      {@render mixups()}
+    </section>
+  </div>
+</div>
+
+{#if open}<QuizModal {t} {result} {instructions} onclose={() => (open = false)} />{/if}
+
+<style>
+  .fig { margin: 0; padding: 0.9rem 1rem 1rem; background: #fffaf4; border: 1px solid var(--panel-border); }
+  .overview :global(p) { margin: 0 0 0.6rem; }
+  .link { font: inherit; color: var(--rust); text-decoration: underline; background: none; border: 0; padding: 0; cursor: pointer; }
+  .link:hover { color: var(--rust-dark); }
+</style>

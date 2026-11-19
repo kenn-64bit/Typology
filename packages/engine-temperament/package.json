@@ -1,0 +1,9 @@
+{
+  "name": "@typo/engine-temperament",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p .", "test": "vitest run" },
+  "dependencies": { "@typo/engine-sdk": "workspace:*", "@typo/likert-cat": "workspace:*", "@typo/bio": "workspace:*", "@typo/irt": "workspace:*" }
+}

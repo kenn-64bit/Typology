@@ -1,0 +1,9 @@
+{
+  "name": "@typo/rank-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p .", "test": "vitest run" },
+  "dependencies": { "@typo/engine-sdk": "workspace:*", "@typo/bayes": "workspace:*" }
+}

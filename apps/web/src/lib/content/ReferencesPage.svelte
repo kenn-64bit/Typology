@@ -1,0 +1,57 @@
+<script lang="ts">
+  // References: every citation on the site, in one place. Same masthead and serif columns as the glossary.
+  import Divider from "$lib/page/Divider.svelte";
+  import SectionHeading from "$lib/page/SectionHeading.svelte";
+  import Masthead from "./Masthead.svelte";
+  import { REFERENCES } from "./references.ts";
+  import { EVIDENCE } from "./evidence.ts";
+  import { BADGES } from "./shared.ts";
+  import "./columns.css";
+</script>
+
+<svelte:head><title>References · Typology</title></svelte:head>
+
+<Masthead title="References" />
+
+<section class="ev">
+  <div class="duo">
+    <div class="ev-head"><SectionHeading icon="info" text="Evidence for each system" /></div>
+    {#each EVIDENCE as a (a.href)}
+      <section id="ev-{a.href.slice(1)}">
+        <h3 class="sub"><a href={a.href}>{a.sys}</a> <span class="badge" title={BADGES[a.key].tip}>{BADGES[a.key].label}</span></h3>
+        <p>{a.ev}</p>
+      </section>
+    {/each}
+  </div>
+</section>
+
+<Divider />
+
+<div class="duo">
+  {#each REFERENCES as g (g.id)}
+    <section id={g.id}>
+      <SectionHeading icon="book" text={g.title} />
+      <ol class="refs">
+        {#each g.refs as r (r.link)}
+          <li>{r.text}{#if r.title} <em>{r.title}</em>{/if}{#if r.rest} {r.rest}{/if}
+            <a href={r.link} rel="noopener" target="_blank">{r.label}</a></li>
+        {/each}
+      </ol>
+    </section>
+  {/each}
+</div>
+
+<Divider />
+<p class="note">Links open the source or a public summary of it. Some publisher and practitioner sites sell the tests they describe.</p>
+
+<style>
+  .refs { list-style: none; margin: 0; padding: 0; }
+  .refs li { margin: 0 0 0.55rem; padding-left: 1.2rem; text-indent: -1.2rem; overflow-wrap: anywhere; }
+  .refs a { white-space: nowrap; }
+  .ev section { scroll-margin-top: 1rem; }
+  .ev p { margin: 0; }
+  .ev-head { grid-column: 1 / -1; }
+  .ev .sub a { color: inherit; }
+  .badge { font: bold 10px var(--font-head); letter-spacing: 0.08em; color: var(--white); background: var(--meta); padding: 0.1rem 0.45rem; margin-left: 0.3rem; vertical-align: 1px; cursor: help; }
+  .note { font-size: 12px; color: var(--meta); margin: 0; }
+</style>

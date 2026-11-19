@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output and caches
+.turbo/
+dist/
+build/
+.svelte-kit/
+.vite/
+vite.config.*.timestamp-*
+*.tsbuildinfo
+coverage/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Installed agent skills (restore from skills-lock.json)
+.agents/
+
+# Private planning and research notes
+/CONTENT.md
+/SPEC.md
+/frontend.md
+/research/dossier.md
+/research/notation.md
+
+# Local tool state
+.claude/settings.local.json
+.taste-skill/
+plans/
+animation-plans/
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
