@@ -57,7 +57,6 @@ export const THRESHOLDS = {
    * percentile is within this distance of 0.5 is reported as close to a boundary, whatever the certainty. Provisional.
    */
   temperament: { blendCut: 0.2, nearLine: 0.1 },
-  /** Prior strength when one engine reads another's published result (placeholder r, from pilot data later). */
   /**
    * Prior policy (X-04): "independent" = cross-engine Big Five priors are NOT applied to scoring. The coefficients
    * below describe an unvalidated expert mapping kept for documentation only; they omit Big Five SD and any measured
@@ -67,7 +66,6 @@ export const THRESHOLDS = {
   priors: { motivesFromBigFive: 0.5, jungEIFromBigFiveE: 0.6 },
   /** Expert likelihoods before calibration (SPEC §4.2 cold start). */
   likelihood: {
-    pairMatch: 0.75, pairOther: 0.25, pairNeutral: 0.5, selfCheckMatch: 0.85, confirmMatch: 0.75,
     /** Temperament description ranking: weight for the temperament placed 1st..4th. */
     temperamentRank: [0.4, 0.3, 0.18, 0.12],
     /** Fixed-form Enneagram: P(answer 1..5 | statement is / is not from your type). */
@@ -79,13 +77,14 @@ export const THRESHOLDS = {
   },
   /** Plackett–Luce worth ratio between adjacent ranks (first choice weighs most). */
   rankWorthRatio: 2.2,
+  /**
+   * Adaptive `next()` stopping only. The removed Enneagram stop values (enneaCoreP, wingP, stackingP, tritypeP and
+   * caps) and the unused likelihoods (pair*, selfCheckMatch, confirmMatch) governed nothing on the fixed form (X-11);
+   * Enneagram publication lives in `ennea.*`, and the paragraph pick has no likelihood (EN-01).
+   */
   stop: {
     bigfiveSE: 0.35, bigfiveCap: 8, bigfiveLetterP: 0.9, // letter rule from dossier Module 1 (ends extreme scorers, §4.5)
     mbtiSE: 0.35, mbtiLetterP: 0.9, mbtiCap: 6,
-    enneaCoreP: 0.85, enneaCoreCap: 15,
-    wingP: 0.75, wingCap: 3,
-    stackingP: 0.8, stackingCap: 4,
-    tritypeP: 0.8, tritypeCapPerCenter: 3,
     // X-01: adaptive-only. `next()` may stop AP/Temporistics after apCap/temporisticsCap tasks or at apOrderP; the
     // deployed fixed form always shows and scores all 7 tasks. Publication uses `ranking.*`, not these values.
     apOrderP: 0.7, apCap: 6,

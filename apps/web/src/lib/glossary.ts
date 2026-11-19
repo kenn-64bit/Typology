@@ -109,7 +109,7 @@ export const GLOSSARY: GlossarySection[] = [
       ["a/b/c", "Stacking: dominant first, the last one is the blind spot"]] }] },
   { id: "ap", title: "Attitudinal Psyche", intro: "Four aspects ranked from 1st to 4th; 24 possible orders.", groups: [
     { label: "Aspects", rows: [["V", "Volition: will"], ["L", "Logic"], ["E", "Emotion"], ["F", "Physics: body, material world"]] },
-    { label: "Positions", rows: [
+    { label: "Positions (AP theory; the test measures only the order)", rows: [
       ["1st", "Confident, results-focused"], ["2nd", "Confident, process-focused and flexible"],
       ["3rd", "Insecure, sensitive to others' judgement"], ["4th", "Indifferent, easily yields"]] }] },
   { id: "temporistics", title: "Temporistics", intro: "Four categories of time ranked from 1st to 4th; letters come from Russian; 24 possible orders.", groups: [

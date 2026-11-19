@@ -14,7 +14,7 @@ estimates exist for any engine, and none were invented.
 | 4 | Jungian Functions | complete |
 | 5 | Enneagram | complete |
 | 6 | Attitudinal Psyche + shared ranking | complete |
-| 7 | Temporistics + final integration | pending (next) |
+| 7 | Temporistics + final integration | complete |
 
 ## Phase 1 — Big Five and shared result foundations
 
@@ -408,6 +408,66 @@ estimates exist for any engine, and none were invented.
 
 **Next phase:** Phase 7 — Temporistics and final integration.
 
+## Phase 7 — Temporistics and final integration
+
+**Engineering status:** complete (2026-11-19). All seven phases are complete in engineering terms. None of the engines is psychometrically validated.
+
+**Findings addressed by code changes:** TP-01; TP-02 (items and copy); final integration of X-01 to X-11.
+
+**Findings that still need respondent data or a theory decision:** TP-02 (whether the rewritten items measure one orientation, and context effects), plus every empirical item listed in the ledger below.
+
+### Decisions and provisional assumptions
+
+- **TP-01.** Temporistics uses the Phase 6 shared ranking result. It shows a full order only at ≥ 0.6, otherwise a partial result (first aspect) or "no clear order" with candidates. Each aspect's average place, chance of being first and chance of being last are shown, along with a conflict note. Scoring version is `temporistics-2`.
+- **TP-02.** Two items were rewritten in original wording:
+  - tp4 drops "beyond this life" (religion), "a deadline coming up" (current workload) and "something unresolved" (distress);
+  - tp6 drops "old photos, notes or music" (owning keepsakes) and "a free afternoon" (leisure opportunity).
+
+  Both now use a general frame ("in general…", "when your mind wanders…"). The other five tasks are unchanged and recorded for cognitive interviews. tp3 ("when you feel lost") still has a distress context. All tasks rank most-first.
+- **Interpretation limits.** The engine header, result caveat, page, glossary and metadata say the test measures a relative priority order. They also say it does not measure an amount of energy, insecurity or belief. The theory's position meanings are labelled as theory, and the unsupported "the 3rd letter shows where you want help" advice was removed. The AP metadata, which still claimed "how confident and how open", and the AP glossary rows were also qualified.
+- **Stale constants (X-11).** Removed `likelihood.pairMatch`, `pairOther`, `pairNeutral`, `selfCheckMatch` and `confirmMatch`, and `stop.enneaCoreP`, `enneaCoreCap`, `wingP`, `wingCap`, `stackingP`, `stackingCap`, `tritypeP` and `tritypeCapPerCenter`. All were unreferenced (grep), and the `stop` block says why they were removed.
+- **Saved-result provenance (X-03).** `apps/web/src/lib/saved.ts` holds:
+  - `CURRENT_SCORING`, which an integration test checks against every engine's `meta.scoringVersion`;
+  - `dependantsOf`;
+  - `resultStatus` (current / legacy / outdated-scoring / outdated-dependency / missing);
+  - `cleanOutdated`.
+
+  `app.saveResult` flags every saved result that depended on the replaced one and clears the flag on the replaced result. The saved session gains an `outdated` map; older saves load with an empty map, so the stored format stays v2 and is compatible. `app.status(id)` exposes the status.
+- **Compatible priors.** Only temperament imports another result, and it accepts only the compatible Big Five versions, through `compatibleResult`. MOTIVES and Jung apply no prior under the independent policy. An outdated or unknown Big Five scoring version is therefore never silently used.
+- **Counts reconciled** across the pages, `typologies.ts`, the orchestrator step list and the actual forms: Big Five 40, MOTIVES 28, temperament 1 or 9, Jung 48, Enneagram 32 (27 + 1 + 4), AP 7, Temporistics 7.
+
+### Source changes (Phase 7)
+
+- `packages/engine-temporistics/src/index.ts`: tp4 and tp6 rewritten; scope header; glossary; scoring version.
+- `packages/engine-sdk/src/thresholds.ts`: stale constants removed and documented.
+- `apps/web/src/lib/saved.ts` (new) and `apps/web/src/lib/app.svelte.ts`: provenance, invalidation and status.
+- `apps/web/src/routes/[slug]/+page.svelte`: Temporistics caveat.
+- `TemporisticsPage.svelte`, `typologies.ts`, `glossary.ts`, `glossaryContent.ts`: scope wording and counts.
+- `packages/orchestrator/src/index.ts`: step item counts match the fixed forms.
+- Tests: `apps/web/src/lib/integration.test.ts` (new) and `packages/engine-temporistics/src/engine.test.ts`.
+
+### Checks performed
+
+- `pnpm test`: 29/29 tasks pass. The web package has 26 tests, including 10 new integration tests.
+- `pnpm typecheck`: 15/15 pass (svelte-check 0 errors, 0 warnings). `pnpm build` succeeds.
+- **Integration tests**, which mirror QuizModal's submit path:
+  - for each of the seven tests: the fixed form completes, completion equals the form length, the scoring version is current, and all uncertainty is marked uncalibrated;
+  - **changing any single fixed-form answer changes the result**, for every item of every test (184 items in total);
+  - Big Five retake: a saved temperament result becomes `outdated-dependency`; a fresh temperament submission reads the new Big Five θ and records `bigfive-2`; MOTIVES and Jung give identical results before and after the retake (independent policy);
+  - a Big Five result marked `bigfive-1` is not imported, so temperament falls back to its 9-item form; the result status reports `outdated-scoring` and `legacy`;
+  - `cleanOutdated` validation.
+- **Temporistics tests (9):** conflicting rankings give an unresolved result with candidates, a conflict note and no token; a shared first choice gives a partial result; consistent rankings resolve with all 7 answers counted; the removed contexts are absent; no "least" task; version and events. The `Math.random` comparator test was replaced with deterministic permutations.
+- A stale-copy sweep found none of the following left: `confidence=` header props, "% sure", "fewer questions", "nearest MBTI", "well inside", the "N of 100 people" population claims, "probably stay", "Your Confident".
+- Browser check: **not performed in any phase**. No browser tool was available in this session. The result states were checked only through unit and integration tests, svelte-check and the production build.
+
+### Remaining work (not engineering-completable without data or decisions)
+
+- Pilot and calibrate all banks: item parameters, likelihood tables, rank worth ratio, priors, and every provisional cutoff (X-05).
+- Population norms, if population percentiles are ever wanted.
+- Construct decisions and new measurement models for AP attitudes, wing traits and ordered tritypes.
+- Cognitive interviews for the context-heavy items (BF-03, EN-06, TP-02) and the new unpiloted items (MOTIVES, Jung, AP ap2, Temporistics tp4/tp6).
+- A browser pass over the changed result states: unresolved, partial and conflict notes, on mobile and desktop.
+
 ## Finding ledger
 
 | ID | Disposition | Notes |
@@ -436,15 +496,16 @@ estimates exist for any engine, and none were invented.
 | AP-01 | Mitigated, with limitations stated | Output narrowed to exploratory priorities everywhere it is shown. No position-sensitive model exists. |
 | AP-02 | Implemented and checked | ap2 rewritten to match the most-first scoring; not reversed. Validity of any concern-based task would need data. |
 | AP-03 | Implemented and checked | Unresolved, partial and candidate orders with a conflict note. Cutoffs provisional. |
-| TP-01, TP-02 | Pending (Phase 7) | |
-| X-01 | Implemented and checked | The cap is adaptive-only; all 7 fixed answers are scored (tested); `apRankTasks` removed. |
-| X-02 | Mitigated | Publication is in `result()` and the rendered components; orchestrator and bioTokens documented as outside the web path. They were not deleted, to keep their tests and API. |
-| X-03 | Mitigated (Big Five, MOTIVES, temperament: versioned import + dependency record) | Scoring version and dependency fields exist; Big Five has no dependencies. Invalidation of dependants is pending (Phases 2–4, 7). |
-| X-04 | Mitigated (MOTIVES, Jung) | Independent policy: no unjustified prior is applied. A justified mapping with prior variance awaits data. |
-| X-05 | Awaiting empirical data | Everything is labelled `calibrated: false`; no calibration exists. |
-| X-06 | Mitigated (all except Temporistics copy, Phase 7) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
-| X-07 | Mitigated (all engines incl. shared ranking, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
-| X-08 | Mitigated (all engines incl. shared ranking; Temporistics fixtures in Phase 7) | Deterministic fixed-form fixtures added. Other engines pending. |
-| X-09 | Rejected allegation preserved | Fresh `init(profileSnapshot())` at submit is unchanged. |
-| X-10 | Mitigated (all except Temporistics, Phase 7) | |
-| X-11 | Mitigated | The thresholds header lists the other constant sources. Removing stale adaptive constants is pending (Phase 7). |
+| TP-01 | Implemented and checked | Shared unresolved, partial and candidate orders with a conflict note; tested. Cutoffs provisional. |
+| TP-02 | Mitigated, with limitations stated | tp4 and tp6 rewritten to remove religion, keepsake, deadline and distress contexts; interpretation limited to relative priority. Five tasks unchanged pending interviews. Validity needs data. |
+| X-01 | Implemented and checked | Caps are adaptive-only and documented; all 7 fixed-form answers are scored for AP and Temporistics (tested); `apRankTasks` removed. The rejected six-answer truncation was not "fixed". |
+| X-02 | Mitigated, with limitations stated | Publication lives in `result()` and the rendered components. Orchestrator and bioTokens are documented as outside the web path, bioTokens emit only resolved outputs, and step counts are corrected. Not deleted, to keep their tests and API. |
+| X-03 | Implemented and checked | Every result has a scoring version; temperament records its Big Five dependency. Saved dependants are flagged outdated on retake; status covers legacy and outdated scoring; incompatible versions are never imported (integration-tested). Raw answers are not stored, so outdated results cannot be recomputed and need a retake. |
+| X-04 | Mitigated; mapping awaits data | Independent policy for MOTIVES and Jung: no unjustified prior is applied (tested with no, zero and nonzero priors). Temperament uses Big Five E/N wholesale with their SDs, by design. A justified cross-construct mapping with prior variance needs data. |
+| X-05 | Awaiting empirical data | Every probability is labelled with its event, its kind and `calibrated: false`. Model percentiles are labelled as such. No reliability, calibration or norm data exists, and none was invented. |
+| X-06 | Implemented and checked | All engines name each probability's event in `meta.uncertainty` and `confidenceEvent`. Averaged and product "confidences" are removed from the UI or marked deprecated. Heuristics are labelled `heuristic`. Publication rules sit in the active result path. |
+| X-07 | Implemented and checked | All seven deserializers and the shared ranking deserializer validate ids, uniqueness, categories, permutations and finite priors; malformed-state tests exist in every engine. App load filters malformed results, engine states and outdated flags. Normalisers guard temperament and Jung; `bayes.normalize` itself is unchanged. |
+| X-08 | Implemented and checked | Deterministic fixed-form fixtures in every engine (straight-lines, keying symmetry, ties, conflicts, answer order and replacement, priors, malformed state), plus an integration test proving every fixed-form answer affects its result. These are not validation studies. |
+| X-09 | Rejected allegation preserved | Fresh `init(profileSnapshot())` at submit is unchanged; the retake integration test confirms the latest Big Five result is read. |
+| X-10 | Implemented and checked | Counts are reconciled across pages, metadata, orchestrator and forms; the claims about adaptive shortening and Big Five shortening are removed. |
+| X-11 | Implemented and checked | The thresholds header lists the other constant sources. Each setting group documents its units and provisional status; adaptive and publication settings are separated; stale constants are removed. |

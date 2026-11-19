@@ -39,7 +39,7 @@
   {:else if t.slug === "jung"}<JungResult r={r as JU} answered={n} />
   {:else if t.slug === "enneagram"}<EnneagramResult r={r as EN} answered={n} />
   {:else if t.slug === "ap"}<OrderResult r={r as RK} answered={n} names={AP} caveat="This is an exploratory order of which aspects you put first. It does not measure the confident, flexible, insecure or indifferent attitudes that AP theory describes." />
-  {:else}<OrderResult r={r as RK} answered={n} names={TP} />{/if}
+  {:else}<OrderResult r={r as RK} answered={n} names={TP} caveat="This is an exploratory order of which times you put first in these questions. It does not measure how much energy you have for each, or any insecurity or belief." />{/if}
 {/snippet}
 
 {#key t.slug}<Page {t} {result} />{/key}

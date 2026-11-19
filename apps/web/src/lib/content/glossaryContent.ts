@@ -65,7 +65,7 @@ export const GLOSSARY_PAGES: GlossaryPage[] = [
     ["L", "Logic", "Reason, facts and ideas."],
     ["E", "Emotion", "Feelings and emotional expression."],
     ["F", "Physics", "The body, comfort and the material world."],
-    ["1st", "Confident", "Strong. You trust your own view."],
+    ["1st", "Confident", "In AP theory: strong, you trust your own view. The test measures only the order."],
     ["2nd", "Flexible", "Strong. You adapt it to other people."],
     ["3rd", "Insecure", "Weak and sensitive. You want to improve."],
     ["4th", "Indifferent", "Weak and low priority. It does not worry you."],
@@ -75,7 +75,7 @@ export const GLOSSARY_PAGES: GlossaryPage[] = [
     ["N", "Present", "\"Where is my place?\" Your part in what happens now."],
     ["B", "Future", "\"Where am I going?\" Goals and plans."],
     ["V", "Eternity", "\"Why am I?\" Meaning, and your life seen from a distance."],
-    ["1st–4th", "Positions", "The order of energy, from most to least."],
+    ["1st–4th", "Positions", "Your priority order, highest to lowest. The theory reads it as energy; the test does not measure energy."],
   ] },
 ];
 

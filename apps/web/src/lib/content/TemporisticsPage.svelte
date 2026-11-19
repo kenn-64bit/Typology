@@ -21,7 +21,7 @@
 
 <TypologyLayout {t} {result} title="Temporistics"
   facts={["4 aspects of time", "4 positions", "24 possible orders"]}
-  format="4 to 8 rankings on one page"
+  format="7 rankings on one page"
 >
 
   {#snippet overview()}
@@ -29,6 +29,7 @@
     <p>Temporistics puts these four directions in one order and gives each one a letter: Past (P), Present (N), Future (B) and Eternity (V). Your type is the four letters in order, from the time you give the most energy to the time you give the least.</p>
     <p>The order can explain small conflicts between people. A Future-first person may think that a Past-first friend "lives in the old days". The friend may think that the planner "forgets where they came from". Neither person is wrong. They give their energy to different times.</p>
     <p>Your result shows which times get your attention and which you ignore. It does not predict what you will do.</p>
+    <p><strong>What this test measures.</strong> The test finds which times you rank first and last across seven questions. It does not measure an amount of energy, insecurity or belief. The positions below come from the theory. If your rankings disagree, the result says so instead of giving an order.</p>
   {/snippet}
 
   {#snippet notation()}
@@ -71,7 +72,7 @@
     <ChipRow label="V:" href={g}><strong>Eternity.</strong> Answers "Why am I?" It covers meaning and importance: your whole life seen from a distance. A strong Eternity asks if something matters at all. You may enjoy philosophy, religion or long conversations about purpose. A weak Eternity may feel lost when someone asks "What is it all for?"</ChipRow>
 
     <h3 class="sub">The four positions</h3>
-    <ArrowRow>The theory uses Afanasyev's position model. A position tells how much energy you give an aspect, not how good you are at it.</ArrowRow>
+    <ArrowRow>The theory uses Afanasyev's position model. In the theory, a position tells how much energy you give an aspect, not how good you are at it. The test measures only your priority order.</ArrowRow>
     <ChipRow label="1st:">You give this aspect the most energy, sometimes too much. You see everything through it, and other people notice it first. Example: a 1st Future turns a dinner conversation into a plan.</ChipRow>
     <ChipRow label="2nd:">You give this aspect a normal amount of energy. You use it as a tool when you need it, and then stop. It often supports your 1st aspect.</ChipRow>
     <ChipRow label="3rd:">This aspect is weak. You may deal with it badly or feel unsure about it, and you may think you should be better at it. Kind help from others in this area can mean a lot to you.</ChipRow>
@@ -81,7 +82,7 @@
   {#snippet read()}
     <ArrowRow>Read the four letters from left to right, from most energy to least energy.</ArrowRow>
     <ArrowRow>Example: <code>NVBP</code> is 1st Present, 2nd Eternity, 3rd Future and 4th Past. This person lives in the moment and asks what it means. Plans are harder for them, and they give little attention to the past.</ArrowRow>
-    <ArrowRow>Look at your 1st and 4th letters first, because they are the largest contrast. Then look at the 3rd letter. It often shows where you want help.</ArrowRow>
+    <ArrowRow>Look at your 1st and 4th letters first, because they are the largest contrast. The theory links the 3rd letter to feeling unsure; the test does not check this.</ArrowRow>
     <ArrowRow>Compare your order with the orders of people close to you. Two people with opposite orders often see the same event very differently.</ArrowRow>
     <ArrowRow>Some sources give each of the 24 types a nickname. For example, some guides call <code>NVBP</code> "the Politician". The nicknames are not the same in all sources.</ArrowRow>
   {/snippet}
