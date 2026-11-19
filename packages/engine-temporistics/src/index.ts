@@ -11,9 +11,9 @@ const t = (id: string, text: string, N: string, V: string, B: string, P: string)
 
 /** Original wording. Rank each from "most like me" to "least like me". */
 export const TEMPO_TASKS: RankTask[] = [
-  t("tp1", "You face a big decision. What do you look at first?",
+  t("tp1", "When you face a big decision, what do you look at most?",
     "What is happening right now", "What it means in the bigger picture", "Where it will lead", "What has worked before"),
-  t("tp2", "Which kind of conversation do you enjoy most?",
+  t("tp2", "Which kinds of conversation do you enjoy most?",
     "What's going on today", "Timeless questions with no final answer", "Plans and what could be", "Stories and memories"),
   t("tp3", "When you feel lost, what steadies you most?",
     "Focusing on the next small step", "Remembering what never changes", "Picturing where I'm heading", "Looking back at how far I've come"),
@@ -21,9 +21,9 @@ export const TEMPO_TASKS: RankTask[] = [
     "A problem in front of me right now", "A sense that something matters beyond this life", "A deadline or opportunity coming up", "Something unresolved from before"),
   t("tp5", "Which saying sounds most like you?",
     "“Deal with what's in front of you.”", "“Some things are bigger than any moment.”", "“Build for tomorrow.”", "“Learn from history.”"),
-  t("tp6", "On a free afternoon, what are you most likely to do?",
-    "Whatever feels good right now", "Read or think about something deep", "Work on a plan or project", "Look through old photos, notes or music"),
-  t("tp7", "When a team argues, what do you bring up first?",
+  t("tp6", "On a free afternoon, what would you most like to do?",
+    "Do whatever feels good in the moment", "Read or think about something deep", "Work on a plan or project", "Look through old photos, notes or music"),
+  t("tp7", "When a team argues, what do you bring up most?",
     "What we can do today", "The values that should guide us", "The goal we're aiming for", "What happened the last time"),
 ];
 

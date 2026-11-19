@@ -63,7 +63,6 @@
     const n = item.options!.length;
     const cur = rankPick[item.id] ?? [];
     let next = cur.includes(id) ? cur.slice(0, cur.indexOf(id)) : [...cur, id];
-    if (next.length === n - 1) next = [...next, item.options!.find(o => !next.includes(o.id))!.id];
     rankPick = { ...rankPick, [item.id]: next };
     if (next.length === n) setAnswer(item, next);
     else if (answers[item.id] !== undefined) { const { [item.id]: _, ...rest } = answers; answers = rest; }
@@ -95,7 +94,12 @@
     const order = rankPick[item.id] ?? (answers[item.id] as string[] | undefined) ?? [];
     const k = order.indexOf(id); return k < 0 ? null : k + 1;
   };
-  const hint = (it: ItemView) => it.format === "rank" ? (/in order/i.test(it.text) ? "Tap each box in order." : "Tap in order, most like you first. Tap a box again to undo.") : it.format === "likert5" ? "" : "Choose one.";
+  /** Shown once, above the questions: the general rules plus how each question type works (only the types this test uses). */
+  const howTo = $derived([
+    ...instructions,
+    ...(form.some(v => v.format === "rank") ? ["Ordering questions: tap every box, from most like you to least like you. Tap a box again to undo it."] : []),
+    ...(form.some(v => v.format === "scenario") ? ["Description questions: choose the one that fits you best."] : []),
+  ]);
 </script>
 
 <dialog bind:this={dlg} class="quiz" aria-labelledby="quiz-title" oncancel={e => { e.preventDefault(); requestClose(); }}>
@@ -119,8 +123,8 @@
       {:else if result}
         <section class="results" aria-label="Your result">
           {@render resultView(result, form.length)}
-          <section class="rs-sec" aria-labelledby="rs-ev">
-            <h3 class="rs-h" id="rs-ev">Answers that decided this result</h3>
+          <details class="rs-sec rs-drop">
+            <summary class="rs-h">Answers that decided this result</summary>
             <div class="rs-ev">
               {#each explanations as ex (ex.output)}
                 <div>
@@ -138,7 +142,7 @@
                 </div>
               {/each}
             </div>
-          </section>
+          </details>
           <section class="rs-sec rs-notes" aria-labelledby="rs-notes">
             <h3 class="rs-k" id="rs-notes">notes</h3>
             <ul>
@@ -152,14 +156,15 @@
           </div>
         </section>
       {:else}
-        <div class="intro-line">
-          <p><strong>{form.length} questions.</strong> You can change any answer before you see your result. {instructions.join(" ")}</p>
-        </div>
+        <aside class="howto" aria-labelledby="howto-h">
+          <h3 id="howto-h">How to answer</h3>
+          <ul>{#each howTo as line (line)}<li>{line}</li>{/each}</ul>
+          <p><strong>{form.length} questions.</strong> You can change any answer before you see your result.</p>
+        </aside>
         <ol class="qlist">
           {#each form as item (item.id)}
             <li class="q" id="q-{item.id}">
               <p class="qtext">{item.text}</p>
-              {#if hint(item)}<p class="qhint">{hint(item)}</p>{/if}
               {#if item.format === "likert5"}
                 <div class="likert" role="radiogroup" aria-label={item.text}>
                   {#each item.options ?? [] as o, k (o.id)}
@@ -243,14 +248,11 @@
     border: 0; border-radius: 2px; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
   }
   .x:hover { background: var(--c-track); }
-  .x:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 0; }
-  .intro-line { color: var(--meta); margin: 0 0 1.2rem; text-align: center; }
 
   .qlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6rem; }
   .q { scroll-margin-top: 90px; }
   /* question sentence, hint and box row are all centered */
   .qtext { margin: 0 0 0.5rem; font: 13px/1.5 var(--font-body); color: var(--text); text-align: center; }
-  .qhint { margin: -0.3rem 0 0.4rem; font-size: 10.5px; color: var(--meta); text-align: center; }
 
   .likert { display: grid; grid-template-columns: repeat(5, min(64px, 17vw)); gap: 6px; justify-content: center; }
   .wide { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 520px; margin: 0 auto; }
@@ -295,8 +297,12 @@
   @media (max-width: 760px) {
     .likert { gap: 4px; }
     .box { font-size: 9.5px; padding: 0.2rem; }
-    .frame-cols { grid-template-columns: 0 minmax(0, 1fr) 0; }
+    .frame-cols { grid-template-columns: 10px minmax(0, 1fr) 10px; }
+    .qtitle { font-size: 1.6rem; }
   }
   @media (prefers-reduced-motion: reduce) { .box, .progress > span { transition: none; } .quiz, .exit { animation: none !important; } .box:active { transform: none; } }
-  .intro-line p { max-width: 34rem; margin: 0 auto; }
+  .howto { max-width: 34rem; margin: 0 auto 1.8rem; padding: 0.8rem 1rem; background: var(--cream-dark); border-left: 3px solid var(--rust); font-size: 12.5px; line-height: 1.5; }
+  .howto h3 { margin: 0 0 0.4rem; font: bold 13px var(--font-head); color: var(--rust); }
+  .howto ul { margin: 0 0 0.5rem; padding-left: 1.1rem; }
+  .howto p { margin: 0; }
 </style>

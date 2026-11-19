@@ -37,7 +37,7 @@ const FORM: ItemView[] = [
   ...STATEMENT_IDS.slice(0, 18).map(id => ({ id, format: "likert5" as const, text: stmtText(id), options: LIKERT.map((text, k) => ({ id: String(k + 1), text })) })),
   { id: PICK_ID, format: "scenario", text: "Which description fits you best overall?", options: TYPES.map(t => ({ id: String(t), text: PARAGRAPHS[t]! })) },
   ...STATEMENT_IDS.slice(18).map(id => ({ id, format: "likert5" as const, text: stmtText(id), options: LIKERT.map((text, k) => ({ id: String(k + 1), text })) })),
-  ...INSTINCT_TASKS.map(t => ({ id: `inst:${t.id}`, format: "rank" as const, text: `${t.text} Put them in order, most like you first.`, options: t.options })),
+  ...INSTINCT_TASKS.map(t => ({ id: `inst:${t.id}`, format: "rank" as const, text: t.text, options: t.options })),
 ];
 
 export interface Answer { itemId: string; r: Response }

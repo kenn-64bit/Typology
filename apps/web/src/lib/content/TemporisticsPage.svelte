@@ -22,7 +22,7 @@
 <TypologyLayout {t} {result} title="Temporistics"
   facts={["4 aspects of time", "4 positions", "24 possible orders"]}
   format="4 to 8 rankings on one page"
-  extra="Tap the four statements in order, from most like you to least like you. Tap a box again to undo it. The Attitudinal Psyche test works the same way.">
+>
 
   {#snippet overview()}
     <p>Everyone lives in time, but people do not give the same attention to each part of it. Some people keep old photos, tell family stories and learn from history. Some live for today: they react quickly and feel most alive when things happen around them. Some always plan the next step. Some ask what their life means as a whole.</p>

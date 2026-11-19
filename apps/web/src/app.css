@@ -120,7 +120,7 @@ code, .token { font-family: var(--font-mono); font-size: 0.95em; }
 .rs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .rs-k { margin: 0; font: normal 11px/1.3 var(--font-head); letter-spacing: 0.02em; text-transform: lowercase; color: var(--c-muted); }
 .rs-hero { padding: 4px 0 4px; }
-.rs-code { margin: 6px 0 8px; font: bold clamp(2.2rem, 9vw, 3.6rem)/1.05 var(--font-mono); letter-spacing: 0.04em; color: var(--c-brand); overflow-wrap: anywhere; }
+.rs-code { margin: 6px 0 8px; font: bold clamp(1.6rem, 6vw, 2.3rem)/1.1 var(--font-mono); letter-spacing: 0.04em; color: var(--c-brand); overflow-wrap: anywhere; }
 .rs-sub { margin: 0; font-size: 12px; color: var(--c-muted); }
 .rs-sec { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--c-line); }
 .rs-sec > .rs-k:first-child { margin-bottom: 12px; }
@@ -132,6 +132,7 @@ code, .token { font-family: var(--font-mono); font-size: 0.95em; }
 /* Breakdown rows: name | scale | value. */
 .rs-row { display: grid; grid-template-columns: 9.5rem minmax(8rem, 1fr) 12.5rem; column-gap: 20px; align-items: center; padding: 8px 0; }
 .rs-name { margin: 0; font: bold 13px/1.3 var(--font-head); color: var(--c-ink); }
+.rs-name .rs-lt { margin-right: 6px; }
 .rs-name small { display: block; font: normal 11px/1.4 var(--font-body); color: var(--c-muted); }
 .rs-val { margin: 0; font-size: 12.5px; }
 .rs-val small { display: block; font-size: 11px; color: var(--c-muted); }
@@ -160,6 +161,13 @@ code, .token { font-family: var(--font-mono); font-size: 0.95em; }
 .rs-ans { color: var(--c-muted); white-space: nowrap; }
 .rs-tag { display: inline-block; margin-left: 6px; padding: 0 5px; font: 10px/1.6 var(--font-head); color: var(--c-muted); border: 1px solid var(--c-line); border-radius: 2px; white-space: nowrap; }
 .rs-w { font: 12px var(--font-mono); font-variant-numeric: tabular-nums; color: var(--c-muted); text-align: right; }
+.rs-drop > summary { display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer; list-style: none; }
+.rs-drop > summary::-webkit-details-marker { display: none; }
+.rs-drop > summary::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform var(--dur-fast); }
+.rs-drop[open] > summary::before { transform: rotate(45deg); }
+.rs-drop > summary:hover { color: var(--c-accent); }
+.rs-drop > summary:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 4px; }
+.rs-drop[open] > .rs-ev { margin-top: 18px; }
 .rs-runner { margin: 8px 0 0; font-size: 11.5px; color: var(--c-muted); }
 .rs-runner code { font-weight: bold; color: var(--c-ink); }
 

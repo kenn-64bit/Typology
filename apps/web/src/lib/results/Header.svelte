@@ -6,5 +6,5 @@
 <header class="rs-hero">
   <h3 class="rs-k">{label}</h3>
   <p class="rs-code">{code}</p>
-  <p class="rs-sub">{#if confidence !== undefined}{Math.round(confidence * 100)}% confidence · {/if}{answered} answers</p>
+  <p class="rs-sub">{#if confidence !== undefined}{Math.round(confidence * 100)}% confidence{" · "}{/if}{answered} answers</p>
 </header>

@@ -19,11 +19,11 @@
       <span class="pt" aria-hidden="true" style="left: {r.N.percentile}%; top: {100 - r.E.percentile}%"></span>
     </div>
   </div>
-  <p class="rs-p">Extraversion {r.E.percentile}<sup>th</sup> · Neuroticism {r.N.percentile}<sup>th</sup> percentile
+  <p class="rs-p center">Extraversion {r.E.percentile}<sup>th</sup> · Neuroticism {r.N.percentile}<sup>th</sup> percentile
     <span class="rs-muted">({r.source === "bigfive" ? "from your Big Five result" : "from this test's own questions"})</span></p>
 </section>
 <style>
-  .tq { display: grid; grid-template-columns: 2rem minmax(0, 26rem); grid-template-rows: auto auto; gap: 6px; margin-bottom: 14px; }
+  .tq { justify-content: center; display: grid; grid-template-columns: 2rem minmax(0, 26rem); grid-template-rows: auto auto; gap: 6px; margin-bottom: 14px; }
   .ax { text-align: center; }
   .side { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
   .grid { position: relative; display: grid; grid-template-columns: 1fr 1fr; }
@@ -32,6 +32,7 @@
   .cell.top, .cell.top b { color: var(--c-brand); }
   .tl, .tr { border-bottom: 1px solid var(--c-line); }
   .tl, .bl { border-right: 1px solid var(--c-line); }
+  .center { text-align: center; }
   .cap { text-transform: capitalize; }
   .pt { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--c-brand); box-shadow: 0 0 0 3px var(--c-surface); transform: translate(-50%, -50%); }
 </style>

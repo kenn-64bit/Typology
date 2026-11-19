@@ -63,7 +63,7 @@ export function quadrant(s: TemperamentState, useRanking = true): Record<Temp, n
 }
 
 const rankView: ItemView = {
-  id: RANK_ID, format: "rank", text: "Put these descriptions in order, most like you first.",
+  id: RANK_ID, format: "rank", text: "How well does each description fit you?",
   options: TEMPS.map(t => ({ id: t, text: DESCRIPTIONS[t] })),
 };
 const formOf = (s: TemperamentState): ItemView[] => [...(s.fromBigFive ? [] : cat.form()), rankView];

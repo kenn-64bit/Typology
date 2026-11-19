@@ -21,7 +21,7 @@
 <TypologyLayout {t} {result} title="Attitudinal Psyche"
   facts={["4 aspects", "4 positions", "24 possible orders"]}
   format="4 to 8 rankings on one page"
-  extra="Tap the four statements in order, from most like you to least like you. Tap a box again to undo it.">
+>
 
   {#snippet overview()}
     <p>Attitudinal Psyche (AP) looks at four areas of life: will, logic, emotion and the body. It does not measure how much of each you have. It asks about your attitude to each one. In this area, are you sure of yourself? Do you adapt to other people? Do you feel unsure? Or do you not care much?</p>

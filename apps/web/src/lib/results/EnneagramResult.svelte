@@ -12,7 +12,7 @@
     <dt class="rs-k">Core type</dt><dd><code>{r.core}</code></dd>
     <dd>{r.coreName}, {pct(r.coreP)} <span class="rs-muted">· runner-up {r.runnerUp.type} ({pct(r.runnerUp.p)})</span></dd>
     <dt class="rs-k">Wing</dt><dd><code>{r.core}w{r.wing}</code></dd>
-    <dd>{pct(r.wingP)}{#if r.balancedWing} · <strong>balanced</strong>: both neighbors fit about equally{/if}</dd>
+    <dd>{pct(r.wingP)}{#if r.balancedWing}{" · "}<strong>balanced</strong>: both neighbors fit about equally{/if}</dd>
     <dt class="rs-k">Tritype</dt><dd><code>{r.tritype}</code></dd><dd>{pct(r.tritypeP)}</dd>
     <dt class="rs-k">Instincts</dt><dd><code>{r.stacking}</code></dd><dd>{pct(r.stackingP)}</dd>
   </dl>

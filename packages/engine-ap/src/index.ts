@@ -11,19 +11,19 @@ const t = (id: string, text: string, V: string, L: string, E: string, F: string)
 
 /** Original wording. Rank each from "most like me" to "least like me". */
 export const AP_TASKS: RankTask[] = [
-  t("ap1", "A group has to make a tough call quickly. What do you protect first?",
+  t("ap1", "A group has to make a tough call quickly. What do you protect most?",
     "That a clear decision actually gets made", "That the reasoning behind it holds up", "That nobody leaves the room upset", "That the plan is practical and doable"),
-  t("ap2", "Someone criticises you in front of others. Which kind of criticism would you shrug off most easily?",
+  t("ap2", "Someone criticises you in front of others. Which criticism bothers you least?",
     "“You're too stubborn”", "“Your argument doesn't make sense”", "“You come across as cold”", "“You look a bit of a mess today”"),
-  t("ap3", "You're advising a friend. What do you find yourself offering first?",
+  t("ap3", "You're advising a friend. What are you most likely to offer?",
     "A firm push to choose and commit", "An honest analysis of the options", "Comfort and understanding", "Practical help, like food or a lift"),
-  t("ap4", "Which of these do you feel most sure of in yourself?",
-    "My ability to set a direction and stick to it", "My ability to think a problem through", "My ability to read and express feelings", "My ability to handle physical and money matters"),
-  t("ap5", "In a disagreement, what are you most likely to keep pushing on?",
+  t("ap4", "Which of these are you most sure you can do well?",
+    "Set a direction and stick to it", "Think a problem through", "Read and express feelings", "Handle physical and money matters"),
+  t("ap5", "In a disagreement, what do you push on most?",
     "What we will do", "What is true", "How people feel about it", "What it costs and what is comfortable"),
   t("ap6", "Which compliment would mean the most to you?",
     "“You know what you want”", "“You think so clearly”", "“You make people feel seen”", "“You have great taste and good sense with things”"),
-  t("ap7", "Planning a weekend away together, what do you care about first?",
+  t("ap7", "Planning a weekend away with friends, what do you care about most?",
     "Having a say in what we do", "That the plan makes sense", "That everyone is in a good mood", "Good food, a comfortable bed, a sensible budget"),
 ];
 
