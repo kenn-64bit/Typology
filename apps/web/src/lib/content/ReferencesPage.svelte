@@ -31,7 +31,7 @@
       <SectionHeading text={g.title} />
       <ol class="refs">
         {#each g.refs as r (r.link)}
-          <li>{r.text}{#if r.title} <em>{r.title}</em>{/if}{#if r.rest} {r.rest}{/if}
+          <li>{r.text}{#if r.title}{" "}<em>{r.title}</em>{/if}{#if r.rest}{" "}{r.rest}{/if}
             <a href={r.link} rel="noopener" target="_blank">{r.label}</a></li>
         {/each}
       </ol>
