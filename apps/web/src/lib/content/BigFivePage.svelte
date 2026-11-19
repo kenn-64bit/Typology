@@ -46,7 +46,7 @@
       <ChipRow label="{p.n}:" href={g}>{p.trait} · High letter: <strong>{p.hi[0]}</strong> {p.hi[1]} · Low letter: <strong>{p.lo[0]}</strong> {p.lo[1]}</ChipRow>
     {/each}
     <ArrowRow>Marks show how far your score is from the middle:</ArrowRow>
-    <ChipRow label="/X/:" href={g}><strong>Strong.</strong> Your score is far from the middle. This letter will probably stay the same on a retake.</ChipRow>
+    <ChipRow label="/X/:" href={g}><strong>Strong.</strong> Your score is far from the middle (at or beyond the 85th or 15th model percentile).</ChipRow>
     <ChipRow label="X:" href={g}><strong>Clear.</strong> A plain letter shows a clear lean to one side.</ChipRow>
     <ChipRow label="[X]:" href={g}><strong>Borderline.</strong> Your score is close to the middle. The other letter fits you almost as well.</ChipRow>
     <ChipRow label="X (letter):" href={g}><strong>Middle.</strong> The letter X means no lean. You show both sides about equally.</ChipRow>
@@ -101,8 +101,8 @@
 
   {#snippet read()}
     <ArrowRow>Read the five letters from left to right in S-L-O-A-N order. Each position is always the same trait.</ArrowRow>
-    <ArrowRow>Look at the marks. <code>/R/</code> is strong, <code>[I]</code> is borderline and <code>X</code> is the middle. A strong letter usually stays the same. A borderline letter can change between one test and the next.</ArrowRow>
-    <ArrowRow>Look at the percentile next to each trait. It compares your score with the test's built-in average. Example: the 80th percentile on Extraversion means a higher score than about 80 of 100 people.</ArrowRow>
+    <ArrowRow>Look at the marks. <code>/R/</code> is strong, <code>[I]</code> is borderline and <code>X</code> is the middle. The marks show how far the score is from the middle. How often a letter stays the same on a retake has not been measured for this test.</ArrowRow>
+    <ArrowRow>Look at the percentile next to each trait. It compares your score with the test's built-in average, not with a measured group of people. Example: the 80th model percentile on Extraversion means a score above 80% of the test's built-in reference curve.</ArrowRow>
     <ArrowRow>Example: <code>/R/LOA[I]</code> is strongly Reserved, Limbic, Organized, Accommodating and borderline Inquisitive. This person likes quiet, feels things strongly, keeps order and avoids conflict. New ideas interest them a little more than average.</ArrowRow>
     <ArrowRow>Neither letter is better. Each side helps in some situations and costs you in others.</ArrowRow>
     <ChipRow label="note:">"Limbic" and "Egocentric" are SLOAN names for one end of a trait. They are not insults and they are not diagnoses.</ChipRow>

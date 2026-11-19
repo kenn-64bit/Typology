@@ -43,17 +43,24 @@ export function temperamentToken(probs: Record<Temp, number>): string {
 /** AP (VLEF) and Temporistics (NVBP). */
 export const orderToken = (order: string[]) => order.join("");
 
-// SLOAN: p = probability of the high pole, traits in order S L O A N
+// SLOAN, traits in order S L O A N. Input is the score LEVEL as a model-percentile fraction Φ(θ) in [0, 1]
+// (BF-01). Never pass a sign probability Φ(θ/se) here: that is certainty, not distance from the middle.
 const SLOAN_POLES: [string, string][] = [["S", "R"], ["L", "C"], ["O", "U"], ["A", "E"], ["I", "N"]];
-export function sloanToken(p: number[]): string {
-  const T = THRESHOLDS.sloan;
-  return p.map((x, i) => {
+export type SloanStrength = "middle" | "borderline" | "clear" | "strong";
+export function sloanStrength(level: number): SloanStrength {
+  const T = THRESHOLDS.sloan, d = Math.abs(level - 0.5);
+  return d < T.middle ? "middle" : d < T.borderline ? "borderline" : d >= T.strong ? "strong" : "clear";
+}
+export function sloanToken(levels: number[]): string {
+  return levels.map((x, i) => {
     const [hi, lo] = SLOAN_POLES[i]!;
-    const s = Math.abs(x - 0.5), letter = x >= 0.5 ? hi : lo;
-    if (s < T.middle) return "X";
-    if (s >= T.strong) return `/${letter}/`;   // strong
-    if (s < T.borderline) return `[${letter}]`; // borderline
-    return letter;
+    const letter = x >= 0.5 ? hi : lo;
+    switch (sloanStrength(x)) {
+      case "middle": return "X";
+      case "strong": return `/${letter}/`;
+      case "borderline": return `[${letter}]`;
+      default: return letter;
+    }
   }).join("").replace(/\/\//g, "/");          // merge adjacent markers: /R//L/ -> /R/L/
 }
 

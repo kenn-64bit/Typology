@@ -10,6 +10,11 @@ interface Saved {
 }
 const KEY = "session";
 const empty = (): Saved => ({ v: 2, engineStates: {}, results: {} });
+/** Saved results carry `meta.scoringVersion` (bigfive-2 onward); older ones have none and are still read as priors. */
+const objects = (r: unknown): Record<string, unknown> => Object.fromEntries(
+  Object.entries(r && typeof r === "object" ? r : {}).filter(([, v]) => v !== null && typeof v === "object" && !Array.isArray(v)));
+const strings = (r: unknown): Record<string, string> => Object.fromEntries(
+  Object.entries(r && typeof r === "object" ? r : {}).filter(([, v]) => typeof v === "string")) as Record<string, string>;
 
 class AppState {
   loaded = $state(false);
@@ -19,7 +24,7 @@ class AppState {
   async load() {
     try {
       const s = await idbGet<{ v: number } & Partial<Saved>>(KEY);
-      if (s?.v === 2) { const { engineStates = {}, results = {} } = s as Saved; this.data = { v: 2, engineStates, results }; } // older saves may carry a bio: dropped
+      if (s?.v === 2) { const { engineStates = {}, results = {} } = s as Saved; this.data = { v: 2, engineStates: strings(engineStates), results: objects(results) }; } // older saves may carry a bio: dropped
       else if (s) this.data = { ...empty(), engineStates: (s.engineStates as Record<string, string>) ?? {} }; // v1 → v2
     } catch (e) { console.error(e); this.storageError = "This browser blocked storage, so your results will not be saved. Private windows often do this."; }
     this.loaded = true;

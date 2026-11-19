@@ -15,7 +15,7 @@ export const GLOSSARY_PAGES: GlossaryPage[] = [
     ["N", "Non-curious", "Low Openness. You prefer the practical and familiar."],
     ["X", "Middle", "Your score is near 50%. You do not lean to either side."],
     ["/X/", "Strong", "Your score is far from the middle."],
-    ["[X]", "Borderline", "Your score is near the middle. The letter can change on a retake."],
+    ["[X]", "Borderline", "Your score is near the middle. The other letter fits almost as well."],
   ] },
   { id: "motives", system: "MOTIVES", href: "/motives", rows: [
     ["M / A", "Materialistic / Ascetic", "Appearance, status and money matter to you, or they matter less."],
