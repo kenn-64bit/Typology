@@ -75,7 +75,7 @@
   </ul>
 {/snippet}
 
-<div class="frame">
+<div class="frame" class:menu-open={menuOpen}>
   <header class="top">
     <a class="logo" href="/">Typology</a>
     <button class="burger" aria-expanded={menuOpen} aria-controls="mobile-menu" onclick={() => (menuOpen = !menuOpen)}>
@@ -354,6 +354,8 @@
     .bars.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .bars.open span:nth-child(2) { opacity: 0; }
     .bars.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    /* While the menu is open, it replaces the page: hide the page content and the footer. */
+    .frame.menu-open .body, .frame.menu-open .foot { display: none; }
     .mobile-menu.open { display: block; border-top: 1px solid rgb(255 255 255 / 0.2); animation: menu-in var(--dur) var(--ease-out); }
     @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
     .m-nav { list-style: none; margin: 0; padding: 0; }
