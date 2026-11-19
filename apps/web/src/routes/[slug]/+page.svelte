@@ -38,7 +38,7 @@
   {:else if t.slug === "temperament"}<TemperamentResult r={r as TE} answered={n} />
   {:else if t.slug === "jung"}<JungResult r={r as JU} answered={n} />
   {:else if t.slug === "enneagram"}<EnneagramResult r={r as EN} answered={n} />
-  {:else if t.slug === "ap"}<OrderResult r={r as RK} answered={n} names={AP} />
+  {:else if t.slug === "ap"}<OrderResult r={r as RK} answered={n} names={AP} caveat="This is an exploratory order of which aspects you put first. It does not measure the confident, flexible, insecure or indifferent attitudes that AP theory describes." />
   {:else}<OrderResult r={r as RK} answered={n} names={TP} />{/if}
 {/snippet}
 

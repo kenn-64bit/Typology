@@ -24,7 +24,7 @@ export interface UncertaintyMeasure {
  * produce any of these patterns. Codes are stable so UI and tests can match on them.
  */
 export interface QualityNote {
-  code: "straight-line" | "reverse-key-conflict" | "incomplete";
+  code: "straight-line" | "reverse-key-conflict" | "incomplete" | "ranking-conflict";
   output?: string;
   message: string;
 }

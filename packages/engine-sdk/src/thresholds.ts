@@ -86,7 +86,9 @@ export const THRESHOLDS = {
     wingP: 0.75, wingCap: 3,
     stackingP: 0.8, stackingCap: 4,
     tritypeP: 0.8, tritypeCapPerCenter: 3,
-    apOrderP: 0.7, apRankTasks: 4, apCap: 6,
+    // X-01: adaptive-only. `next()` may stop AP/Temporistics after apCap/temporisticsCap tasks or at apOrderP; the
+    // deployed fixed form always shows and scores all 7 tasks. Publication uses `ranking.*`, not these values.
+    apOrderP: 0.7, apCap: 6,
     motivesSE: 0.40, motivesLetterP: 0.9, motivesCap: 3,          // dossier Modules 5–6
     jungFuncSE: 0.45, jungFuncCap: 3, jungFuncLetterP: 1.01, // dossier Module 2; 1.01 = no letter rule (continuous scores)
     tempFallbackSE: 0.40, // temperament without a Big Five result; the fixed form asks all 8 fallback items regardless

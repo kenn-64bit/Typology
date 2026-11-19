@@ -1,4 +1,7 @@
 // Step orchestrator (SPEC §2.3 sequential mode, §2.6 run order). Framework-free; engines are injected.
+// NOT the web result path (X-02): the app's QuizModal calls form → answer → result → explain directly, and results
+// carry their own publication rules (ResultMeta, resolved/unresolved fields). Sequencing and bio composition here,
+// and engines' bioTokens(), are unused by the deployed fixed form and must not be relied on to gate results.
 import type { BioToken, EngineId, EvidenceLevel, ExamEngine, Slot } from "@typo/engine-sdk";
 import { composeBio, tokensBySlot } from "@typo/bio";
 
@@ -25,7 +28,7 @@ export const STEPS: StepDef[] = [
     blurb: "The order of the social, one-to-one and self-preservation instincts." },
   { id: "ennea-tritype", num: "5c", title: "Tritype", engine: "enneagram", slots: ["tritype"], example: "127 (1w2)", estItems: "4–6", evidence: "exploratory",
     blurb: "One type from each center; your core is the first digit." },
-  { id: "ap", num: "6", title: "Attitudinal Psyche", engine: "ap", slots: ["ap"], example: "VLEF", estItems: "4–8", evidence: "exploratory",
+  { id: "ap", num: "6", title: "Attitudinal Psyche", engine: "ap", slots: ["ap"], example: "VLEF", estItems: "7", evidence: "exploratory",
     blurb: "Rank Volition, Logic, Emotion and Physics from 1st to 4th." },
   { id: "temporistics", num: "7", title: "Temporistics", engine: "temporistics", slots: ["temporistics"], example: "NVBP", estItems: "4–8", evidence: "exploratory",
     blurb: "Rank present, eternity, future and past, using the same ranking format as AP." },

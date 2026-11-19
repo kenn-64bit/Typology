@@ -20,13 +20,14 @@
 
 <TypologyLayout {t} {result} title="Attitudinal Psyche"
   facts={["4 aspects", "4 positions", "24 possible orders"]}
-  format="4 to 8 rankings on one page"
+  format="7 rankings on one page"
 >
 
   {#snippet overview()}
     <p>Attitudinal Psyche (AP) looks at four areas of life: will, logic, emotion and the body. It does not measure how much of each you have. It asks about your attitude to each one. In this area, are you sure of yourself? Do you adapt to other people? Do you feel unsure? Or do you not care much?</p>
     <p>Think of a group dinner. One person chooses the restaurant and does not ask anyone. One person explains why the food is healthy. One person worries that their bad mood will spoil the evening. One person does not mind what they eat. Each person has a different attitude to a different area.</p>
-    <p>AP puts the four aspects in order from 1st to 4th. The order shows how confident and how open you are in each area. There are 24 possible orders.</p>
+    <p>AP theory puts the four aspects in order from 1st to 4th and gives each position an attitude. There are 24 possible orders.</p>
+    <p><strong>What this test measures.</strong> The test only finds which aspects you put first and last across seven rankings. It does not measure confidence, flexibility, insecurity or indifference, so read the positions below as theory, not as your measured attitudes. If your rankings disagree, the result says so instead of giving an order.</p>
     <p>The order can explain why one remark hurts you badly while another person does not notice it. It can also show where you can help other people and where you may need help.</p>
   {/snippet}
 
@@ -36,7 +37,7 @@
     <ChipRow label="L:" href={g}><strong>Logic.</strong> Your attitude to reason, facts and ideas: how sure you are about what you think.</ChipRow>
     <ChipRow label="E:" href={g}><strong>Emotion.</strong> Your attitude to feelings and how you show them: how sure you are about what you feel.</ChipRow>
     <ChipRow label="F:" href={g}><strong>Physics (body).</strong> Your attitude to the body, comfort and material things. The letter F comes from the Russian word "fizika".</ChipRow>
-    <ArrowRow>The code gives the four aspects in order, from 1st to 4th. You feel most confident in the 1st. You care least about the 4th.</ArrowRow>
+    <ArrowRow>The code gives the four aspects in order, from the one you ranked highest to the one you ranked lowest. In AP theory the 1st is confident and the 4th indifferent; the test does not check this.</ArrowRow>
   {/snippet}
 
   {#snippet figure()}
@@ -53,7 +54,7 @@
           </div>
         {/each}
       </div>
-      <p class="fx-cap">Top two positions are strong, bottom two weak. The example is one of 24 orders.</p>
+      <p class="fx-cap">The attitudes come from AP theory. The test measures only the order. The example is one of 24 orders.</p>
     </div>
   {/snippet}
 
@@ -74,10 +75,10 @@
 
   {#snippet read()}
     <ArrowRow>Read the four letters from left to right.</ArrowRow>
-    <ArrowRow>The first letter is your Confident aspect. The last letter is your Indifferent aspect.</ArrowRow>
+    <ArrowRow>The first letter is the aspect you ranked highest, and the last letter the one you ranked lowest. AP theory calls these Confident and Indifferent.</ArrowRow>
     <ArrowRow>Example: <code>VLEF</code> is Confident Volition, Flexible Logic, Insecure Emotion and Indifferent Physics. This person decides firmly, discusses ideas openly, is unsure about showing emotion and thinks little about comfort or appearance.</ArrowRow>
-    <ArrowRow>Look carefully at your 3rd aspect. It often explains where you are most sensitive with other people.</ArrowRow>
-    <ArrowRow>Compare your order with a partner's or a friend's. If your 1st aspect is their 3rd, your confidence there can hurt them and you may not know it.</ArrowRow>
+    <ArrowRow>The theory links the 3rd aspect to sensitivity. The test cannot tell sensitivity from low priority, so check this against your own experience.</ArrowRow>
+    <ArrowRow>Compare your order with a partner's or a friend's, and talk about where your priorities differ.</ArrowRow>
   {/snippet}
 
   {#snippet mixups()}

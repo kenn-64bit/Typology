@@ -15,7 +15,7 @@ export const LOADERS: Record<string, () => Promise<AnyEngine>> = {
   temporistics: () => import("@typo/engine-temporistics").then(m => m.temporisticsEngine),
 };
 
-/** The orchestrator knows every step; the three Enneagram steps share one engine. */
+/** The orchestrator knows every step; the three Enneagram steps share one engine. Not used to publish results (X-02). */
 export const orchestrator = new Orchestrator({
   bigfive: LOADERS.bigfive!, motives: LOADERS.motives!, temperament: LOADERS.temperament!, jung: LOADERS.jung!,
   "ennea-core": LOADERS.enneagram!, "ennea-instincts": LOADERS.enneagram!, "ennea-tritype": LOADERS.enneagram!,

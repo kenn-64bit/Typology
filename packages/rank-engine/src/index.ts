@@ -1,15 +1,24 @@
 // Ranking engine (SPEC §4.2 Plackett–Luce): posterior over every full order of N aspects.
 // Shared by Attitudinal Psyche and Temporistics; the Enneagram reuses rankPosterior for instincts.
-import { THRESHOLDS, type BioToken, type EngineMeta, type ExamEngine, type Explanation, type ItemView, type Response, type Slot } from "@typo/engine-sdk";
+import { THRESHOLDS, type BioToken, type EngineMeta, type ExamEngine, type Explanation, type ItemView, type QualityNote, type Response, type ResultMeta, type Slot } from "@typo/engine-sdk";
 import { permutations, top, uniform, updateRanking, type Posterior } from "@typo/bayes";
 
 export interface RankTask { id: string; text: string; options: { id: string; text: string }[] }
 export interface RankState { v: 1; answers: { itemId: string; ranking: string[] }[] }
 export interface RankResult {
+  /** Most probable complete order under the model, always present. Not a published result: see `resolved`. */
   order: string; p: number; runnerUp: { order: string; p: number };
+  /** Order published only at ≥ THRESHOLDS.ranking.resolveP; null when the rankings do not support one order. */
+  resolved: string | null;
+  /** Aspect with P(first position) ≥ THRESHOLDS.ranking.firstP, when no full order is resolved (partial result). */
+  first: { aspect: string; p: number } | null;
+  candidates: { order: string; p: number }[];
   /** Average rank position (1 = first) of each aspect, from the posterior. */
   positions: Record<string, number>;
+  /** marginals[a][k] = P(aspect a in position k + 1). */
+  marginals: Record<string, number[]>;
   tasks: number;
+  meta: ResultMeta;
 }
 
 /** Worth for each aspect given a class order: first place weighs most (ratio from thresholds). */
@@ -60,19 +69,44 @@ export function createRankEngine(cfg: {
 }): ExamEngine<RankState, RankResult> {
   const classes = permutations(cfg.aspects).map(o => o.join(""));
   const byId = new Map(cfg.tasks.map(t => [t.id, t]));
-  const post = (s: RankState, skip?: string) => rankPosterior(classes, s.answers.filter(a => a.itemId !== skip).map(a => a.ranking));
+  const post = (s: RankState, skip?: string) => rankPosterior(classes,
+    s.answers.filter(a => a.itemId !== skip).sort((x, y) => x.itemId.localeCompare(y.itemId)).map(a => a.ranking));
 
+  /** ADAPTIVE stopping only (X-01): never limits which fixed-form answers are scored; every answer enters `post`. */
   const finished = (s: RankState) => {
     if (s.answers.length === 0) return false;
     const t = top(post(s))[0]!;
     return t.p >= cfg.stopP || s.answers.length >= Math.min(cfg.cap, cfg.tasks.length);
   };
 
+  const ORDER_EVENT = "this complete order (Plackett–Luce expert model, uncalibrated)";
   const result = (s: RankState): RankResult => {
     const p = post(s); const [a, b] = top(p);
-    const positions: Record<string, number> = Object.fromEntries(cfg.aspects.map(x => [x, 0]));
-    for (const [cls, pr] of Object.entries(p)) [...cls].forEach((x, i) => (positions[x]! += pr * (i + 1)));
-    return { order: a!.cls, p: a!.p, runnerUp: { order: b!.cls, p: b!.p }, positions, tasks: s.answers.length };
+    const sum = summarizeRanking(p, cfg.aspects);
+    const answered = s.answers.length, total = cfg.tasks.length;
+    const quality: QualityNote[] = [];
+    // Response-fit note: rankings that point to different orders. Context can legitimately cause this.
+    if (answered >= 2 && !sum.order) {
+      const firsts = new Set(s.answers.map(x => x.ranking[0]));
+      quality.push({ code: "ranking-conflict", message: `Your rankings point in different directions${firsts.size > 1 ? ` (${firsts.size} different first choices)` : ""}, so no single order fits them well. That can reflect real differences between situations, not careless answers.` });
+    }
+    if (answered < total) quality.push({ code: "incomplete", message: `${total - answered} of ${total} rankings were not answered.` });
+    const meta: ResultMeta = {
+      engine: cfg.meta.id, scoringVersion: cfg.meta.scoringVersion ?? cfg.meta.version,
+      completion: { answered, total, complete: answered === total },
+      unresolved: sum.order ? [] : [sum.first ? "positions after first" : "order"],
+      quality,
+      uncertainty: [
+        ...sum.candidates.map(c => ({ output: c.order, event: ORDER_EVENT, kind: "model-probability" as const, value: c.p, calibrated: false as const })),
+        ...cfg.aspects.map(x => ({ output: x, event: "aspect is in first position (expert model)", kind: "model-probability" as const, value: sum.marginals[x]![0]!, calibrated: false as const })),
+      ],
+      dependencies: [],
+    };
+    return {
+      order: a!.cls, p: a!.p, runnerUp: { order: b!.cls, p: b!.p },
+      resolved: sum.order, first: sum.order ? null : sum.first, candidates: sum.candidates,
+      positions: sum.positions, marginals: sum.marginals, tasks: answered, meta,
+    };
   };
 
   const engine: ExamEngine<RankState, RankResult> = {
@@ -105,18 +139,28 @@ export function createRankEngine(cfg: {
         const names = a.ranking.map(id => t.options.find(o => o.id === id)!.text);
         return { itemId: a.itemId, answer: `${t.text} You ranked first: “${names[0]}”`, delta: Math.round(Math.log(r.p / without) * 100) / 100 };
       }).sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta)).slice(0, 3);
-      return [{ output: cfg.meta.name, result: r.order, confidence: r.p, topEvidence: ev, runnerUp: { result: r.runnerUp.order, confidence: r.runnerUp.p } }];
+      return [{ output: cfg.meta.name, result: r.resolved ?? (r.first ? `${r.first.aspect} first, rest unresolved` : `unresolved (most likely ${r.order})`),
+        confidence: r.p, confidenceEvent: ORDER_EVENT, topEvidence: ev, runnerUp: { result: r.runnerUp.order, confidence: r.runnerUp.p } }];
     },
     serialize: s => JSON.stringify(s),
     deserialize(raw) {
       const s = JSON.parse(raw) as RankState;
-      if (s.v !== 1 || !Array.isArray(s.answers)) throw new Error("Unrecognised ranking state");
+      if (!s || s.v !== 1 || !Array.isArray(s.answers)) throw new Error("Unrecognised ranking state");
+      const seen = new Set<string>();
+      for (const x of s.answers) {
+        const t = byId.get(x?.itemId);
+        if (!t || seen.has(x.itemId) || !Array.isArray(x.ranking) || [...x.ranking].sort().join() !== t.options.map(o => o.id).sort().join())
+          throw new Error(`Invalid ranking answer ${String(x?.itemId)}`);
+        seen.add(x.itemId);
+      }
       return s;
     },
+    /** Not used by the web result path (X-02). Emits a token only for a resolved order. */
     bioTokens(s): BioToken[] {
-      if (!finished(s)) return [];
+      const all = s.answers.length === cfg.tasks.length;
+      if (!finished(s) && !all) return [];
       const r = result(s);
-      return [{ slot: cfg.slot, text: r.order, confidence: r.p, source: "test" }];
+      return r.resolved ? [{ slot: cfg.slot, text: r.resolved, confidence: r.p, source: "test" }] : [];
     },
   };
   return engine;

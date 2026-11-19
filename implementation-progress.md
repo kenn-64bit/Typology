@@ -13,8 +13,8 @@ estimates exist for any engine, and none were invented.
 | 3 | Four Temperaments | complete |
 | 4 | Jungian Functions | complete |
 | 5 | Enneagram | complete |
-| 6 | Attitudinal Psyche + shared ranking | pending (next) |
-| 7 | Temporistics + final integration | pending |
+| 6 | Attitudinal Psyche + shared ranking | complete |
+| 7 | Temporistics + final integration | pending (next) |
 
 ## Phase 1 — Big Five and shared result foundations
 
@@ -332,6 +332,82 @@ estimates exist for any engine, and none were invented.
 
 **Next phase:** Phase 6 — Attitudinal Psyche and shared ranking behaviour.
 
+## Phase 6 — Attitudinal Psyche and shared ranking behaviour
+
+**Engineering status:** complete (2026-11-19).
+
+**Findings addressed by code changes:** AP-02 and AP-03. AP-01 is narrowed by copy. X-01 and X-02 are addressed. Applied X-05 to X-08 and X-10 to X-11 to AP and the shared rank engine.
+
+**Findings that still need respondent data or a theory decision:**
+- AP-01: a position-sensitive measurement model and tasks that could identify attitudes.
+- AP-02: whether any "concern" task can be validated for a specific position.
+- Task-specific fit and context effects.
+- `rankWorthRatio`.
+- The `ranking.*` cutoffs.
+
+### Decisions and provisional assumptions
+
+- **What AP measures (AP-01).** The output is presented as an *exploratory order of aspect priorities*. The engine header, the glossary and the result caveat say it does not measure confident, flexible, insecure or indifferent attitudes. The AP page keeps the theory description, but labels every attitude claim as theory that the test does not check. The unsupported advice was removed, namely "your 3rd aspect explains where you are sensitive" and "your 1st can hurt their 3rd".
+- **ap2 (AP-02).**
+  - The old task, "Which criticism bothers you least?", was replaced by an original priority task, "Which do you put the most effort into getting right?". Its direction now matches the most-first scoring used by every task.
+  - It was not mechanically reversed: low concern does not identify the 4th position.
+  - All seven tasks use the most-to-least endpoint, which matches the modal instruction.
+- **Shared ranking result (AP-03).**
+  - `RankResult` gains `resolved`, `first`, `candidates`, `marginals` and `meta`, using `summarizeRanking` from Phase 5.
+  - The order is published only at ≥ `ranking.resolveP` = 0.6.
+  - A partial result names the first aspect at ≥ `firstP` = 0.6.
+  - `order` stays as the "most probable" field for compatibility but is not shown as the result.
+  - A non-punitive `ranking-conflict` note appears when no order resolves; it says that context differences can cause this.
+- **Separated concepts.** Completion is `meta.completion` (all 7 fixed-form tasks). Adaptive stopping is `finished()`/`next()` only, documented as never limiting which answers are scored. Output uncertainty is in `meta.uncertainty`, and response fit in `meta.quality`.
+- **Cap (X-01).** `stop.apCap` and `temporisticsCap` are documented as adaptive-only. The unused `apRankTasks` was removed. Every valid fixed-form answer enters the posterior, including the seventh. Ranking answers are sorted by task id so the result does not depend on answer order.
+- **Publication path (X-02).** Publication rules live in `result()` and the result components that the web app actually renders. The orchestrator and `bioTokens` are documented as outside that path; `bioTokens` now emits only resolved orders.
+- **Validation (X-07).** Rank-state deserialization checks known task ids, uniqueness and full permutations.
+- **Enneagram compatibility.** `summarizeRanking` is unchanged, and the 19 Enneagram tests still pass.
+
+### Source changes
+
+- `packages/engine-sdk/src/result.ts`: new `ranking-conflict` quality code.
+- `packages/engine-sdk/src/thresholds.ts`: adaptive cap documented; `apRankTasks` removed.
+- `packages/rank-engine/src/index.ts`: resolved, partial and candidate result fields; `ResultMeta`; conflict note; named event; order-invariant posterior; validated deserialization; resolved-only bio tokens; adaptive stop documented.
+- `packages/engine-ap/src/index.ts`: ap2 rewritten; header and glossary narrowed to priorities; scoring version `ap-2`.
+- `apps/web/src/lib/results/OrderResult.svelte` (shared by AP and Temporistics):
+  - the hero shows the order, a partial `V???`, or "no clear order";
+  - candidate orders;
+  - each aspect's average place, chance of being first, and chance of being last;
+  - quality notes;
+  - an optional caveat.
+- `apps/web/src/routes/[slug]/+page.svelte`: AP caveat passed in.
+- `APPage.svelte`, `orchestrator`: count is 7 rankings (was "4 to 8"); attitude claims marked as theory.
+- `orchestrator/src/index.ts`, `apps/web/src/lib/engines.ts`: X-02 isolation comments.
+
+### Checks performed
+
+- `pnpm test` 29/29, `pnpm typecheck` 15/15 (svelte-check 0 errors), `pnpm build` succeeds.
+- Rank-engine tests (11) pass. They cover:
+  - conflicting rankings on the adaptive path give an unresolved result, a conflict note and no token;
+  - all 7 fixed-form answers are scored even though the adaptive cap is 6;
+  - a different seventh answer changes the posterior and moves that aspect earlier;
+  - answer order and replacement give identical results;
+  - malformed rankings are rejected;
+  - `summarizeRanking` gives the uniform → unresolved case, and resolves a concentrated posterior with marginals that sum to 1.
+- AP tests (9) pass. They cover:
+  - alternating 1st↔2nd / 3rd↔4th swaps give no order, with both candidates kept;
+  - consistent rankings resolve;
+  - a shared first choice gives the partial `V`;
+  - no task asks for "least";
+  - version and named events.
+- The non-reproducible `Math.random` comparator test was replaced with deterministic permutations.
+- Enneagram (19) and Temporistics (4) tests still pass.
+- One assertion of mine had the wrong direction (expected position) and was corrected.
+- Browser check: **not performed**. No browser tool is available in this session.
+
+### Remaining work
+
+- Temporistics now inherits the shared unresolved behaviour through `OrderResult`. Its scoring version, copy, item review and caveat are Phase 7.
+- Phase 7 handles stale-constant cleanup, dependency invalidation on Big Five retakes, and the cross-test reconciliation.
+
+**Next phase:** Phase 7 — Temporistics and final integration.
+
 ## Finding ledger
 
 | ID | Disposition | Notes |
@@ -357,16 +433,18 @@ estimates exist for any engine, and none were invented.
 | MO-02 | Mitigated, with limitations stated | Keying balanced 2:2 with original items; raw uniform answers now give θ = 0. New items unpiloted; acquiescence is only flagged, not modelled. |
 | MO-03 | Implemented and checked | No bars on X; ties give no bars and a candidate list. Gap value provisional. |
 | MO-04 | Mitigated, with limitations stated | Names, page and items aligned on care for others (I) and optimism/energy (V). Whether the new items load on those constructs needs respondent data. |
-| AP-01 – AP-03 | Pending (Phase 6) | |
+| AP-01 | Mitigated, with limitations stated | Output narrowed to exploratory priorities everywhere it is shown. No position-sensitive model exists. |
+| AP-02 | Implemented and checked | ap2 rewritten to match the most-first scoring; not reversed. Validity of any concern-based task would need data. |
+| AP-03 | Implemented and checked | Unresolved, partial and candidate orders with a conflict note. Cutoffs provisional. |
 | TP-01, TP-02 | Pending (Phase 7) | |
-| X-01 | Pending (Phase 6) | |
-| X-02 | Pending (Phase 6) | |
+| X-01 | Implemented and checked | The cap is adaptive-only; all 7 fixed answers are scored (tested); `apRankTasks` removed. |
+| X-02 | Mitigated | Publication is in `result()` and the rendered components; orchestrator and bioTokens documented as outside the web path. They were not deleted, to keep their tests and API. |
 | X-03 | Mitigated (Big Five, MOTIVES, temperament: versioned import + dependency record) | Scoring version and dependency fields exist; Big Five has no dependencies. Invalidation of dependants is pending (Phases 2–4, 7). |
 | X-04 | Mitigated (MOTIVES, Jung) | Independent policy: no unjustified prior is applied. A justified mapping with prior variance awaits data. |
 | X-05 | Awaiting empirical data | Everything is labelled `calibrated: false`; no calibration exists. |
-| X-06 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
-| X-07 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
-| X-08 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram) | Deterministic fixed-form fixtures added. Other engines pending. |
+| X-06 | Mitigated (all except Temporistics copy, Phase 7) | Per-trait events named; the averaged header confidence is removed from the UI. Other engines pending. |
+| X-07 | Mitigated (all engines incl. shared ranking, app load) | Big Five deserialize validated through the shared helper; other engines pending. |
+| X-08 | Mitigated (all engines incl. shared ranking; Temporistics fixtures in Phase 7) | Deterministic fixed-form fixtures added. Other engines pending. |
 | X-09 | Rejected allegation preserved | Fresh `init(profileSnapshot())` at submit is unchanged. |
-| X-10 | Mitigated (Big Five, MOTIVES, temperament, Jung, Enneagram, Overview); AP and Temporistics pending (Phases 6–7) | |
+| X-10 | Mitigated (all except Temporistics, Phase 7) | |
 | X-11 | Mitigated | The thresholds header lists the other constant sources. Removing stale adaptive constants is pending (Phase 7). |
