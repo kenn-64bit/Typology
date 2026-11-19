@@ -9,8 +9,9 @@
 <style>
   .chip-row { margin: 0 0 0.45rem; }
   .chip {
-    display: inline-block; margin-right: 0.4rem; font: bold 10.5px/1.5 var(--font-mono); color: var(--white); background: var(--teal);
+    display: inline-block; margin-right: 0.4rem; font: bold 10.5px/1.5 Verdana, sans-serif; color: var(--white); background: var(--teal);
     padding: 0.05rem 0.45rem; white-space: nowrap;
   }
+  .chip-row :global(code) { font-family: Verdana, sans-serif; }
   a.chip:hover { background: var(--teal-dark); text-decoration: none; }
 </style>
