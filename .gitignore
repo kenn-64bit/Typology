@@ -46,3 +46,5 @@ animation-plans/
 *.swp
 .DS_Store
 Thumbs.db
+
+incident-report.md
