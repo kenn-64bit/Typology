@@ -1,7 +1,10 @@
 <script lang="ts">
   import "../app.css";
   import { page } from "$app/state";
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
+  import { afterNavigate } from "$app/navigation";
+  import Search from "$lib/search/Search.svelte";
+  import { slugify } from "$lib/search/index.ts";
   import { app } from "$lib/app.svelte.ts";
   import { TYPOLOGIES } from "$lib/typologies.ts";
   import { GLOSSARY } from "$lib/glossary.ts";
@@ -35,31 +38,18 @@
   // close the mobile menu after navigating
   $effect(() => { page.url.pathname; menuOpen = false; });
 
-  let filter = $state("");
-  const matches = $derived.by(() => {
-    const q = filter.trim().toLowerCase();
-    if (!q) return [];
-    return GLOSSARY.flatMap(sec => sec.groups.flatMap(g => g.rows
-      .filter(([k, v]) => k.toLowerCase() === q || v.toLowerCase().includes(q))
-      .map(([k, v]) => ({ id: sec.id, k, v, sys: sec.title })))).slice(0, 12);
+  // Give every section heading an id (from its own text) and scroll to the #anchor, so search results land on the section.
+  afterNavigate(async () => {
+    await tick();
+    for (const h of document.querySelectorAll<HTMLElement>("main :is(.sec-head, h3.sub)")) if (!h.id) h.id = slugify(h.textContent ?? "");
+    const id = location.hash.slice(1);
+    if (/^[a-z0-9-]+$/.test(id)) document.getElementById(id)?.scrollIntoView({ block: "start" });
   });
 </script>
 
 <svelte:head><title>Typology</title></svelte:head>
 <svelte:window onkeydown={e => { if (e.key === "Escape") menuOpen = false; }} />
 
-{#snippet search(id: string)}
-  <div class="search">
-    <label class="sr-only" for={id}>Search the glossary</label>
-    <input {id} type="search" bind:value={filter} />
-    <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6.5 1a5.5 5.5 0 0 1 4.4 8.8l3.9 3.9-1.1 1.1-3.9-3.9A5.5 5.5 0 1 1 6.5 1zm0 1.6a3.9 3.9 0 1 0 0 7.8 3.9 3.9 0 0 0 0-7.8z" fill="currentColor" /></svg>
-  </div>
-  {#if matches.length}
-    <ul class="kw-results" aria-label="Glossary matches">
-      {#each matches as m (m.id + m.k)}<li><a href="/glossary#{m.id}"><code>{m.k}</code> {m.v}</a> <small>({m.sys})</small></li>{/each}
-    </ul>
-  {/if}
-{/snippet}
 
 {#snippet keywords()}
   <h2 class="kw-head">Keywords</h2>
@@ -101,7 +91,7 @@
       </ul>
     </nav>
     <div class="m-side">
-      {@render search("kw-m")}
+      <Search id="kw-m" />
       {@render keywords()}
     </div>
   </div>
@@ -117,7 +107,7 @@
     </div>
 
     <aside class="side">
-      {@render search("kw")}
+      <Search id="kw" />
       {@render keywords()}
     </aside>
     <div class="edge" aria-hidden="true"></div>
@@ -219,18 +209,17 @@
     position: relative; padding-top: 1.6rem; font-size: 10.5px;
     background: linear-gradient(90deg, #8eb8c7 0, #a3c8d4 14px, var(--sky) 40px, var(--sky) calc(100% - 18px), #9cc2cf 100%);
   }
-  .search {
+  .side :global(.search), .m-side :global(.search) {
     /* bare input straddling the panel edge, like the reference: no surrounding box */
     position: relative; z-index: 3; display: flex; align-items: center; gap: 0.4rem;
     margin: 0 0.5rem 1.4rem -7.5rem;
   }
-  .search input {
+  .frame :global(.search input) {
     flex: 1; min-width: 0; height: 1.45rem; padding: 0.15rem 0.35rem;
     background: #fbf9f3; border: 1px solid #b9aa9c;
     box-shadow: inset 1px 1px 1px rgb(90 60 40 / 0.2), 0 1px 0 rgb(255 255 255 / 0.5);
   }
-  .search-icon { flex: none; color: #1f5d74; }
-  .kw-results { list-style: none; margin: 0 0.5rem 0.8rem; padding: 0.3rem 0.5rem; background: var(--cream); box-shadow: 1px 2px 4px rgb(40 70 90 / 0.25); }
+  .frame :global(.kw-results) { position: relative; z-index: 4; list-style: none; max-height: 60vh; overflow-y: auto; margin: 0 0.5rem 0.8rem; padding: 0.3rem 0.5rem; background: #d7e9ef; box-shadow: 1px 2px 4px rgb(40 70 90 / 0.25); }
   .kw-head {
     font: bold 13px var(--font-head); color: var(--white); letter-spacing: 0.04em;
     text-shadow: 1px 1px 1px rgb(30 70 90 / 0.7);
@@ -331,7 +320,7 @@
   @media (max-width: 1000px) {
     .body { grid-template-columns: minmax(0, 1fr) var(--side); }
     .band, .edge { display: none; }
-    .search { margin-left: -4rem; }
+    .side :global(.search) { margin-left: -4rem; }
     .top { grid-template-columns: minmax(0, 1fr); background: none; }
     .main-nav ul { max-width: none; padding-left: 1rem; }
     .logo { padding-top: 0.8rem; }
@@ -365,7 +354,8 @@
     }
     .m-nav a.current { background: rgb(0 0 0 / 0.18); text-decoration: underline; text-underline-offset: 4px; }
     .m-side { background: var(--sky); padding: 1rem 0 1rem; font-size: 13px; box-shadow: inset 0 4px 6px -2px rgb(40 20 10 / 0.35); }
-    .m-side .search { margin: 0 16px 1rem; }
+    .m-side :global(.search) { margin: 0 16px 1rem; }
+    .m-side :global(.kw-results) { margin: 0 16px 1rem; }
     .m-side .kw-head { font-size: 14px; }
     .foot { grid-template-columns: minmax(0, 1fr); }
     .foot-grid { padding: 18px 16px 20px; gap: 10px; }

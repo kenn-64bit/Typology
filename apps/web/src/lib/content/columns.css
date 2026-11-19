@@ -14,3 +14,4 @@
 :is(.cols, .duo) .sub:not(:first-of-type) { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid rgb(59 48 43 / 0.14); }
 :is(.cols, .duo) code { color: var(--rust); }
 @media (max-width: 760px) { .cols { column-count: 1; } .duo { grid-template-columns: minmax(0, 1fr); } }
+:is(.cols, .duo, .fig, main) :is(.sec-head, .sub, [id]) { scroll-margin-top: 1rem; }
