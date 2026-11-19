@@ -16,6 +16,7 @@
   const LEGEND: { key: BadgeKey; fill: number }[] = [
     { key: "strong", fill: 4 }, { key: "some", fill: 3 }, { key: "mixed", fill: 2 }, { key: "little", fill: 1 },
   ];
+  const FILL = Object.fromEntries(LEGEND.map(l => [l.key, l.fill])) as Record<BadgeKey, number>;
   const systemsAt = (k: BadgeKey) => EVIDENCE.filter(e => e.key === k).map(e => e.sys).join(" · ");
 </script>
 
@@ -28,22 +29,23 @@
 
   <Divider />
   <SectionHeading text="The seven systems" />
-  <div class="dg-scroll">
-    <div class="dg-table sys" role="table" aria-label="The seven systems">
-      <div class="dg-row dg-head" role="row">
-        <span role="columnheader">System</span><span role="columnheader">What it describes</span>
-        <span role="columnheader">Example code</span><span role="columnheader">Evidence</span>
-      </div>
+  <table class="fx sys">
+    <caption class="sr">The seven systems: what each describes, an example code and how much evidence supports it</caption>
+    <thead>
+      <tr><th scope="col" class="fx-k">System</th><th scope="col" class="fx-k">Example code</th><th scope="col" class="fx-k">What it describes</th><th scope="col" class="fx-k">Evidence</th></tr>
+    </thead>
+    <tbody>
       {#each EVIDENCE as s (s.href)}
-        <div class="dg-row" role="row">
-          <a class="name" role="rowheader" href={s.href}>{s.sys}</a>
-          <span role="cell">{s.lead}</span>
-          <span role="cell"><code>{CODE[s.href]}</code></span>
-          <span role="cell"><a href="/references#ev-{s.href.slice(1)}" title={BADGES[s.key].tip}>{WORD[s.key]}</a></span>
-        </div>
+        {@const fill = FILL[s.key]}
+        <tr>
+          <th scope="row"><a class="name" href={s.href}>{s.sys}</a></th>
+          <td class="code"><code>{CODE[s.href]}</code></td>
+          <td class="desc">{s.lead}</td>
+          <td class="ev"><a href="/references#ev-{s.href.slice(1)}" title={BADGES[s.key].tip}><span class="bar" aria-hidden="true">{#each Array(4) as _, i (i)}<span class:on={i < fill}></span>{/each}</span>{WORD[s.key]}</a></td>
+        </tr>
       {/each}
-    </div>
-  </div>
+    </tbody>
+  </table>
 
   <Divider />
   <SectionHeading text="How much evidence each system has" />
@@ -72,23 +74,41 @@
 <style>
   .card { border: 1px solid var(--panel-border); background: rgb(255 255 255 / 0.25); padding: 0.9rem 1rem 1rem; }
   .lead { margin: 0.2rem 0 0.8rem 1.1rem; font-size: 13px; }
-  .sys .dg-row { grid-template-columns: 9rem minmax(12rem, 1fr) 8.5rem 4rem; }
-  .sys .name { font: bold 12.5px var(--font-head); }
-  .sys code { color: var(--rust); font-weight: bold; }
+  /* The seven systems: rows sit on the page; one hairline between rows. Teal = links, rust = codes, text colour = evidence. */
+  .sys { width: 100%; border-collapse: collapse; margin-top: var(--fx-2); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .sys th, .sys td { padding: var(--fx-3) var(--fx-4) var(--fx-3) 0; text-align: left; vertical-align: baseline; border-top: 1px solid var(--fx-line); }
+  .sys :is(th, td):last-child { padding-right: 0; }
+  .sys thead th { border-top: 0; padding-top: 0; padding-bottom: var(--fx-2); }
+  .sys tbody tr:first-child > * { border-top-color: var(--tan); }
+  .name { font: bold 14px var(--font-head); color: var(--text); text-decoration: none; white-space: nowrap; }
+  .name::after { content: " →"; color: var(--teal-dark); opacity: 0; transition: opacity var(--dur-fast); }
+  .name:is(:hover, :focus-visible) { color: var(--teal-dark); text-decoration: underline; text-underline-offset: 3px; }
+  .name:is(:hover, :focus-visible)::after { opacity: 1; }
+  .code code { font: bold 13px var(--font-mono); letter-spacing: 0.04em; color: var(--rust); white-space: nowrap; }
+  .desc { font-size: 12.5px; color: var(--meta); }
+  .ev { white-space: nowrap; }
+  .ev a { display: inline-flex; align-items: center; gap: var(--fx-2); font-size: 12px; color: var(--text); text-decoration: none; }
+  .ev a:is(:hover, :focus-visible) { color: var(--teal-dark); text-decoration: underline; }
+  .bar { display: inline-flex; gap: 2px; }
+  .bar span { width: 10px; height: 6px; background: var(--cream-dark); }
+  .bar span.on { background: var(--text); }
   .legend { display: grid; gap: 0.2rem; margin-left: 1.1rem; font-size: 11px; }
   .l-row { display: grid; grid-template-columns: 4.5rem auto minmax(0, 1fr); gap: 0.6rem; align-items: center; cursor: help; }
   .l-word { font: bold 10px var(--font-head); letter-spacing: 0.02em; color: var(--meta); }
   .l-bar { display: flex; gap: 2px; }
   .l-bar span { width: 18px; height: 9px; background: var(--cream-dark); }
-  .l-bar span.on { background: var(--teal); }
+  .l-bar span.on { background: var(--text); }
   .steps { margin: 0 0 0 1.1rem; padding-left: 1.2rem; display: grid; gap: 0.5rem; font-size: 13px; }
   .steps li::marker { font: bold 12px var(--font-head); color: var(--teal-dark); }
   @media (max-width: 760px) {
-    .sys .dg-row { grid-template-columns: minmax(0, 1fr) auto; }
-    .sys .dg-row > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
-    .sys .dg-head > :nth-child(2), .sys .dg-head > :nth-child(3) { display: none; }
-    .sys .dg-row > :nth-child(3) { grid-row: 3; grid-column: 1 / -1; }
-    .sys .dg-row > :nth-child(4) { grid-row: 1; grid-column: 2; }
+    .sys, .sys tbody, .sys tr, .sys th, .sys td { display: block; }
+    .sys thead { display: none; }
+    .sys tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--fx-3); padding: var(--fx-3) 0; border-top: 1px solid var(--fx-line); }
+    .sys tbody tr:first-child { border-top-color: var(--tan); }
+    .sys th, .sys td { padding: 0; border: 0; }
+    .sys .ev { grid-column: 2; grid-row: 1; }
+    .sys .code, .sys .desc { grid-column: 1 / -1; margin-top: var(--fx-1); }
     .l-row { grid-template-columns: 4rem auto; } .l-row > :last-child { grid-column: 1 / -1; }
   }
 </style>

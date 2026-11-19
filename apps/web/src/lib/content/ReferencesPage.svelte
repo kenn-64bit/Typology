@@ -52,6 +52,6 @@
   .ev p { margin: 0; }
   .ev-head { grid-column: 1 / -1; }
   .ev .sub a { color: inherit; }
-  .badge { font: bold 10px var(--font-head); letter-spacing: 0.08em; color: var(--white); background: var(--meta); padding: 0.1rem 0.45rem; margin-left: 0.3rem; vertical-align: 1px; cursor: help; }
+  .badge { font: bold 10px var(--font-head); color: var(--white); background: var(--meta); padding: 0.1rem 0.45rem; margin-left: 0.3rem; vertical-align: 1px; cursor: help; }
   .note { font-size: 12px; color: var(--meta); margin: 0; }
 </style>

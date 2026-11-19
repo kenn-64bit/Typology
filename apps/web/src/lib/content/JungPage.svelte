@@ -11,10 +11,10 @@
   let { t, result }: { t: Typology; result: Snippet<[unknown, number]> } = $props();
   const g = "/glossary#jung";
   const GRID = [
-    { fn: "THINKING", l: "T", kind: "(judging)", i: ["Ti", "inner logic, checks if ideas are consistent"], e: ["Te", "organizes facts and systems to get results"] },
-    { fn: "FEELING", l: "F", kind: "(judging)", i: ["Fi", "personal values, \"is this true to me?\""], e: ["Fe", "group feelings, keeps harmony with others"] },
-    { fn: "SENSATION", l: "S", kind: "(perceiving)", i: ["Si", "compares now with past experience and memory"], e: ["Se", "takes in the present moment and acts on it"] },
-    { fn: "INTUITION", l: "N", kind: "(perceiving)", i: ["Ni", "sees one inner pattern and where it leads"], e: ["Ne", "sees many possibilities and links outside"] },
+    { fn: "thinking", l: "T", kind: "(judging)", i: ["Ti", "inner logic, checks if ideas are consistent"], e: ["Te", "organizes facts and systems to get results"] },
+    { fn: "feeling", l: "F", kind: "(judging)", i: ["Fi", "personal values, \"is this true to me?\""], e: ["Fe", "group feelings, keeps harmony with others"] },
+    { fn: "sensation", l: "S", kind: "(perceiving)", i: ["Si", "compares now with past experience and memory"], e: ["Se", "takes in the present moment and acts on it"] },
+    { fn: "intuition", l: "N", kind: "(perceiving)", i: ["Ni", "sees one inner pattern and where it leads"], e: ["Ne", "sees many possibilities and links outside"] },
   ];
 </script>
 
@@ -42,29 +42,27 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="dg-scroll">
+    <div class="fx">
+      <p class="fx-ex"><span class="fx-k">Example</span><code class="fx-code">IT(N)</code><code class="lt on">(Ti Ni)</code></p>
       <div class="jg" role="table" aria-label="The eight Jungian functions">
-        <span class="dg-label" role="columnheader">Attitude</span>
-        <span class="dg-label" role="columnheader">introverted (i)<br /><small>inner world</small></span>
-        <span class="dg-label" role="columnheader">extraverted (e)<br /><small>outer world</small></span>
+        <span class="fx-k" role="columnheader">Attitude</span>
+        <span class="fx-k" role="columnheader">introverted (i)<small>inner world</small></span>
+        <span class="fx-k" role="columnheader">extraverted (e)<small>outer world</small></span>
         {#each GRID as r (r.l)}
-          <span class="dg-label fn" role="rowheader">{r.fn} <a class="dg-letter" href={g}>{r.l}</a><br /><small>{r.kind}</small></span>
-          <span class="cell" class:ex={r.i[0] === "Ti" || r.i[0] === "Ni"} role="cell"><a class="dg-letter" href={g}>{r.i[0]}</a> {r.i[1]}</span>
-          <span class="cell" role="cell"><a class="dg-letter" href={g}>{r.e[0]}</a> {r.e[1]}</span>
+          <span class="fn" role="rowheader"><span class="fx-k">{r.fn}</span> <a class="lt" href={g}>{r.l}</a><small>{r.kind}</small></span>
+          <span class="cell" role="cell"><a class="lt fa" class:on={r.i[0] === "Ti" || r.i[0] === "Ni"} href={g}>{r.i[0]}</a><span>{r.i[1]}</span></span>
+          <span class="cell" role="cell"><a class="lt fa" href={g}>{r.e[0]}</a><span>{r.e[1]}</span></span>
         {/each}
       </div>
+      <h3 class="fx-k sub">How a code is built</h3>
+      <dl class="parts">
+        <dt><code>I</code></dt><dd>attitude of the main function (introverted)</dd>
+        <dt><code>T</code></dt><dd>main function (Thinking)</dd>
+        <dt><code>N</code></dt><dd>helper function (Intuition)</dd>
+        <dt><code>(Ti Ni)</code></dt><dd>shorthand. Ti is the main function, Ni is the helper.</dd>
+      </dl>
+      <p class="fx-cap">Each function × direction is one function-attitude; your result is the two you use most.</p>
     </div>
-    <h3 class="sub">How a code is built:</h3>
-    <div class="build">
-      <div class="code"><code>I</code><code>T</code><code>(N)</code></div>
-      <ul>
-        <li><code>I</code>: attitude of the main function (introverted)</li>
-        <li><code>T</code>: main function (Thinking)</li>
-        <li><code>N</code>: helper function (Intuition)</li>
-        <li>Shorthand: <code>(Ti Ni)</code>. Ti is the main function, Ni is the helper.</li>
-      </ul>
-    </div>
-    <p class="dg-note">Each row is one function and each column is one direction, so each box is one of the eight function-attitudes. Your result is the two boxes you use most.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -101,13 +99,19 @@
 </TypologyLayout>
 
 <style>
-  .jg { display: grid; grid-template-columns: 9rem minmax(0, 1fr) minmax(0, 1fr); gap: 4px; min-width: 32rem; font: 12.5px/1.45 var(--font-body); }
-  .jg small { font-weight: normal; text-transform: none; color: var(--meta); letter-spacing: 0; }
-  .fn { align-self: center; }
-  .cell { padding: 0.5rem 0.6rem; background: var(--white); border: 1px solid var(--panel-border); }
-  .cell.ex { border-color: var(--tan); box-shadow: inset 0 0 0 1px var(--tan); background: #fffaf4; }
-  .build { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; font: 12.5px/1.6 var(--font-body); }
-  .code { display: flex; gap: 0.3rem; }
-  .code code { font: bold 1.6rem var(--font-mono); padding: 0.1rem 0.4rem; border-bottom: 3px solid var(--tan); }
-  .build ul { margin: 0; padding-left: 1.1rem; }
+  .jg { display: grid; grid-template-columns: 9rem minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--fx-4); }
+  .jg > * { padding: var(--fx-3) 0; border-top: 1px solid var(--fx-line); }
+  .jg > :nth-child(-n + 3) { border-top: 0; padding-top: 0; }
+  .jg small { display: block; font: 11px/1.4 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--meta); }
+  .cell { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: var(--fx-2); align-items: baseline; }
+  .fa { font-size: 15px; }
+  .sub { margin-top: var(--fx-5) !important; margin-bottom: var(--fx-3) !important; }
+  .parts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--fx-2) var(--fx-3); align-items: baseline; }
+  .parts code { font: bold 13px var(--font-mono); color: var(--rust); }
+  @media (max-width: 760px) {
+    .jg { grid-template-columns: 1fr 1fr; column-gap: var(--fx-3); }
+    .jg > :first-child { display: none; }
+    .fn { grid-column: 1 / -1; padding-bottom: 0; }
+    .cell { border-top: 0; grid-template-columns: 1fr; gap: 2px; padding-top: var(--fx-2); }
+  }
 </style>

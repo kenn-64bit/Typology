@@ -37,20 +37,22 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="tg" role="table" aria-label="Temperament grid: Extraversion by Neuroticism">
-      <span></span>
-      <span class="dg-label top axis" role="columnheader">Neuroticism (emotional reactivity)</span>
-      <span class="dg-label corner">Extraversion</span>
-      <span class="dg-label top" role="columnheader">LOW (Calm) <a class="dg-letter" href="/bigfive">C</a></span>
-      <span class="dg-label top" role="columnheader">HIGH (Limbic) <a class="dg-letter" href="/bigfive">L</a></span>
-      <span class="dg-label side" role="rowheader">HIGH (Social) <a class="dg-letter" href="/bigfive">S</a></span>
-      <a class="cell" href={g} role="cell"><b>SANGUINE</b>cheerful · active<br />easy to talk to</a>
-      <a class="cell" href={g} role="cell"><b>CHOLERIC</b>driven · quick to<br />anger · leads</a>
-      <span class="dg-label side" role="rowheader">LOW (Reserved) <a class="dg-letter" href="/bigfive">R</a></span>
-      <a class="cell" href={g} role="cell"><b>PHLEGMATIC</b>calm · steady<br />patient</a>
-      <a class="cell" href={g} role="cell"><b>MELANCHOLIC</b>thoughtful · deep<br />feelings · careful</a>
+    <div class="fx">
+      <div class="tg" role="table" aria-label="Temperament grid: Extraversion by Neuroticism">
+        <span></span>
+        <span class="fx-k axis" role="columnheader">Neuroticism (emotional reactivity)</span>
+        <span class="fx-k corner">Extraversion</span>
+        <span class="fx-k top" role="columnheader">Low (Calm) <a class="lt" href="/bigfive">C</a></span>
+        <span class="fx-k top" role="columnheader">High (Limbic) <a class="lt" href="/bigfive">L</a></span>
+        <span class="fx-k side" role="rowheader">High (Social) <a class="lt" href="/bigfive">S</a></span>
+        <a class="q tl" href={g} role="cell"><b>Sanguine</b>cheerful · active<br />easy to talk to</a>
+        <a class="q tr" href={g} role="cell"><b>Choleric</b>driven · quick to<br />anger · leads</a>
+        <span class="fx-k side" role="rowheader">Low (Reserved) <a class="lt" href="/bigfive">R</a></span>
+        <a class="q bl" href={g} role="cell"><b>Phlegmatic</b>calm · steady<br />patient</a>
+        <a class="q" href={g} role="cell"><b>Melancholic</b>thoughtful · deep<br />feelings · careful</a>
+      </div>
+      <p class="fx-cap">Your Extraversion and Neuroticism scores place you in one quadrant.</p>
     </div>
-    <p class="dg-note">The columns are Neuroticism, from low to high. The rows are Extraversion, from high to low. Your two Big Five scores put you in one of the four areas.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -77,14 +79,22 @@
 </TypologyLayout>
 
 <style>
-  .tg { display: grid; grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 1fr); gap: 4px; font: 12.5px/1.45 var(--font-body); max-width: 40rem; margin: 0 auto; }
-  .top { text-align: center; padding-bottom: 0.2rem; }
-  .side { align-self: center; }
-  .axis { grid-column: span 2; border-bottom: 1px solid var(--panel-border); }
-  .corner { align-self: end; color: var(--meta); padding-bottom: 0.2rem; }
-  .tg :global(.dg-letter) { font-size: 11px; min-width: 1.3rem; margin-left: 0.2rem; }
-  .cell { display: grid; gap: 0.2rem; padding: 0.8rem; text-align: center; color: var(--text); background: var(--white); border: 1px solid var(--panel-border); }
-  .cell b { color: var(--rust); letter-spacing: 0.06em; }
-  .cell:hover { text-decoration: none; background: var(--cream-dark); }
-  @media (max-width: 760px) { .tg { grid-template-columns: 5rem 1fr 1fr; font-size: 11.5px; } .cell { padding: 0.5rem; } }
+  .tg { display: grid; grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1fr); max-width: 40rem; margin: 0 auto; }
+  .axis { grid-column: span 2; text-align: center; color: var(--text); padding-bottom: var(--fx-2); }
+  .corner { align-self: end; padding-bottom: var(--fx-2); }
+  .top { text-align: center; padding-bottom: var(--fx-2); }
+  .side { align-self: center; padding-right: var(--fx-3); }
+  .tg .lt { margin-left: var(--fx-1); }
+  .q { display: grid; gap: var(--fx-1); padding: var(--fx-4) var(--fx-3); text-align: center; color: var(--meta); font-size: 12.5px; }
+  .q b { font: bold 15px var(--font-head); letter-spacing: 0.02em; text-transform: lowercase; color: var(--text); }
+  .q:hover { text-decoration: none; }
+  .q:hover b { color: var(--rust); }
+  .tl, .tr { border-bottom: 1px solid var(--fx-line); }
+  .tl, .bl { border-right: 1px solid var(--fx-line); }
+  @media (max-width: 760px) {
+    .tg { grid-template-columns: 4.6rem minmax(0, 1fr) minmax(0, 1fr); }
+    .side { font-size: 10px; padding-right: var(--fx-2); }
+    .q { padding: var(--fx-3) var(--fx-2); font-size: 11.5px; }
+    .q b { font-size: 12px; }
+  }
 </style>

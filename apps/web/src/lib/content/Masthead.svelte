@@ -21,7 +21,7 @@
     margin: 0.9rem 0 1.3rem; padding: 0.55rem 0; border-top: 3px double var(--rule); border-bottom: 3px double var(--rule);
   }
   .m-title { margin: 0; text-align: center; }
-  .m-big { font: bold 1.9rem/1.1 Georgia, "Times New Roman", serif; color: var(--rust); text-transform: uppercase; letter-spacing: 0.06em; }
+  .m-big { font: bold 1.9rem/1.1 Georgia, "Times New Roman", serif; color: var(--rust); text-transform: none; }
 
   @media (max-width: 760px) {
     .banner { margin-top: 0.4rem; }

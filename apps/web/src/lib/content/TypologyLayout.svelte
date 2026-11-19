@@ -66,7 +66,7 @@
 {#if open}<QuizModal {t} {result} {instructions} onclose={() => (open = false)} />{/if}
 
 <style>
-  .fig { margin: 0; padding: 0.9rem 1rem 1rem; background: #fffaf4; border: 1px solid var(--panel-border); }
+  .fig { margin: 0; padding: 0.4rem 0 0.8rem; }
   .overview :global(p) { margin: 0 0 0.6rem; }
   .link { font: inherit; color: var(--rust); text-decoration: underline; background: none; border: 0; padding: 0; cursor: pointer; }
   .link:hover { color: var(--rust-dark); }

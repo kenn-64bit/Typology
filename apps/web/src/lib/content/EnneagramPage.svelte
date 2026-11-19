@@ -24,7 +24,29 @@
   ];
   const center = (n: number) => ([8, 9, 1].includes(n) ? "gut" : [2, 3, 4].includes(n) ? "heart" : "head");
   // 9 at the top, then clockwise 1..8
-  const pt = (n: number, r: number) => { const a = ((n % 9) * 40 - 90) * (Math.PI / 180); return [160 + r * Math.cos(a), 150 + r * Math.sin(a)]; };
+  // Diagram geometry: type n sits at (n mod 9) × 40°, with 9 at the top.
+  const CX = 230, CY = 200, R = 120;
+  const TRI = [1, 2, 7];
+  const at = (deg: number, r: number) => { const a = deg * (Math.PI / 180); return [CX + r * Math.cos(a), CY + r * Math.sin(a)] as const; };
+  const pt = (n: number, r = R) => at((n % 9) * 40 - 90, r);
+  /** Arc from angle a to b (degrees, clockwise). `rev` draws it backwards so text on it reads upright at the bottom. */
+  const arc = (a: number, b: number, r: number, rev = false) => {
+    const [x1, y1] = at(rev ? b : a, r), [x2, y2] = at(rev ? a : b, r);
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${r} ${r} 0 0 ${rev ? 0 : 1} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  };
+  /** Line between two type circles, trimmed so it starts and ends at their edges. */
+  const seg = (a: number, b: number) => {
+    const [x1, y1] = pt(a), [x2, y2] = pt(b), dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), s = 15 / L, e = (L - 16) / L;
+    return `M${(x1 + dx * s).toFixed(1)} ${(y1 + dy * s).toFixed(1)} L${(x1 + dx * e).toFixed(1)} ${(y1 + dy * e).toFixed(1)}`;
+  };
+  // Triangle 3-6-9 and hexad 1-4-2-8-5-7-1.
+  const LINES = [[3, 6], [6, 9], [9, 3], [1, 4], [4, 2], [2, 8], [8, 5], [5, 7], [7, 1]] as const;
+  // from/to = angles of the first and last type; label = where the center name sits (between two types).
+  const CENTERS = [
+    { key: "gut", types: [8, 9, 1], from: 230, to: 310, label: 290, note: "anger, instinct" },
+    { key: "heart", types: [2, 3, 4], from: -10, to: 70, label: 10, note: "image, shame" },
+    { key: "head", types: [5, 6, 7], from: 110, to: 190, label: 170, note: "fear, thinking" },
+  ] as const;
 </script>
 
 <TypologyLayout {t} {result} title="Enneagram"
@@ -47,34 +69,50 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="en">
-      <svg viewBox="-30 0 380 300" role="img" aria-label="The nine Enneagram types on a circle, grouped into three centers">
-        <circle cx="160" cy="150" r="100" fill="none" stroke="var(--tan)" stroke-width="1.5" />
-        {#each [1, 2, 3, 4, 5, 6, 7, 8, 9] as n (n)}
-          {@const [x, y] = pt(n, 100)}
-          {@const [lx, ly] = pt(n, 122)}
-          {@const side = lx > 170 ? "start" : lx < 150 ? "end" : "middle"}
-          {#if [1, 2, 7].includes(n)}<circle cx={x} cy={y} r="17.5" class="ring" />{/if}
-          <circle cx={x} cy={y} r="13" class="dot {center(n)}" />
-          <text x={x} y={y + 4.5} text-anchor="middle" class="num">{n}</text>
-          <text x={lx + (side === "start" ? 4 : side === "end" ? -4 : 0)} y={ly + (n === 9 ? -4 : 4)} text-anchor={side} class="name">{NAMES[n]}</text>
-        {/each}
-      </svg>
-      <ul class="centers">
-        <li><span class="sw gut"></span><b>gut center:</b> 8 · 9 · 1<br /><small>(anger, instinct)</small></li>
-        <li><span class="sw heart"></span><b>heart center:</b> 2 · 3 · 4<br /><small>(image, shame)</small></li>
-        <li><span class="sw head"></span><b>head center:</b> 5 · 6 · 7<br /><small>(fear, thinking)</small></li>
-        <li><span class="sw ring-sw"></span>example tritype <code>127</code></li>
-      </ul>
+    <div class="fx">
+      <p class="fx-ex"><span class="fx-k">Example</span><code class="fx-code">so/sx/sp 127 (1w2)</code></p>
+      <div class="en">
+        <svg viewBox="0 20 440 350" role="img" aria-label="The nine Enneagram types on a circle, grouped into three centers, with the example tritype 1, 2 and 7 circled">
+          <defs>
+            <marker id="en-arrow" viewBox="0 0 6 6" refX="5.5" refY="3" markerWidth="5" markerHeight="5" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M0 0.5 L6 3 L0 5.5z" class="arrow" />
+            </marker>
+          </defs>
+          {#each LINES as [a, b] (`${a}-${b}`)}<path d={seg(a, b)} class="inner" marker-end="url(#en-arrow)" />{/each}
+          {#each CENTERS as c (c.key)}
+            <path d={arc(c.from - 17, c.to + 17, R)} class="band {c.key}" />
+            <path id="en-l-{c.key}" d={arc(c.label - 30, c.label + 30, c.key === "head" ? R - 19 : R - 26, c.key === "head")} fill="none" />
+            <text class="cname {c.key}"><textPath href="#en-l-{c.key}" startOffset="50%" text-anchor="middle">{c.key}</textPath></text>
+          {/each}
+          {#each [1, 2, 3, 4, 5, 6, 7, 8, 9] as n (n)}
+            {@const [x, y] = pt(n)}
+            {@const [lx, ly] = pt(n, R + 26)}
+            {@const anchor = lx > CX + 8 ? "start" : lx < CX - 8 ? "end" : "middle"}
+            {@const y0 = n === 9 ? ly - 14 : n === 4 || n === 5 ? ly + 6 : ly - 3}
+            {#if TRI.includes(n)}<circle cx={x} cy={y} r="17.5" class="tri" />{/if}
+            <circle cx={x} cy={y} r="12.5" class="dot {center(n)}" />
+            <text x={x} y={y + 4.5} text-anchor="middle" class="num">{n}</text>
+            <text x={lx} y={y0} text-anchor={anchor} class="name" class:on={TRI.includes(n)}><tspan class="the" x={lx}>The</tspan><tspan x={lx} dy="13.5">{NAMES[n]}</tspan></text>
+          {/each}
+        </svg>
+        <div class="side">
+          <ul class="legend">
+            {#each CENTERS as c (c.key)}
+              <li><span class="sw {c.key}"></span><span><span class="fx-k">{c.key} center</span> <span class="lt">{c.types.join(" · ")}</span><small>{c.note}</small></span></li>
+            {/each}
+            <li><span class="sw ring"></span><span><span class="fx-k">example tritype</span> <span class="lt on">127</span></span></li>
+          </ul>
+          <h3 class="fx-k sub">How your result is built</h3>
+          <dl class="fx-dl">
+            <dt class="fx-k">Core type</dt><dd><code>1</code></dd><dd>your main type</dd>
+            <dt class="fx-k">Wing</dt><dd><code>1w2</code></dd><dd>a type next to the core: type 1 can have wing 9 or wing 2</dd>
+            <dt class="fx-k">Tritype</dt><dd><code>127</code></dd><dd>one type per center: 1 (gut) · 2 (heart) · 7 (head)</dd>
+            <dt class="fx-k">Instincts</dt><dd><code>so/sx/sp</code></dd><dd>social first · one-to-one second · self-preservation last</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="fx-cap">Colours mark the three centers. Your result starts from one core type.</p>
     </div>
-    <h3 class="sub">How your Enneagram result is built:</h3>
-    <div class="dg-table built">
-      <div class="dg-row"><span class="dg-label">Core type</span><code>1</code><span>your main type</span></div>
-      <div class="dg-row"><span class="dg-label">Wing</span><code>1w2</code><span>a type next to the core: type 1 can have wing 9 or wing 2</span></div>
-      <div class="dg-row"><span class="dg-label">Tritype</span><code>127</code><span>one type per center: 1 (gut) · 2 (heart) · 7 (head)</span></div>
-      <div class="dg-row"><span class="dg-label">Instincts</span><code>so/sx/sp</code><span>social first · one-to-one second · self-preservation last</span></div>
-    </div>
-    <p class="dg-note">The circle shows the nine types, and the colors show the three centers. Your result starts with one core type. The table shows the other parts it adds.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -126,18 +164,31 @@
 </TypologyLayout>
 
 <style>
-  .en { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem 2rem; }
-  .en svg { width: min(100%, 360px); height: auto; }
-  .ring { fill: none; stroke: var(--rust); stroke-width: 1.5; stroke-dasharray: 3 2; }
-  .dot { stroke: var(--white); stroke-width: 2; }
-  .gut { fill: var(--rust); background: var(--rust); }
-  .heart { fill: var(--teal); background: var(--teal); }
-  .head { fill: var(--tan); background: var(--tan); }
+  .en { --gut: var(--rust); --heart: var(--teal-dark); --head: #9a7656;
+    display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 1fr); gap: var(--fx-5); align-items: center; }
+  .en svg { width: 100%; max-width: 460px; height: auto; justify-self: center; overflow: visible; }
+  .band { fill: none; stroke-width: 3; }
+  .band.gut { stroke: var(--gut); } .band.heart { stroke: var(--heart); } .band.head { stroke: var(--head); }
+  .inner { fill: none; stroke: var(--meta); stroke-width: 0.8; opacity: 0.45; }
+  .arrow { fill: var(--meta); opacity: 0.6; }
+  .dot { stroke: #fffaf4; stroke-width: 2; }
+  .dot.gut { fill: var(--gut); } .dot.heart { fill: var(--heart); } .dot.head { fill: var(--head); }
+  .tri { fill: none; stroke: var(--text); stroke-width: 1.75; }
   .num { fill: var(--white); font: bold 13px var(--font-head); }
-  .name { fill: var(--text); font: 11px var(--font-body); }
-  .centers { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; font: 12.5px/1.4 var(--font-body); }
-  .centers small { color: var(--meta); margin-left: 1.3rem; }
-  .sw { display: inline-block; width: 0.8rem; height: 0.8rem; margin-right: 0.5rem; vertical-align: -1px; border-radius: 50%; }
-  .ring-sw { border: 1.5px dashed var(--rust); }
-  .built :global(.dg-row) { grid-template-columns: 6rem 5.5rem minmax(0, 1fr); }
+  .name { fill: var(--text); font: 12.5px var(--font-body); }
+  .name.on { font-weight: bold; }
+  .the { fill: var(--meta); font-size: 10.5px; font-weight: normal; }
+  .cname { font: 9px var(--font-head); letter-spacing: 0.04em; text-transform: lowercase; }
+  .cname.gut { fill: var(--gut); } .cname.heart { fill: var(--heart); } .cname.head { fill: var(--head); }
+  .legend { list-style: none; padding: 0; display: grid; gap: var(--fx-2); }
+  .legend li { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); align-items: baseline; }
+  .legend small { display: block; font-size: 11px; color: var(--meta); }
+  .sw { width: 10px; height: 10px; border-radius: 50%; }
+  .sw.gut { background: var(--gut); } .sw.heart { background: var(--heart); } .sw.head { background: var(--head); }
+  .sw.ring { box-sizing: border-box; border: 1.75px solid var(--text); width: 12px; height: 12px; }
+  .sub { margin: var(--fx-5) 0 var(--fx-3) !important; }
+  @media (max-width: 760px) {
+    .en { grid-template-columns: 1fr; gap: var(--fx-4); }
+    .sub { margin-top: var(--fx-4) !important; }
+  }
 </style>

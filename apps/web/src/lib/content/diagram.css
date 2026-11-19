@@ -1,20 +1,42 @@
-/* Shared figure styles for the "What it measures" diagrams. Imported by the page components. */
-.dg-table { display: grid; border: 1px solid var(--panel-border); background: var(--white); font: 12.5px/1.45 var(--font-body); }
-.dg-row { display: grid; gap: 0.6rem; padding: 0.4rem 0.6rem; border-top: 1px solid var(--panel-border); align-items: baseline; }
-.dg-row:first-child { border-top: 0; }
-.dg-head { background: var(--cream-dark); font: bold 10px var(--font-head); text-transform: lowercase; letter-spacing: 0.02em; color: var(--rust); }
-.dg-letter { display: inline-block; min-width: 1.6rem; text-align: center; font: bold 13px var(--font-mono); color: var(--white); background: var(--teal); padding: 0 0.2rem; }
-a.dg-letter:hover { background: var(--teal-dark); text-decoration: none; }
-.dg-label { font: bold 10px var(--font-head); text-transform: lowercase; letter-spacing: 0.02em; color: var(--rust); }
-.dg-note { font: 12px/1.6 var(--font-body); color: var(--meta); margin: 0.6rem 0 0; }
-.dg-track { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); font: 12px/1.4 var(--font-body); }
-.dg-track li { display: grid; gap: 0.15rem; padding: 0.4rem 0.5rem; border-top: 4px solid var(--rust); position: relative; }
-.dg-track li:nth-child(2) { border-top-color: var(--rust-light); }
-.dg-track li:nth-child(3) { border-top-color: var(--tan); }
-.dg-track li:nth-child(4) { border-top-color: var(--rule); }
-.dg-track b { font: bold 13px var(--font-head); color: var(--rust); }
-.dg-track small { font-size: 10px; color: var(--meta); }
+/* Shared figure styles for the "What it measures" panels. Imported by the page components.
+ *
+ * One visual language (prefix fx-), used by all seven systems:
+ *   type   – 11px label (caps, tracked, regular, --meta) · 13px body · 24px example code. Two weights only.
+ *   space  – 4 / 8 / 12 / 20 / 32 px (--fx-1 … --fx-5).
+ *   colour – --text for content, --meta for labels and notes, --panel-border for hairlines,
+ *            --rust ONLY for the example and the letters it uses. Teal and tan only where a system
+ *            needs categories (the Enneagram centers).
+ *   letters – monospace, bold, no fill. `.lt.on` = this letter is in the example (rust + underline).
+ */
+.fx {
+  --fx-1: 4px; --fx-2: 8px; --fx-3: 12px; --fx-4: 20px; --fx-5: 32px;
+  --fx-line: var(--panel-border);
+  font: 13px/1.5 var(--font-body); color: var(--text);
+}
+.fx :where(h3, p, ul, ol, dl, dd) { margin: 0; }
+
+/* Labels: the quiet voice. */
+.fx-k { font: 11px/1.3 var(--font-head); font-weight: normal; letter-spacing: 0.02em; text-transform: lowercase; color: var(--meta); }
+
+/* Example line: the loud voice, same place in every panel. */
+.fx-ex { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--fx-1) var(--fx-3); margin-bottom: var(--fx-4); }
+.fx-code { font: bold 24px/1.1 var(--font-mono); letter-spacing: 0.08em; color: var(--rust); }
+
+/* Letter codes. */
+.lt { font: bold 13px/1 var(--font-mono); color: var(--text); text-decoration: none; }
+a.lt:hover { color: var(--rust); text-decoration: underline; }
+.lt.on { color: var(--rust); text-decoration: underline 2px; text-underline-offset: 3px; }
+
+/* Shared "how the code is built" list: label · code · meaning. */
+.fx-dl { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: var(--fx-2) var(--fx-3); align-items: baseline; }
+.fx-dl dt { grid-column: 1; }
+.fx-dl code { font: bold 13px var(--font-mono); color: var(--rust); }
+
+/* Caption: one short line, set as an annotation. */
+.fx-cap { margin-top: var(--fx-4) !important; max-width: 62ch; font: 12px/1.5 var(--font-body); color: var(--meta); }
+
 @media (max-width: 760px) {
-  .dg-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dg-scroll { overflow-x: auto; }
+  .fx-code { font-size: 20px; }
+  .fx-dl { grid-template-columns: max-content minmax(0, 1fr); }
+  .fx-dl dt { grid-column: 1 / -1; margin-top: var(--fx-1); }
 }

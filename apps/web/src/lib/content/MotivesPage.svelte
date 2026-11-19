@@ -14,6 +14,8 @@
     ["1", "M", "A", "A", "strong"], ["2", "O", "C", "|O|", "strongest"], ["3", "T", "H", "X", "middle"], ["4", "I", "W", "I", "strong"],
     ["5", "V", "D", "V", "strong"], ["6", "E", "R", "R", "strong"], ["7", "S", "G", "g", "medium"],
   ];
+  /** True when the example letter in this column is this pole (1 = high, 2 = low). Strength marks and case are ignored. */
+  const isOn = (c: string[], i: 1 | 2) => c[3]!.replace(/\|/g, "").toUpperCase() === c[i];
 </script>
 
 <TypologyLayout {t} {result} title="MOTIVES"
@@ -38,15 +40,16 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="dg-scroll">
+    <div class="fx">
+      <p class="fx-ex"><span class="fx-k">Example</span><code class="fx-code">{COLS.map(c => c[3]).join("")}</code></p>
       <div class="mo" role="table" aria-label="The seven MOTIVES positions with an example">
-        <div class="mo-row" role="row"><span class="dg-label" role="rowheader">Position</span>{#each COLS as c (c[0])}<b role="cell">{c[0]}</b>{/each}</div>
-        <div class="mo-row" role="row"><span class="dg-label" role="rowheader">High pole</span>{#each COLS as c (c[0])}<a class="dg-letter" role="cell" href={g}>{c[1]}</a>{/each}</div>
-        <div class="mo-row" role="row"><span class="dg-label" role="rowheader">Low pole</span>{#each COLS as c (c[0])}<a class="dg-letter low" role="cell" href={g}>{c[2]}</a>{/each}</div>
-        <div class="mo-row ex" role="row"><span class="dg-label" role="rowheader">Example</span>{#each COLS as c (c[0])}<span role="cell"><code>{c[3]}</code><small>{c[4]}</small></span>{/each}</div>
+        <div class="mo-row" role="row"><span class="fx-k" role="rowheader">Position</span>{#each COLS as c (c[0])}<span class="fx-k" role="cell">{c[0]}</span>{/each}</div>
+        <div class="mo-row" role="row"><span class="fx-k" role="rowheader">High pole</span>{#each COLS as c (c[0])}<a class="lt" class:on={isOn(c, 1)} role="cell" href={g}>{c[1]}</a>{/each}</div>
+        <div class="mo-row low" role="row"><span class="fx-k" role="rowheader">Low pole</span>{#each COLS as c (c[0])}<a class="lt" class:on={isOn(c, 2)} role="cell" href={g}>{c[2]}</a>{/each}</div>
+        <div class="mo-row ex" role="row"><span class="fx-k" role="rowheader">Example</span>{#each COLS as c (c[0])}<span role="cell"><code>{c[3]}</code><small>{c[4]}</small></span>{/each}</div>
       </div>
+      <p class="fx-cap">One letter per column; the marks around it show its strength.</p>
     </div>
-    <p class="dg-note">Each column is one trait with two poles. Your code takes one letter from each column. The example row shows how the code writes strength.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -103,19 +106,19 @@
 </TypologyLayout>
 
 <style>
-  .mo { display: grid; gap: 0.3rem; min-width: 30rem; font: 12px/1.3 var(--font-body); }
-  .mo-row { display: grid; grid-template-columns: 6rem repeat(7, minmax(0, 1fr)); gap: 0.4rem; align-items: center; justify-items: center; }
+  .mo { display: grid; row-gap: var(--fx-2); }
+  .mo-row { display: grid; grid-template-columns: 6rem repeat(7, minmax(0, 1fr)); align-items: baseline; justify-items: center; }
   .mo-row > :first-child { justify-self: start; }
-  .mo :global(.dg-letter) { width: 2.2rem; line-height: 1.8; }
-  .mo .low { background: var(--tan); }
-  .ex span { display: grid; justify-items: center; }
-  .ex code { font: bold 15px var(--font-mono); }
-  .ex small { font-size: 10px; color: var(--meta); }
+  .mo .lt { font-size: 17px; }
+  .low { padding-top: var(--fx-2); border-top: 1px solid var(--fx-line); }
+  .low .lt:not(.on) { color: var(--meta); font-weight: normal; }
+  .ex { margin-top: var(--fx-3); }
+  .ex span { display: grid; justify-items: center; gap: 2px; }
+  .ex code { font: bold 17px var(--font-mono); color: var(--rust); }
+  .ex small { font-size: 11px; color: var(--meta); }
   @media (max-width: 760px) {
-    .mo { min-width: 0; gap: 0.25rem; }
-    .mo-row { grid-template-columns: 4.6rem repeat(7, minmax(0, 1fr)); gap: 0.2rem; }
-    .mo :global(.dg-letter) { width: 100%; min-width: 0; }
-    .ex code { font-size: 13px; }
-    .ex small { font-size: 8.5px; text-align: center; }
+    .mo-row { grid-template-columns: 3.6rem repeat(7, minmax(0, 1fr)); }
+    .mo-row > :first-child { font-size: 10px; }
+    .ex small { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; }
   }
 </style>

@@ -11,10 +11,10 @@
   let { t, result }: { t: Typology; result: Snippet<[unknown, number]> } = $props();
   const g = "/glossary#ap";
   const ROWS = [
-    ["1st", "strong", "CONFIDENT", "sure, firm, shows it freely", "V", "Volition"],
-    ["2nd", "strong", "FLEXIBLE", "skilled, listens, adapts to others", "L", "Logic"],
-    ["3rd", "weak", "INSECURE", "sensitive, easily hurt, wants to improve", "E", "Emotion"],
-    ["4th", "weak", "INDIFFERENT", "low priority, does not worry about it", "F", "Physics"],
+    ["1st", "strong", "confident", "sure, firm, shows it freely", "V", "Volition"],
+    ["2nd", "strong", "flexible", "skilled, listens, adapts to others", "L", "Logic"],
+    ["3rd", "weak", "insecure", "sensitive, easily hurt, wants to improve", "E", "Emotion"],
+    ["4th", "weak", "indifferent", "low priority, does not worry about it", "F", "Physics"],
   ];
 </script>
 
@@ -40,17 +40,21 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="dg-table ap" role="table" aria-label="The four Attitudinal Psyche positions">
-      <div class="dg-row dg-head" role="row"><span role="columnheader">Position</span><span role="columnheader">Strength</span><span role="columnheader">Attitude</span><span role="columnheader">Example: V L E F</span></div>
-      {#each ROWS as [pos, str, att, desc, l, name] (pos)}
-        <div class="dg-row" class:split={pos === "3rd"} role="row">
-          <b role="cell">{pos}</b><span role="cell" class:weak={str === "weak"} class="str">{str}</span>
-          <span role="cell"><b>{att}:</b> {desc}</span>
-          <span role="cell"><a class="dg-letter" href={g}>{l}</a> {name}</span>
-        </div>
-      {/each}
+    <div class="fx">
+      <p class="fx-ex"><span class="fx-k">Example</span><code class="fx-code">V L E F</code></p>
+      <div class="ap" role="table" aria-label="The four Attitudinal Psyche positions">
+        <div class="ap-row ap-head" role="row"><span class="fx-k" role="columnheader">Position</span><span class="fx-k" role="columnheader">Strength</span><span class="fx-k" role="columnheader">Attitude</span><span class="fx-k" role="columnheader">Example</span></div>
+        {#each ROWS as [pos, str, att, desc, l, name] (pos)}
+          <div class="ap-row" class:split={pos === "3rd"} role="row">
+            <span class="pos" role="cell">{pos}</span>
+            <span class="fx-k" class:strong={str === "strong"} role="cell">{str}</span>
+            <span role="cell"><b class="att">{att}</b> {desc}</span>
+            <span class="exl" role="cell"><a class="lt on" href={g}>{l}</a> <span>{name}</span></span>
+          </div>
+        {/each}
+      </div>
+      <p class="fx-cap">Top two positions are strong, bottom two weak. The example is one of 24 orders.</p>
     </div>
-    <p class="dg-note">The top two positions are strong: you feel sure in these areas. The bottom two are weak: you feel unsure or you do not care. The example is one of the 24 orders.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -86,13 +90,20 @@
 </TypologyLayout>
 
 <style>
-  .ap :global(.dg-row) { grid-template-columns: 4rem 4.5rem minmax(0, 1.6fr) minmax(0, 1fr); }
-  .str { font-size: 11px; text-transform: lowercase; letter-spacing: 0.02em; color: var(--rust); }
-  .str.weak { color: var(--meta); }
-  .ap :global(.dg-row.split) { border-top: 2px solid var(--tan); }
+  .ap-row { display: grid; grid-template-columns: 3.5rem 5rem minmax(0, 1fr) 9rem; column-gap: var(--fx-3); padding: var(--fx-2) 0; align-items: baseline; }
+  .ap-head { padding-top: 0; }
+  .split { border-top: 1px solid var(--fx-line); margin-top: var(--fx-2); padding-top: var(--fx-3); }
+  .pos { font: bold 13px var(--font-head); }
+  .strong { color: var(--text); }
+  .att { font: bold 12px var(--font-head); margin-right: var(--fx-1); }
+  .exl .lt { font-size: 16px; margin-right: var(--fx-1); }
+  .exl span { color: var(--meta); }
   @media (max-width: 760px) {
-    .ap :global(.dg-row) { grid-template-columns: 3rem 4rem minmax(0, 1fr); }
-    .ap :global(.dg-row > :last-child) { grid-column: 3; }
-    .ap :global(.dg-head > :last-child) { display: none; }
+    .ap-head { display: none; }
+    .ap-row { grid-template-columns: 3rem minmax(0, 1fr) 4.5rem; row-gap: 2px; }
+    .ap-row > :nth-child(2) { grid-column: 1; grid-row: 2; }
+    .ap-row > :nth-child(3) { grid-column: 2; grid-row: 1 / span 2; }
+    .ap-row > :nth-child(4) { grid-column: 3; grid-row: 1; text-align: right; }
+    .exl span { display: block; font-size: 11px; }
   }
 </style>

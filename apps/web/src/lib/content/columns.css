@@ -8,7 +8,7 @@
 .duo section:last-child { margin-bottom: 0.4rem; }
 .cols :is(.sec-head, .sub) { break-after: avoid; }
 .cols :is(.arrow-row, .chip-row, .sub) { break-inside: avoid; }
-:is(.cols, .duo, .fig) .sec-head { font: bold 15px/1.3 Georgia, "Times New Roman", serif; color: var(--rust); text-transform: uppercase; letter-spacing: 0.03em; }
+:is(.cols, .duo, .fig) .sec-head { font: bold 15px/1.3 Georgia, "Times New Roman", serif; color: var(--rust); text-transform: none; }
 :is(.cols, .duo) .sub { font: bold 12px Georgia, serif; color: var(--rust); margin: 0.6rem 0 0.3rem; }
 :is(.cols, .duo) code { color: var(--rust); }
 @media (max-width: 760px) { .cols { column-count: 1; } .duo { grid-template-columns: minmax(0, 1fr); } }

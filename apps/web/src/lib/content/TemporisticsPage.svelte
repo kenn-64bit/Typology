@@ -41,18 +41,26 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="dg-table tp" role="table" aria-label="The four aspects of Temporistics">
-      <div class="dg-row dg-head" role="row"><span role="columnheader">Aspect</span><span role="columnheader">Letter</span><span role="columnheader">The question it answers</span><span role="columnheader">Linked to</span></div>
-      {#each ROWS as r (r.letter)}
-        <div class="dg-row" role="row"><b role="cell">{r.aspect}</b><span role="cell"><a class="dg-letter" href={g}>{r.letter}</a></span><span role="cell" class="q">{r.q}</span><span role="cell">{r.linked}</span></div>
-      {/each}
+    <div class="fx">
+      <p class="fx-ex"><span class="fx-k">Example</span><code class="fx-code">{EXAMPLE.map(e => e[1][0]).join("")}</code></p>
+      <div class="tp" role="table" aria-label="The four aspects of Temporistics">
+        <div class="col keys" aria-hidden="true"><span class="fx-k">Aspect</span><span class="fx-k">The question it answers</span><span class="fx-k">Linked to</span></div>
+        {#each ROWS as r (r.letter)}
+          <div class="col" role="row">
+            <span role="rowheader"><a class="lt big" href={g}>{r.letter}</a> <span class="fx-k">{r.aspect}</span></span>
+            <span role="cell" class="q">{r.q}</span>
+            <span role="cell" class="linked">{r.linked}</span>
+          </div>
+        {/each}
+      </div>
+      <h3 class="fx-k sub">Energy, in the example's order</h3>
+      <ol class="track" aria-label="Positions from most energy to least energy">
+        {#each EXAMPLE as [pos, ex], i (pos)}
+          <li style="--w: {4 - i}px"><span class="fx-k">{pos}{#if i === 0} · most energy{:else if i === 3} · least energy{/if}</span><span><a class="lt on" href={g}>{ex.slice(0, 1)}</a> {ex.slice(2)}</span></li>
+        {/each}
+      </ol>
+      <p class="fx-cap">Your type orders the four questions from most to least thought about.</p>
     </div>
-    <ol class="dg-track" aria-label="Positions from most energy to least energy">
-      {#each EXAMPLE as [pos, ex], i (pos)}
-        <li><b>{pos}</b>{#if i === 0}<small>most energy</small>{:else if i === 3}<small>least energy</small>{/if}<span><small>example:</small> <a class="dg-letter" href={g}>{ex.slice(0, 1)}</a> {ex.slice(2)}</span></li>
-      {/each}
-    </ol>
-    <p class="dg-note">Each aspect answers one question about your life. Your type puts the four questions in order, from the one you think about most to the one you think about least.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -87,11 +95,21 @@
 </TypologyLayout>
 
 <style>
-  .tp :global(.dg-row) { grid-template-columns: 6rem 3.5rem minmax(0, 1fr) minmax(0, 1.4fr); }
-  .q { font-weight: bold; color: var(--rust); }
+  .tp { display: grid; grid-template-columns: 8rem repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); column-gap: var(--fx-4); }
+  .col { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: var(--fx-2); }
+  .keys > :first-child { align-self: end; }
+  .big { font-size: 20px; margin-right: var(--fx-1); }
+  .q { color: var(--text); }
+  .linked { font-size: 12px; color: var(--meta); }
+  .sub { margin: var(--fx-5) 0 var(--fx-3) !important; }
+  .track { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--fx-3); }
+  .track li { display: grid; gap: var(--fx-1); padding-top: var(--fx-2); border-top: var(--w) solid var(--rust); }
+  .track .lt { font-size: 16px; }
   @media (max-width: 760px) {
-    .tp :global(.dg-row) { grid-template-columns: 5rem 2.5rem minmax(0, 1fr); }
-    .tp :global(.dg-row > :last-child) { grid-column: 3; }
-    .tp :global(.dg-head > :last-child) { display: none; }
+    .tp { grid-template-columns: 1fr 1fr; gap: var(--fx-4) var(--fx-3); }
+    .keys { display: none; }
+    .col { grid-row: auto; grid-template-rows: none; }
+    .track { column-gap: var(--fx-2); }
+    .track .fx-k { font-size: 10px; }
   }
 </style>

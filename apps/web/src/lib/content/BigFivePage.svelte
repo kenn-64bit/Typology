@@ -53,19 +53,23 @@
   {/snippet}
 
   {#snippet figure()}
-    <div class="bf" role="table" aria-label="The five SLOAN positions, from low to high">
-      <div class="bf-row bf-head" role="row"><span></span><span role="columnheader">low</span><span class="bf-arrow" aria-hidden="true">Example: <code>{exampleFor(t.slug)}</code></span><span role="columnheader" class="r">high</span></div>
-      {#each POS as p, i (p.n)}
-        <div class="bf-row" role="row">
-          <span class="dg-label" role="rowheader">Position {p.n}</span>
-          <span role="cell"><a class="dg-letter" href={g}>{p.lo[0]}</a> {p.lo[1]}</span>
-          <span class="bf-line" aria-hidden="true"><span style="left: {MARKS[i] ?? 50}%"></span></span>
-          <span role="cell" class="r">{p.hi[1]} <a class="dg-letter" href={g}>{p.hi[0]}</a></span>
-        </div>
-      {/each}
-      <div class="bf-row" aria-hidden="true"><span></span><span></span><span class="bf-mid">middle = X</span><span></span></div>
+    <div class="fx">
+      <p class="fx-ex"><span class="fx-k">Example</span><code class="fx-code">{exampleFor(t.slug)}</code></p>
+      <div class="bf" role="table" aria-label="The five SLOAN positions, from low to high">
+        <div class="bf-row bf-head" role="row"><span></span><span class="fx-k r" role="columnheader">low</span><span></span><span class="fx-k" role="columnheader">high</span></div>
+        {#each POS as p, i (p.n)}
+          {@const m = MARKS[i] ?? 50}
+          <div class="bf-row" role="row">
+            <span class="fx-k" role="rowheader">Position {p.n}</span>
+            <span class="r" role="cell">{p.lo[1]} <a class="lt" class:on={m < 50} href={g}>{p.lo[0]}</a></span>
+            <span class="bf-line" aria-hidden="true"><span style="left: {m}%"></span></span>
+            <span role="cell"><a class="lt" class:on={m > 50} href={g}>{p.hi[0]}</a> {p.hi[1]}</span>
+          </div>
+        {/each}
+        <div class="bf-row" aria-hidden="true"><span></span><span></span><span class="bf-mid fx-k">middle = X</span><span></span></div>
+      </div>
+      <p class="fx-cap">The letter shows your side of the middle; the dot shows how far.</p>
     </div>
-    <p class="dg-note">Each trait is a scale. Most people score near the middle on most traits. The letter shows your side of the middle. The marker shows how far from the middle you are.</p>
   {/snippet}
 
   {#snippet parts()}
@@ -113,20 +117,22 @@
 </TypologyLayout>
 
 <style>
-  .bf { display: grid; gap: 0.35rem; font: 12.5px/1.4 var(--font-body); }
-  .bf-row { display: grid; grid-template-columns: 6.5rem 9.5rem minmax(4rem, 1fr) 9.5rem; gap: 0.6rem; align-items: center; }
-  .bf-head { font: bold 10px var(--font-head); letter-spacing: 0.02em; color: var(--rust); }
-  .bf-arrow { text-align: center; color: var(--meta); letter-spacing: 0; }
-  .bf-arrow code { color: var(--rust); font-size: 12px; }
+  .bf { display: grid; row-gap: var(--fx-3); }
+  .bf-row { display: grid; grid-template-columns: 6.5rem 10rem minmax(6rem, 1fr) 10rem; column-gap: var(--fx-3); align-items: center; }
+  .bf-head { margin-bottom: calc(-1 * var(--fx-2)); }
   .r { text-align: right; }
-  .bf-line::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--meta); opacity: 0.5; }
-  .bf-line { position: relative; height: 10px; background: linear-gradient(90deg, var(--cream-dark), var(--tan), var(--cream-dark)); }
-  .bf-line span { position: absolute; z-index: 1; top: -3px; width: 4px; height: 16px; margin-left: -2px; background: var(--rust); }
-  .bf-mid { position: relative; text-align: center; font-size: 10px; color: var(--meta); line-height: 1.2; padding-top: 6px; }
-  .bf-mid::before { content: ""; position: absolute; left: 50%; top: 0; height: 5px; border-left: 1px solid var(--meta); }
+  .bf .lt { font-size: 15px; }
+  .bf-line { position: relative; height: 1px; background: var(--fx-line); }
+  .bf-line::before { content: ""; position: absolute; left: 50%; top: -4px; width: 1px; height: 9px; background: var(--tan); }
+  .bf-line span { position: absolute; top: -4.5px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--rust); }
+  .bf-mid { text-align: center; margin-top: calc(-1 * var(--fx-2)); }
   @media (max-width: 760px) {
-    .bf-row { grid-template-columns: 1fr 1fr; }
-    .bf-row > :first-child { grid-column: 1 / -1; }
-    .bf-line, .bf-arrow, .bf-mid { grid-column: 1 / -1; }
+    .bf { row-gap: var(--fx-4); }
+    .bf-head { display: none; }
+    .bf-row { grid-template-columns: 1fr 1fr; row-gap: var(--fx-2); }
+    .bf-row > :first-child, .bf-mid { grid-column: 1 / -1; }
+    .bf-row .r { text-align: left; }
+    .bf-row > :last-child { text-align: right; }
+    .bf-line { grid-column: 1 / -1; grid-row: 3; }
   }
 </style>

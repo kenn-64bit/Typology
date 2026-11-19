@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick, untrack, type Snippet } from "svelte";
+  import { onMount, setContext, tick, untrack, type Snippet } from "svelte";
   import type { Explanation, ItemView, Response } from "@typo/engine-sdk";
   import { app } from "./app.svelte.ts";
   import { LOADERS, type AnyEngine } from "./engines.ts";
@@ -24,6 +24,20 @@
   let exitDlg: HTMLDialogElement | undefined = $state();
   let scroller: HTMLDivElement | undefined = $state();
 
+
+  // Disclaimers from the result components (results/Note.svelte) are collected here and shown once, at the end.
+  const notes = $state<{ list: string[] }>({ list: [] });
+  setContext("result-notes", notes);
+
+  /** Splits an evidence answer ("“text” — Agree (reverse-keyed)") into its parts for display. The text itself is unchanged. */
+  function parts(answer: string) {
+    const rev = answer.endsWith(" (reverse-keyed)");
+    const a = rev ? answer.slice(0, -" (reverse-keyed)".length) : answer;
+    const k = a.lastIndexOf(" — ");
+    return k < 0 ? { quote: a, resp: "", rev } : { quote: a.slice(0, k), resp: a.slice(k + 3), rev };
+  }
+  /** Weights always with a sign and two decimals: +0.20, −0.13. */
+  const weight = (d: number) => `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(2)}`;
 
   const answeredCount = $derived(form.filter(v => answers[v.id] !== undefined).length);
   const left = $derived(form.length - answeredCount);
@@ -104,22 +118,38 @@
         <p>Loading…</p>
       {:else if result}
         <section class="results" aria-label="Your result">
-          <div class="result-body">{@render resultView(result, form.length)}</div>
-          <h3 class="post-title">Answers that decided this result</h3>
-          {#each explanations as ex (ex.output)}
-            <section class="mini">
-              <h4 class="mini-head">{ex.output}: {ex.result}</h4>
-              {#if ex.topEvidence.length}
-                <ul>{#each ex.topEvidence as e (e.itemId)}<li>{e.answer}{#if e.delta}<span class="meta">&nbsp;({e.delta > 0 ? "+" : ""}{e.delta})</span>{/if}</li>{/each}</ul>
-              {/if}
-              {#if ex.runnerUp}<p class="meta">Runner-up: {ex.runnerUp.result} ({Math.round(ex.runnerUp.confidence * 100)}%)</p>{/if}
-            </section>
-          {/each}
-          <p class="meta">The question weights are estimates. They are not yet checked against real data.</p>
-          <p class="actions">
+          {@render resultView(result, form.length)}
+          <section class="rs-sec" aria-labelledby="rs-ev">
+            <h3 class="rs-h" id="rs-ev">Answers that decided this result</h3>
+            <div class="rs-ev">
+              {#each explanations as ex (ex.output)}
+                <div>
+                  <h4 class="rs-group-h"><span class="rs-k">{ex.output}</span><code>{ex.result}</code></h4>
+                  {#if ex.topEvidence.length}
+                    <ul class="rs-quotes">
+                      {#each ex.topEvidence as e (e.itemId)}
+                        {@const a = parts(e.answer)}
+                        <li><span>{a.quote}{#if a.resp}{" "}<span class="rs-ans">— {a.resp}</span>{/if}{#if a.rev}<span class="rs-tag">reverse-keyed</span>{/if}</span>
+                          <span class="rs-w">{#if e.delta}<span class="rs-sr">weight </span>{weight(e.delta)}{/if}</span></li>
+                      {/each}
+                    </ul>
+                  {/if}
+                  {#if ex.runnerUp}<p class="rs-runner">Runner-up: <code>{ex.runnerUp.result}</code> ({Math.round(ex.runnerUp.confidence * 100)}%)</p>{/if}
+                </div>
+              {/each}
+            </div>
+          </section>
+          <section class="rs-sec rs-notes" aria-labelledby="rs-notes">
+            <h3 class="rs-k" id="rs-notes">notes</h3>
+            <ul>
+              {#each notes.list as n (n)}<li>{n}</li>{/each}
+              <li>The question weights are estimates. They are not yet checked against real data.</li>
+            </ul>
+          </section>
+          <div class="rs-actions">
             <button class="btn tan" onclick={restart}>Retake</button>
             <button class="btn" onclick={close}>Done</button>
-          </p>
+          </div>
         </section>
       {:else}
         <div class="intro-line">
@@ -188,33 +218,32 @@
   .quiz::backdrop { background: transparent; }
   .frame-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr); height: 100%; }
   /* side strips dim the page behind, in the same tone as the exit dialog's backdrop */
-  .glass { background: rgb(40 15 5 / 0.35); }
+  .glass { background: rgb(40 15 5 / 0.45); }
   /* the modal column is styled like the site: rust header bar + cream panel with a double inner rule */
   /* one short fade for both dialogs */
   .quiz[open], .exit[open] { animation: fade-in var(--dur) var(--ease-out); }
   @keyframes fade-in { from { opacity: 0; } }
-  .colwrap { display: flex; flex-direction: column; min-height: 0; height: 100%; box-shadow: 0 0 22px rgb(0 0 0 / 0.35); }
+  .colwrap { display: flex; flex-direction: column; min-height: 0; height: 100%; background: var(--c-surface); box-shadow: 0 0 24px rgb(40 15 5 / 0.3); }
   .column {
     position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-    background: var(--cream); border: 1px solid #f6dcc6; border-top: 0;
-    box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 4px #e9cbb3;
-    padding: 1.2rem clamp(16px, 4vw, 48px) calc(6rem + env(safe-area-inset-bottom));
-    scrollbar-width: thin; scrollbar-color: var(--tan) var(--cream);
+    background: var(--c-surface); color: var(--c-ink);
+    padding: 1.4rem clamp(16px, 5vw, 56px) calc(3rem + env(safe-area-inset-bottom));
+    scrollbar-width: thin; scrollbar-color: var(--c-line) var(--c-surface);
   }
-  .progress { height: 8px; background: var(--sky); box-shadow: inset 0 1px 2px rgb(30 70 90 / 0.3); }
-  .progress > span { display: block; height: 100%; background: var(--teal); transition: width 250ms var(--ease-out); }
+  .progress { flex: none; height: 3px; background: var(--c-track); }
+  .progress > span { display: block; height: 100%; background: var(--c-accent); transition: width 250ms var(--ease-out); }
 
   .qhead {
     flex: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-    background: var(--rust-texture); padding: 0.7rem clamp(16px, 4vw, 48px);
-    border-bottom: 3px solid var(--tan);
+    background: var(--c-surface); padding: 0.75rem clamp(16px, 5vw, 56px);
   }
-  .qtitle { font: 2rem/1.1 var(--font-logo); color: var(--cream); text-shadow: 1px 1px 0 rgb(0 0 0 / 0.3); }
+  .qtitle { margin: 0; font: bold 1.2rem/1.2 var(--font-head); color: var(--c-brand); }
   .x {
-    flex: none; display: grid; place-items: center; width: 38px; height: 38px; color: var(--cream); background: rgb(0 0 0 / 0.12);
-    border: 1px solid rgb(255 255 255 / 0.5); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+    flex: none; display: grid; place-items: center; width: 40px; height: 40px; margin-right: -10px; color: var(--c-ink); background: transparent;
+    border: 0; border-radius: 2px; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
   }
-  .x:hover { background: var(--cream); color: var(--rust); }
+  .x:hover { background: var(--c-track); }
+  .x:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 0; }
   .intro-line { color: var(--meta); margin: 0 0 1.2rem; text-align: center; }
 
   .qlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6rem; }
@@ -249,8 +278,6 @@
 
   .submit { margin-top: 2rem; padding-top: 1rem; border-top: 3px double var(--rule); text-align: center; }
   .btn.big { font-size: 12px; padding: 0.55rem 1.8rem; }
-  .results { display: grid; gap: 0.6rem; }
-  .result-body { padding: 0.4rem 0 0.6rem; }
   .actions { display: flex; gap: 0.8rem; justify-content: flex-end; flex-wrap: wrap; }
 
   .exit {
@@ -266,11 +293,9 @@
   .btn.leave:hover { color: var(--white); background: var(--rust); border-color: var(--rust); }
 
   @media (max-width: 760px) {
-    .frame-cols { grid-template-columns: 10px minmax(0, 1fr) 10px; }
     .likert { gap: 4px; }
     .box { font-size: 9.5px; padding: 0.2rem; }
-    .qtitle { font-size: 1.6rem; }
-    .column { border: 0; box-shadow: none; }
+    .frame-cols { grid-template-columns: 0 minmax(0, 1fr) 0; }
   }
   @media (prefers-reduced-motion: reduce) { .box, .progress > span { transition: none; } .quiz, .exit { animation: none !important; } .box:active { transform: none; } }
   .intro-line p { max-width: 34rem; margin: 0 auto; }
