@@ -1,15 +1,15 @@
 /* Serif text with red capital headings.
    .cols: two flowing text columns (glossary). .duo: two fixed grid columns (typology pages),
    so a heading never shares its line with text from the other column. */
-.cols, .duo { font: 12.5px/1.65 var(--font-body); letter-spacing: 0; color: #222; }
+.cols, .duo { font: var(--fs-base)/1.65 var(--font-body); letter-spacing: 0; color: #222; }
 .cols { column-count: 2; column-gap: 2.4rem; }
 .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2.4rem; align-items: start; }
 :is(.cols, .duo) section { margin-bottom: 1.3rem; }
 .duo section:last-child { margin-bottom: 0.4rem; }
 .cols :is(.sec-head, .sub) { break-after: avoid; }
 .cols :is(.arrow-row, .chip-row, .sub) { break-inside: avoid; }
-:is(.cols, .duo, .fig) .sec-head { font: bold 15px/1.3 Georgia, "Times New Roman", serif; color: var(--rust); text-transform: none; }
-:is(.cols, .duo) .sub { font: bold 12px Georgia, serif; color: var(--rust); margin: 0.6rem 0 0.3rem; }
+:is(.cols, .duo, .fig) .sec-head { font: bold var(--fs-lg)/1.3 Georgia, "Times New Roman", serif; color: var(--rust); text-transform: none; }
+:is(.cols, .duo) .sub { font: bold var(--fs-base) Georgia, serif; color: var(--rust); margin: 0.6rem 0 0.3rem; }
 /* Faint divider between blocks: above every sub-heading except the first in its section. */
 :is(.cols, .duo) .sub:not(:first-of-type) { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid rgb(59 48 43 / 0.14); }
 :is(.cols, .duo) code { color: var(--rust); }

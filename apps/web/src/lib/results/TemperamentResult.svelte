@@ -42,8 +42,8 @@
   .ax { text-align: center; }
   .side { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
   .grid { position: relative; display: grid; grid-template-columns: 1fr 1fr; }
-  .cell { margin: 0; padding: 18px 10px; display: grid; justify-items: center; gap: 2px; font-size: 12.5px; color: var(--c-muted); }
-  .cell b { font: bold 14px var(--font-mono); color: var(--c-ink); }
+  .cell { margin: 0; padding: 18px 10px; display: grid; justify-items: center; gap: 2px; font-size: var(--fs-base); color: var(--c-muted); }
+  .cell b { font: bold var(--fs-md) var(--font-mono); color: var(--c-ink); }
   .cell.top, .cell.top b { color: var(--c-brand); }
   .tl, .tr { border-bottom: 1px solid var(--c-line); }
   .tl, .bl { border-right: 1px solid var(--c-line); }

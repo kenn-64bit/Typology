@@ -176,15 +176,15 @@
   .dot { stroke: #fcfaf5; stroke-width: 2; }
   .dot.gut { fill: var(--gut); } .dot.heart { fill: var(--heart); } .dot.head { fill: var(--head); }
   .tri { fill: none; stroke: var(--text); stroke-width: 1.75; }
-  .num { fill: var(--white); font: bold 13px var(--font-head); }
-  .name { fill: var(--text); font: 12.5px var(--font-body); }
+  .num { fill: var(--white); font: bold var(--fs-md) var(--font-head); }
+  .name { fill: var(--text); font: var(--fs-base) var(--font-body); }
   .name.on { font-weight: bold; }
-  .the { fill: var(--meta); font-size: 10.5px; font-weight: normal; }
-  .cname { font: 9px var(--font-head); letter-spacing: 0.04em; text-transform: lowercase; }
+  .the { fill: var(--meta); font-size: var(--fs-xs); font-weight: normal; }
+  .cname { font: var(--fs-xs) var(--font-head); letter-spacing: 0.04em; text-transform: lowercase; }
   .cname.gut { fill: var(--gut); } .cname.heart { fill: var(--heart); } .cname.head { fill: var(--head); }
   .legend { list-style: none; padding: 0; display: grid; gap: var(--fx-2); }
   .legend li { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); align-items: baseline; }
-  .legend small { display: block; font-size: 11px; color: var(--meta); }
+  .legend small { display: block; font-size: var(--fs-sm); color: var(--meta); }
   .sw { width: 10px; height: 10px; border-radius: 50%; }
   .sw.gut { background: var(--gut); } .sw.heart { background: var(--heart); } .sw.head { background: var(--head); }
   .sw.ring { box-sizing: border-box; border: 1.75px solid var(--text); width: 12px; height: 12px; }

@@ -103,12 +103,12 @@
   .jg { display: grid; grid-template-columns: 9rem minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--fx-4); }
   .jg > * { padding: var(--fx-3) 0; border-top: 1px solid var(--fx-line); }
   .jg > :nth-child(-n + 3) { border-top: 0; padding-top: 0; }
-  .jg small { display: block; font: 11px/1.4 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--meta); }
+  .jg small { display: block; font: var(--fs-sm)/1.4 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--meta); }
   .cell { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: var(--fx-2); align-items: baseline; }
-  .fa { font-size: 15px; }
+  .fa { font-size: var(--fs-lg); }
   .sub { margin-top: var(--fx-5) !important; margin-bottom: var(--fx-3) !important; }
   .parts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--fx-2) var(--fx-3); align-items: baseline; }
-  .parts code { font: bold 13px var(--font-mono); color: var(--rust); }
+  .parts code { font: bold var(--fs-md) var(--font-mono); color: var(--rust); }
   @media (max-width: 760px) {
     .jg { grid-template-columns: 1fr 1fr; column-gap: var(--fx-3); }
     .jg > :first-child { display: none; }

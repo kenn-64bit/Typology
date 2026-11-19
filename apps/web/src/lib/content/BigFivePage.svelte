@@ -121,7 +121,7 @@
   .bf-row { display: grid; grid-template-columns: 6.5rem 10rem minmax(6rem, 1fr) 10rem; column-gap: var(--fx-3); align-items: center; }
   .bf-head { margin-bottom: calc(-1 * var(--fx-2)); }
   .r { text-align: right; }
-  .bf .lt { font-size: 15px; }
+  .bf .lt { font-size: var(--fs-lg); }
   .bf-line { position: relative; height: 1px; background: var(--fx-line); }
   .bf-line::before { content: ""; position: absolute; left: 50%; top: -4px; width: 1px; height: 9px; background: var(--tan); }
   .bf-line span { position: absolute; top: -4.5px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--rust); }

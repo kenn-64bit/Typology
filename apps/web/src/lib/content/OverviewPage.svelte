@@ -73,7 +73,7 @@
 
 <style>
   .card { border: 1px solid var(--panel-border); background: rgb(255 255 255 / 0.25); padding: 0.9rem 1rem 1rem; }
-  .lead { margin: 0.2rem 0 0.8rem 1.1rem; font-size: 13px; }
+  .lead { margin: 0.2rem 0 0.8rem 1.1rem; font-size: var(--fs-md); }
   /* The seven systems: rows sit on the page; one hairline between rows. Teal = links, rust = codes, text colour = evidence. */
   .sys { width: 100%; border-collapse: collapse; margin-top: var(--fx-2); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -81,26 +81,26 @@
   .sys :is(th, td):last-child { padding-right: 0; }
   .sys thead th { border-top: 0; padding-top: 0; padding-bottom: var(--fx-2); }
   .sys tbody tr:first-child > * { border-top-color: var(--tan); }
-  .name { font: bold 14px var(--font-head); color: var(--text); text-decoration: none; white-space: nowrap; }
+  .name { font: bold var(--fs-md) var(--font-head); color: var(--text); text-decoration: none; white-space: nowrap; }
   .name::after { content: " →"; color: var(--teal-dark); opacity: 0; transition: opacity var(--dur-fast); }
   .name:is(:hover, :focus-visible) { color: var(--teal-dark); text-decoration: underline; text-underline-offset: 3px; }
   .name:is(:hover, :focus-visible)::after { opacity: 1; }
-  .code code { font: bold 13px var(--font-mono); letter-spacing: 0.04em; color: var(--rust); white-space: nowrap; }
-  .desc { font-size: 12.5px; color: var(--meta); }
+  .code code { font: bold var(--fs-md) var(--font-mono); letter-spacing: 0.04em; color: var(--rust); white-space: nowrap; }
+  .desc { font-size: var(--fs-base); color: var(--meta); }
   .ev { white-space: nowrap; }
-  .ev a { display: inline-flex; align-items: center; gap: var(--fx-2); font-size: 12px; color: var(--text); text-decoration: none; }
+  .ev a { display: inline-flex; align-items: center; gap: var(--fx-2); font-size: var(--fs-base); color: var(--text); text-decoration: none; }
   .ev a:is(:hover, :focus-visible) { color: var(--teal-dark); text-decoration: underline; }
   .bar { display: inline-flex; gap: 2px; }
   .bar span { width: 10px; height: 6px; background: var(--cream-dark); }
   .bar span.on { background: var(--text); }
-  .legend { display: grid; gap: 0.2rem; margin-left: 1.1rem; font-size: 11px; }
+  .legend { display: grid; gap: 0.2rem; margin-left: 1.1rem; font-size: var(--fs-sm); }
   .l-row { display: grid; grid-template-columns: 4.5rem auto minmax(0, 1fr); gap: 0.6rem; align-items: center; cursor: help; }
-  .l-word { font: bold 10px var(--font-head); letter-spacing: 0.02em; color: var(--meta); }
+  .l-word { font: bold var(--fs-xs) var(--font-head); letter-spacing: 0.02em; color: var(--meta); }
   .l-bar { display: flex; gap: 2px; }
   .l-bar span { width: 18px; height: 9px; background: var(--cream-dark); }
   .l-bar span.on { background: var(--text); }
-  .steps { margin: 0 0 0 1.1rem; padding-left: 1.2rem; display: grid; gap: 0.5rem; font-size: 13px; }
-  .steps li::marker { font: bold 12px var(--font-head); color: var(--teal-dark); }
+  .steps { margin: 0 0 0 1.1rem; padding-left: 1.2rem; display: grid; gap: 0.5rem; font-size: var(--fs-md); }
+  .steps li::marker { font: bold var(--fs-base) var(--font-head); color: var(--teal-dark); }
   @media (max-width: 760px) {
     .sys, .sys tbody, .sys tr, .sys th, .sys td { display: block; }
     .sys thead { display: none; }

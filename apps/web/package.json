@@ -11,6 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/pt-sans": "^5.3.0",
+    "@fontsource/tinos": "^5.3.0",
     "@typo/bio": "workspace:*",
     "@typo/engine-ap": "workspace:*",
     "@typo/engine-bigfive": "workspace:*",

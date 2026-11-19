@@ -86,16 +86,16 @@
   .top { text-align: center; padding-bottom: var(--fx-2); }
   .side { align-self: center; padding-right: var(--fx-3); }
   .tg .lt { margin-left: var(--fx-1); }
-  .q { display: grid; gap: var(--fx-1); padding: var(--fx-4) var(--fx-3); text-align: center; color: var(--meta); font-size: 12.5px; }
-  .q b { font: bold 15px var(--font-head); letter-spacing: 0.02em; text-transform: lowercase; color: var(--text); }
+  .q { display: grid; gap: var(--fx-1); padding: var(--fx-4) var(--fx-3); text-align: center; color: var(--meta); font-size: var(--fs-base); }
+  .q b { font: bold var(--fs-lg) var(--font-head); letter-spacing: 0.02em; text-transform: lowercase; color: var(--text); }
   .q:hover { text-decoration: none; }
   .q:hover b { color: var(--rust); }
   .tl, .tr { border-bottom: 1px solid var(--fx-line); }
   .tl, .bl { border-right: 1px solid var(--fx-line); }
   @media (max-width: 760px) {
     .tg { grid-template-columns: 4.6rem minmax(0, 1fr) minmax(0, 1fr); }
-    .side { font-size: 10px; padding-right: var(--fx-2); }
-    .q { padding: var(--fx-3) var(--fx-2); font-size: 11.5px; }
-    .q b { font-size: 12px; }
+    .side { font-size: var(--fs-xs); padding-right: var(--fx-2); }
+    .q { padding: var(--fx-3) var(--fx-2); font-size: var(--fs-sm); }
+    .q b { font-size: var(--fs-base); }
   }
 </style>

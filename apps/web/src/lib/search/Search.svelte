@@ -64,9 +64,9 @@
   .kw-results li { list-style: none; }
   .kw-results a { display: grid; gap: 1px; padding: 0.35rem 0.4rem; color: #1e2a30; text-decoration: none; border-radius: 2px; }
   .kw-results li.on a, .kw-results a:hover { background: rgb(31 93 116 / 0.1); }
-  .r-title { font: bold 11.5px var(--font-head); color: #173f4f; }
-  .r-where { font-size: 10px; color: #4d6a75; }
-  .r-snip { font-size: 10.5px; line-height: 1.45; color: #333; overflow-wrap: anywhere; }
+  .r-title { font: bold var(--fs-sm) var(--font-head); color: #173f4f; }
+  .r-where { font-size: var(--fs-xs); color: #4d6a75; }
+  .r-snip { font-size: var(--fs-xs); line-height: 1.45; color: #333; overflow-wrap: anywhere; }
   .r-snip mark { background: rgb(240 190 70 / 0.55); color: inherit; padding: 0 1px; }
-  .none { padding: 0.35rem 0.4rem; font-size: 11px; color: #4d6a75; overflow-wrap: anywhere; }
+  .none { padding: 0.35rem 0.4rem; font-size: var(--fs-sm); color: #4d6a75; overflow-wrap: anywhere; }
 </style>

@@ -41,6 +41,6 @@
   .fn .rs-lt.rs-muted { color: var(--c-muted); }
   .mbti { margin-top: 18px; }
   .mbti .rs-k { margin-right: 10px; }
-  .mbti .rs-lt { font-size: 13px; }
+  .mbti .rs-lt { font-size: var(--fs-md); }
   @media (max-width: 760px) { .fn { grid-template-columns: minmax(0, 1fr) auto; } .fn .rs-name { white-space: normal; } .fn .rs-val:empty { display: none; } }
 </style>

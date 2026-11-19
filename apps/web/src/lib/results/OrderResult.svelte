@@ -32,8 +32,8 @@
 {#if caveat}<Note text={caveat} />{/if}
 <style>
   .order { list-style: none; margin: 0; padding: 0; display: grid; }
-  .order li { display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 8px 0; font-size: 13px; }
-  .order .rs-lt { font-size: 20px; }
-  .avg { font-size: 11.5px; }
+  .order li { display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 8px 0; font-size: var(--fs-md); }
+  .order .rs-lt { font-size: var(--fs-xl); }
+  .avg { font-size: var(--fs-sm); }
   @media (max-width: 760px) { .order li { grid-template-columns: 2rem minmax(0, 1fr); } .avg { grid-column: 2; } }
 </style>

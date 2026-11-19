@@ -94,10 +94,10 @@
   .ap-row { display: grid; grid-template-columns: 3.5rem 5rem minmax(0, 1fr) 9rem; column-gap: var(--fx-3); padding: var(--fx-2) 0; align-items: baseline; }
   .ap-head { padding-top: 0; }
   .split { border-top: 1px solid var(--fx-line); margin-top: var(--fx-2); padding-top: var(--fx-3); }
-  .pos { font: bold 13px var(--font-head); }
+  .pos { font: bold var(--fs-md) var(--font-head); }
   .strong { color: var(--text); }
-  .att { font: bold 12px var(--font-head); margin-right: var(--fx-1); }
-  .exl .lt { font-size: 16px; margin-right: var(--fx-1); }
+  .att { font: bold var(--fs-base) var(--font-head); margin-right: var(--fx-1); }
+  .exl .lt { font-size: var(--fs-lg); margin-right: var(--fx-1); }
   .exl span { color: var(--meta); }
   @media (max-width: 760px) {
     .ap-head { display: none; }
@@ -105,6 +105,6 @@
     .ap-row > :nth-child(2) { grid-column: 1; grid-row: 2; }
     .ap-row > :nth-child(3) { grid-column: 2; grid-row: 1 / span 2; }
     .ap-row > :nth-child(4) { grid-column: 3; grid-row: 1; text-align: right; }
-    .exl span { display: block; font-size: 11px; }
+    .exl span { display: block; font-size: var(--fs-sm); }
   }
 </style>

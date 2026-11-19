@@ -49,5 +49,5 @@
   .ev section { scroll-margin-top: 1rem; }
   .ev p { margin: 0; }
   .ev .sub a { color: inherit; }
-  .note { font-size: 12px; color: var(--meta); margin: 0; }
+  .note { font-size: var(--fs-base); color: var(--meta); margin: 0; }
 </style>

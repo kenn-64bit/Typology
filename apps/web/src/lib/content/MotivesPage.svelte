@@ -109,16 +109,16 @@
   .mo { display: grid; row-gap: var(--fx-2); }
   .mo-row { display: grid; grid-template-columns: 6rem repeat(7, minmax(0, 1fr)); align-items: baseline; justify-items: center; }
   .mo-row > :first-child { justify-self: start; }
-  .mo .lt { font-size: 17px; }
+  .mo .lt { font-size: var(--fs-lg); }
   .low { padding-top: var(--fx-2); border-top: 1px solid var(--fx-line); }
   .low .lt:not(.on) { color: var(--meta); font-weight: normal; }
   .ex { margin-top: var(--fx-3); }
   .ex span { display: grid; justify-items: center; gap: 2px; }
-  .ex code { font: bold 17px var(--font-mono); color: var(--rust); }
-  .ex small { font-size: 11px; color: var(--meta); }
+  .ex code { font: bold var(--fs-lg) var(--font-mono); color: var(--rust); }
+  .ex small { font-size: var(--fs-sm); color: var(--meta); }
   @media (max-width: 760px) {
     .mo-row { grid-template-columns: 3.6rem repeat(7, minmax(0, 1fr)); }
-    .mo-row > :first-child { font-size: 10px; }
-    .ex small { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; }
+    .mo-row > :first-child { font-size: var(--fs-xs); }
+    .ex small { writing-mode: vertical-rl; transform: rotate(180deg); font-size: var(--fs-xs); }
   }
 </style>
