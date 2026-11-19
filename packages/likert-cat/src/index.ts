@@ -20,12 +20,14 @@ export function createLikertCat(cfg: { items: LikertItem[]; scales: readonly str
   const scaleOf = (id: string) => byId.get(id)?.scale;
 
   function estimate(answers: LikertAnswer[], scale: string, priorMean = 0, skip?: string) {
-    const rows = answers.filter(a => a.itemId !== skip && scaleOf(a.itemId) === scale).map(a => {
+    // Sorted by item id so the likelihood product is identical for any answer order.
+    const rows = answers.filter(a => a.itemId !== skip && scaleOf(a.itemId) === scale)
+      .sort((p, q) => p.itemId.localeCompare(q.itemId)).map(a => {
       const it = byId.get(a.itemId)!;
       return { a: it.a, b: it.b, x: a.x, reverse: it.reverse };
     });
     const e = eap(rows, priorMean);
-    return { ...e, n: rows.length, pHigh: pAboveMedian(e.theta, e.se), percentile: Math.round(100 * pAboveMedian(e.theta, 1)) };
+    return { ...e, level: pAboveMedian(e.theta, 1), n: rows.length, pHigh: pAboveMedian(e.theta, e.se), percentile: Math.round(100 * pAboveMedian(e.theta, 1)) };
   }
 
   function done(answers: LikertAnswer[], scale: string, priorMean = 0): boolean {

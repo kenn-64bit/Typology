@@ -13,7 +13,7 @@ export interface StepDef {
 export const STEPS: StepDef[] = [
   { id: "bigfive", num: "1", title: "Big Five", engine: "bigfive", slots: ["sloan"], example: "/R/LOA[I]", estItems: "15–25", evidence: "strong",
     blurb: "Five well-studied traits, written as a SLOAN code. Its Extraversion and Neuroticism feed later steps." },
-  { id: "motives", num: "2", title: "MOTIVES", engine: "motives", slots: ["motives"], example: "A|O|XIVRg", estItems: "10–21", evidence: "exploratory",
+  { id: "motives", num: "2", title: "MOTIVES", engine: "motives", slots: ["motives"], example: "A|O|XIVRg", estItems: "28", evidence: "exploratory",
     blurb: "Seven bipolar traits in the fixed order M-O-T-I-V-E-S. Uses your Big Five result as a head start." },
   { id: "temperament", num: "3", title: "Temperament", engine: "temperament", slots: ["temperament"], example: "phleg [dom]", estItems: "2", evidence: "exploratory",
     blurb: "Derived from Big Five Extraversion × Neuroticism, plus two confirm items (pure or blend)." },

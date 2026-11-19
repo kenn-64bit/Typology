@@ -21,9 +21,21 @@ export const THRESHOLDS = {
    * never used to reject or rescore answers. Provisional expert cutoffs.
    */
   quality: { agreeMean: 3.75, disagreeMean: 2.25, minPerSide: 2 },
-  motives: { strong: 0.8, medium: 0.6 },                         // p of high pole (mirrored for low)
+  /**
+   * MOTIVES case and bars (MO-01, MO-03). Units: MODEL percentile Φ(θ) as a fraction (score level, not certainty).
+   * Uppercase at ≥ strong (or ≤ 1 − strong), lowercase at ≥ medium (or ≤ 1 − medium), else X.
+   * Bars mark one trait only when its distance from 0.5 exceeds every other trait's by ≥ dominanceGap; otherwise no
+   * bars and the leading traits are reported as tied candidates. All provisional, unpiloted.
+   */
+  motives: { strong: 0.8, medium: 0.6, dominanceGap: 0.05 },
   temperament: { blendCut: 0.2 },                                // runner-up prob below this = "[dom]"
   /** Prior strength when one engine reads another's published result (placeholder r, from pilot data later). */
+  /**
+   * Prior policy (X-04): "independent" = cross-engine Big Five priors are NOT applied to scoring. The coefficients
+   * below describe an unvalidated expert mapping kept for documentation only; they omit Big Five SD and any measured
+   * cross-construct correlation, so no engine may use them until a measurement model with prior variance is justified.
+   */
+  priorPolicy: "independent" as "independent" | "mapped-mean",
   priors: { motivesFromBigFive: 0.5, jungEIFromBigFiveE: 0.6 },
   /** Expert likelihoods before calibration (SPEC §4.2 cold start). */
   likelihood: {

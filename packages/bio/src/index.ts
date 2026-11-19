@@ -64,20 +64,32 @@ export function sloanToken(levels: number[]): string {
   }).join("").replace(/\/\//g, "/");          // merge adjacent markers: /R//L/ -> /R/L/
 }
 
-// MOTIVES: fixed order M-O-T-I-V-E-S, [high, low]
+// MOTIVES: fixed order M-O-T-I-V-E-S, [high, low]. Inputs are score LEVELS Φ(θ) in [0, 1], never sign certainty.
 export const MOTIVES: [string, string][] = [["M", "A"], ["O", "C"], ["T", "H"], ["I", "W"], ["V", "D"], ["E", "R"], ["S", "G"]];
-export function motivesLetter(p: number, [hi, lo]: readonly [string, string]): string {
+export function motivesLetter(level: number, [hi, lo]: readonly [string, string]): string {
   const T = THRESHOLDS.motives;
-  if (p >= T.strong) return hi;
-  if (p <= 1 - T.strong) return lo;
-  if (p >= T.medium) return hi.toLowerCase();
-  if (p <= 1 - T.medium) return lo.toLowerCase();
+  if (level >= T.strong) return hi;
+  if (level <= 1 - T.strong) return lo;
+  if (level >= T.medium) return hi.toLowerCase();
+  if (level <= 1 - T.medium) return lo.toLowerCase();
   return "X";
 }
-export function motivesToken(p: number[]): string {
-  const dom = p.map(x => Math.abs(x - 0.5)).reduce((b, v, i, a) => (v > a[b]! ? i : b), 0);
-  return p.map((x, i) => {
+/**
+ * Index of the strongest trait, or null when no non-X trait leads every other by THRESHOLDS.motives.dominanceGap.
+ * `candidates` lists the traits within that gap of the leader (all tied leaders when unresolved).
+ */
+export function motivesDominance(levels: number[]): { index: number | null; candidates: number[] } {
+  const d = levels.map(x => Math.abs(x - 0.5));
+  const top = Math.max(...d);
+  const candidates = d.map((v, i) => [v, i] as const).filter(([v]) => top - v < THRESHOLDS.motives.dominanceGap).map(([, i]) => i);
+  const lead = candidates.length === 1 ? candidates[0]! : null;
+  const index = lead !== null && motivesLetter(levels[lead]!, MOTIVES[lead]!) !== "X" ? lead : null;
+  return { index, candidates: index === null && motivesLetter(levels[candidates[0]!]!, MOTIVES[candidates[0]!]!) === "X" ? [] : candidates };
+}
+export function motivesToken(levels: number[]): string {
+  const { index } = motivesDominance(levels);
+  return levels.map((x, i) => {
     const l = motivesLetter(x, MOTIVES[i]!);
-    return i === dom ? `|${l}|` : l;
+    return i === index ? `|${l}|` : l;
   }).join("");
 }

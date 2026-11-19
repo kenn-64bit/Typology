@@ -20,8 +20,8 @@
 
 <TypologyLayout {t} {result} title="MOTIVES"
   facts={["7 traits", "one letter each"]}
-  format="10 to 21 statements on one page"
-  extra="If you took the Big Five test first, this test asks fewer questions.">
+  format="28 statements on one page"
+  extra="This test is scored on its own answers. A Big Five result does not change it.">
 
   {#snippet overview()}
     <p>The Big Five describes how you behave. MOTIVES tries to describe why. It measures seven drives: status, new experience, order, care for others, energy, calm and loyalty to your own group.</p>
@@ -34,9 +34,9 @@
     <ChipRow label="example:"><code>{exampleFor(t.slug)}</code> This example changes each time you load the page.</ChipRow>
     <ArrowRow>The code has seven letters in a fixed order: <strong>M O T I V E S</strong>. The name MOTIVES is the seven high-pole letters. Each position shows the high-pole letter or the low-pole letter.</ArrowRow>
     <ChipRow label="Uppercase:" href={g}><strong>Strong.</strong> Example: <code>A</code>. You lean clearly to this pole.</ChipRow>
-    <ChipRow label="Lowercase:" href={g}><strong>Medium.</strong> Example: <code>g</code>. You lean to this pole, but not strongly. In some situations the other pole can show.</ChipRow>
+    <ChipRow label="Lowercase:" href={g}><strong>Medium.</strong> Example: <code>g</code>. You lean to this pole, but your score is closer to the middle.</ChipRow>
     <ChipRow label="X:" href={g}><strong>Middle.</strong> You are between the two poles.</ChipRow>
-    <ChipRow label="|bars|:" href={g}><strong>Strongest trait.</strong> Example: <code>|O|</code>. Of your seven traits, this one is furthest from the middle. Other people probably notice it first.</ChipRow>
+    <ChipRow label="|bars|:" href={g}><strong>Strongest trait.</strong> Example: <code>|O|</code>. Of your seven traits, this one is clearly furthest from the middle. If two or more traits are about equally far, no letter gets bars.</ChipRow>
   {/snippet}
 
   {#snippet figure()}
@@ -94,7 +94,7 @@
     <ArrowRow>Read the seven letters in M-O-T-I-V-E-S order. Each position is always the same trait.</ArrowRow>
     <ArrowRow>Uppercase letters are strong and lowercase letters are medium. Read the uppercase letters first, because they are your clearest motives.</ArrowRow>
     <ArrowRow><code>X</code> means you are in the middle for that position.</ArrowRow>
-    <ArrowRow>The letter between bars, such as <code>|O|</code>, is your strongest trait.</ArrowRow>
+    <ArrowRow>The letter between bars, such as <code>|O|</code>, is your strongest trait. A code without bars means no single trait stood out.</ArrowRow>
     <ArrowRow>Example: <code>A|O|XIVRg</code> is Ascetic, Offbeat (strongest), middle on order, Interpersonal, Vital, Rigid and medium Globalistic. This person cares little about status, likes the unusual, helps others and has a lot of energy, but finds it hard to relax.</ArrowRow>
   {/snippet}
 

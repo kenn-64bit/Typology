@@ -77,7 +77,7 @@ export const GLOSSARY: GlossarySection[] = [
   { id: "motives", title: "MOTIVES", intro: "Seven traits in the fixed order M-O-T-I-V-E-S. Each position has a high and a low pole.", groups: [
     { label: "Letters", rows: [
       ["M / A", "Materialistic / Ascetic"], ["O / C", "Offbeat / Conventional"], ["T / H", "Thinking / Haphazard"],
-      ["I / W", "Interpersonal / Withdrawn"], ["V / D", "Vital / Dependent"], ["E / R", "Easygoing / Rigid"], ["S / G", "Sectarian / Globalistic"]] },
+      ["I / W", "Interpersonal / Withholding"], ["V / D", "Vital / Depressed"], ["E / R", "Easygoing / Rigid"], ["S / G", "Sectarian / Globalistic"]] },
     { label: "Markers", rows: [
       ["UPPERCASE", "Strong lean"], ["lowercase", "Medium lean"], ["X", "Middle"], ["|x|", "Bars mark the dominant trait"]] }] },
   { id: "temperament", title: "Four temperaments", intro: "Read through Eysenck's Extraversion × Neuroticism grid.", groups: [
