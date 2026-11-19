@@ -7,7 +7,7 @@ export const SLOT_INFO: Record<Slot, { system: string; meaning: string }> = {
   instincts: { system: "Enneagram instincts",
     meaning: "Stacking order. so = social (belonging, group role); sx = sexual / one-to-one (intensity, chemistry); sp = self-preservation (safety, resources). The last one is the “blind spot”." },
   tritype: { system: "Enneagram tritype + core/wing",
-    meaning: "One type from each center, in order of use: gut (8-9-1), heart (2-3-4), head (5-6-7). In brackets: core type with its wing, which is always a neighbouring number." },
+    meaning: "One type from each center, in order of use: gut (8-9-1), heart (2-3-4), head (5-6-7). In brackets: core type with its wing, which is always a neighboring number." },
   temperament: { system: "Four temperaments",
     meaning: "Temperament from Eysenck's Extraversion × Neuroticism grid. [dom] = pure, with no second temperament mixed in; phleg-mel = a blend." },
   temporistics: { system: "Temporistics",
@@ -101,7 +101,7 @@ export const GLOSSARY: GlossarySection[] = [
       ["6", "Loyalist"], ["7", "Enthusiast"], ["8", "Challenger"], ["9", "Peacemaker"]] },
     { label: "Centers", rows: [["Gut", "8, 9, 1"], ["Heart", "2, 3, 4"], ["Head", "5, 6, 7"]] },
     { label: "Notation", rows: [
-      ["XwY", "Core type X with wing Y; the wing is always a neighbouring number"],
+      ["XwY", "Core type X with wing Y; the wing is always a neighboring number"],
       ["XYZ", "Tritype: one type per center, in order of use; the first digit is the core"]] },
     { label: "Instincts", rows: [
       ["sp", "Self-preservation: safety, health, resources"], ["so", "Social: belonging, group role"],

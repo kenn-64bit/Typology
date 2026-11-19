@@ -32,7 +32,7 @@
 
   onMount(() => {
     dlg?.showModal();
-    LOADERS[slug]!().then(e => { engine = e; form = e.form(e.init(app.profileSnapshot())); }).catch(err => (loadError = String(err)));
+    LOADERS[slug]!().then(e => { engine = e; form = e.form(e.init(app.profileSnapshot())); }).catch(err => { console.error(err); loadError = "The test did not load. Reload the page and try again."; });
   });
 
   $effect(() => {
@@ -65,7 +65,7 @@
   }
 
 
-  function requestClose() { if (finalState || answeredCount === 0) close(); else confirmExit = true; }
+  function requestClose() { if (finalState) close(); else confirmExit = true; }
   function close() { confirmExit = false; dlg?.close(); onclose(); }
   function restart() { answers = {}; rankPick = {}; finalState = null; scroller?.scrollTo({ top: 0 }); }
 
@@ -81,7 +81,7 @@
     const order = rankPick[item.id] ?? (answers[item.id] as string[] | undefined) ?? [];
     const k = order.indexOf(id); return k < 0 ? null : k + 1;
   };
-  const hint = (it: ItemView) => it.format === "rank" ? (/in order/i.test(it.text) ? "Tap each box in order." : "Tap in order, most like you first.") : it.format === "likert5" ? "" : "Choose one";
+  const hint = (it: ItemView) => it.format === "rank" ? (/in order/i.test(it.text) ? "Tap each box in order." : "Tap in order, most like you first. Tap a box again to undo.") : it.format === "likert5" ? "" : "Choose one.";
 </script>
 
 <dialog bind:this={dlg} class="quiz" aria-labelledby="quiz-title" oncancel={e => { e.preventDefault(); requestClose(); }}>
@@ -99,13 +99,13 @@
     <div class="column" bind:this={scroller}>
 
       {#if loadError}
-        <p role="alert">Could not load the test: {loadError}</p>
+        <p role="alert">{loadError}</p>
       {:else if !engine}
         <p>Loading…</p>
       {:else if result}
         <section class="results" aria-label="Your result">
           <div class="result-body">{@render resultView(result, form.length)}</div>
-          <h3 class="post-title">What drove this result</h3>
+          <h3 class="post-title">Answers that decided this result</h3>
           {#each explanations as ex (ex.output)}
             <section class="mini">
               <h4 class="mini-head">{ex.output}: {ex.result}</h4>
@@ -115,7 +115,7 @@
               {#if ex.runnerUp}<p class="meta">Runner-up: {ex.runnerUp.result} ({Math.round(ex.runnerUp.confidence * 100)}%)</p>{/if}
             </section>
           {/each}
-          <p class="meta">Question weights are expert placeholders until calibration.</p>
+          <p class="meta">The question weights are estimates. They are not yet checked against real data.</p>
           <p class="actions">
             <button class="btn tan" onclick={restart}>Retake</button>
             <button class="btn" onclick={close}>Done</button>
@@ -123,8 +123,7 @@
         </section>
       {:else}
         <div class="intro-line">
-          <p><strong>{form.length} questions.</strong> You can change any answer before you finish.</p>
-          {#if instructions.length}<ul class="instr">{#each instructions as s (s)}<li>{s}</li>{/each}</ul>{/if}
+          <p><strong>{form.length} questions.</strong> You can change any answer before you see your result. {instructions.join(" ")}</p>
         </div>
         <ol class="qlist">
           {#each form as item (item.id)}
@@ -161,7 +160,7 @@
         <footer class="submit">
           <button class="btn big" onclick={submit} disabled={left > 0}>See my result</button>
           {#if left > 0}
-            <p class="meta">{left} still unanswered.</p>
+            <p class="meta">{left} {left === 1 ? "question" : "questions"} not answered.</p>
           {/if}
         </footer>
       {/if}
@@ -172,11 +171,12 @@
 </dialog>
 
 <dialog bind:this={exitDlg} class="exit" aria-labelledby="exit-title" oncancel={e => { e.preventDefault(); confirmExit = false; }}>
-  <h3 id="exit-title" class="post-title">Leave the quiz?</h3>
-  <p class="warn-line"><strong>Your answers will not be saved.</strong> If you leave now, you will start over next time.</p>
-  <p class="actions">
-    <button class="btn tan" onclick={() => (confirmExit = false)}>Keep going</button>
-    <button class="btn" onclick={close}>Leave without saving</button>
+  <svg class="caution" viewBox="0 0 16 16" width="34" height="34" aria-hidden="true"><path d="M8 1l7.5 13.5H.5zm-.9 4.5v4.5h1.8V5.5zm0 5.8v1.8h1.8v-1.8z" fill="currentColor" fill-rule="evenodd" /></svg>
+  <h3 id="exit-title" class="exit-title">Leave the quiz?</h3>
+  <p class="exit-text"><strong>Your answers are not saved.</strong> If you leave now, you start again next time.</p>
+  <p class="actions exit-actions">
+    <button class="btn tan leave" onclick={close}>Leave</button>
+    <button class="btn" onclick={() => (confirmExit = false)}>Back to the quiz</button>
   </p>
 </dialog>
 
@@ -187,31 +187,22 @@
   }
   .quiz::backdrop { background: transparent; }
   .frame-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr); height: 100%; }
-  /* clear glass: the page shows through, softly blurred */
-  .glass {
-    background: rgb(255 255 255 / 0.06);
-    backdrop-filter: blur(10px) saturate(1.1); -webkit-backdrop-filter: blur(10px) saturate(1.1);
-  }
-  .glass:first-child { border-right: 1px solid rgb(255 255 255 / 0.35); }
-  .glass:last-child { border-left: 1px solid rgb(255 255 255 / 0.35); }
+  /* side strips dim the page behind, in the same tone as the exit dialog's backdrop */
+  .glass { background: rgb(40 15 5 / 0.35); }
   /* the modal column is styled like the site: rust header bar + cream panel with a double inner rule */
-  .quiz[open] .colwrap { animation: col-in 220ms var(--ease-out); }
-  .quiz[open] .glass { animation: fade-in 220ms var(--ease-out); }
-  .exit[open] { animation: exit-in var(--dur) var(--ease-out); }
-  @keyframes col-in { from { opacity: 0; transform: translateY(8px); } }
+  /* one short fade for both dialogs */
+  .quiz[open], .exit[open] { animation: fade-in var(--dur) var(--ease-out); }
   @keyframes fade-in { from { opacity: 0; } }
-  @keyframes exit-in { from { opacity: 0; transform: scale(0.97); } }
   .colwrap { display: flex; flex-direction: column; min-height: 0; height: 100%; box-shadow: 0 0 22px rgb(0 0 0 / 0.35); }
   .column {
     position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
     background: var(--cream); border: 1px solid #f6dcc6; border-top: 0;
     box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 4px #e9cbb3;
     padding: 1.2rem clamp(16px, 4vw, 48px) calc(6rem + env(safe-area-inset-bottom));
-    scrollbar-width: none;
+    scrollbar-width: thin; scrollbar-color: var(--tan) var(--cream);
   }
-  .column::-webkit-scrollbar { display: none; }
   .progress { height: 8px; background: var(--sky); box-shadow: inset 0 1px 2px rgb(30 70 90 / 0.3); }
-  .progress > span { display: block; height: 100%; background: linear-gradient(var(--teal), var(--teal-dark)); transition: width 250ms var(--ease-out); }
+  .progress > span { display: block; height: 100%; background: var(--teal); transition: width 250ms var(--ease-out); }
 
   .qhead {
     flex: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
@@ -239,17 +230,17 @@
   .wide.many > :global(*) { flex-basis: calc((100% - 12px) / 3); min-width: min(100%, 180px); }
   .box {
     position: relative; display: grid; place-items: center; text-align: center;
-    padding: 0.35rem 0.3rem; font: 10.5px/1.25 var(--font-body); color: var(--text); background: #fffaf4;
-    border: 1.5px solid #3b2b22; cursor: pointer;
+    padding: 0.35rem 0.3rem; font: 10.5px/1.25 var(--font-body); color: var(--meta); background: #f6efe9;
+    border: 1px solid var(--edge); cursor: pointer;
     transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
   .likert .box { aspect-ratio: 1 / 1; }
   .wide .box { min-height: 60px; padding: 0.55rem 0.7rem; font-size: 11px; }
   .wide.many .box { place-items: center start; text-align: left; font-size: 10.5px; }
   .wide .box:has(.rank) { padding-top: 1.45rem; }
-  .box:hover { background: var(--teal); color: var(--white); border-color: var(--teal-dark); }
+  .box:hover { background: #e3eff3; color: var(--text); border-color: var(--sky); }
   .box:active { transform: scale(0.97); }
-  .box.on { background: var(--teal-dark); color: var(--white); border-color: var(--teal-dark); }
+  .box.on { background: var(--sky); color: var(--header-dark); border-color: var(--sky-dark); }
   .box:focus-visible { outline: 3px solid var(--rust); outline-offset: 2px; }
   .rank {
     position: absolute; top: 5px; left: 5px; width: 18px; height: 18px; display: grid; place-items: center;
@@ -257,7 +248,7 @@
   }
 
   .submit { margin-top: 2rem; padding-top: 1rem; border-top: 3px double var(--rule); text-align: center; }
-  .btn.big { font-size: 13px; padding: 0.6rem 1.6rem; }
+  .btn.big { font-size: 12px; padding: 0.55rem 1.8rem; }
   .results { display: grid; gap: 0.6rem; }
   .result-body { padding: 0.4rem 0 0.6rem; }
   .actions { display: flex; gap: 0.8rem; justify-content: flex-end; flex-wrap: wrap; }
@@ -266,8 +257,13 @@
     max-width: min(26rem, calc(100vw - 2rem)); padding: 1.2rem 1.4rem; background: var(--cream); color: var(--text);
     border: 1px solid var(--panel-border); box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
   }
-  .exit::backdrop { background: rgb(40 15 5 / 0.35); backdrop-filter: blur(2px); }
-  .warn-line { background: var(--cream-dark); border-left: 3px solid var(--rust); padding: 0.5rem 0.7rem; }
+  .exit::backdrop { background: rgb(40 15 5 / 0.35); }
+  .exit { text-align: center; }
+  .caution { display: block; margin: 0 auto 0.5rem; color: var(--rust); }
+  .exit-title { font: bold 1.35rem/1.3 var(--font-head); color: var(--rust); margin: 0 0 0.4rem; }
+  .exit-text { margin: 0 0 1.1rem; }
+  .exit-actions { justify-content: center; }
+  .btn.leave:hover { color: var(--white); background: var(--rust); border-color: var(--rust); }
 
   @media (max-width: 760px) {
     .frame-cols { grid-template-columns: 10px minmax(0, 1fr) 10px; }
@@ -276,7 +272,6 @@
     .qtitle { font-size: 1.6rem; }
     .column { border: 0; box-shadow: none; }
   }
-  @media (prefers-reduced-motion: reduce) { .box, .progress > span { transition: none; } .colwrap, .glass, .exit { animation: none !important; } .box:active { transform: none; } }
-  .instr { margin: 0.3rem 0 0; padding-left: 1.2rem; }
-  .instr li { margin: 0.15rem 0; }
+  @media (prefers-reduced-motion: reduce) { .box, .progress > span { transition: none; } .quiz, .exit { animation: none !important; } .box:active { transform: none; } }
+  .intro-line p { max-width: 34rem; margin: 0 auto; }
 </style>

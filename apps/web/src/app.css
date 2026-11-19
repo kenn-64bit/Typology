@@ -32,6 +32,8 @@
 html { background: var(--rust); }
 body { background: var(--rust-texture); background-attachment: fixed; min-height: 100vh; }
 body { margin: 0; color: var(--text); font: 12px/1.65 var(--font-body); letter-spacing: 0.02em; }
+/* Un-smoothed text, like early-2000s pages. macOS browsers honor these properties. Windows and Linux use the system font settings. */
+html { -webkit-font-smoothing: none; -moz-osx-font-smoothing: auto; font-smooth: never; text-rendering: optimizeSpeed; }
 a { color: var(--teal); text-decoration: none; }
 a:hover { text-decoration: underline; }
 :focus-visible { outline: 2px solid var(--teal-dark); outline-offset: 2px; }
@@ -55,7 +57,7 @@ h1, h2, h3, h4 { margin: 0; }
 /* Post card: teal heading with a corner bracket, meta line, excerpt, read-more bar */
 .post { position: relative; padding: 0.6rem 0.6rem 0.8rem; margin-bottom: 1.2rem; }
 /* Overview cards: border appears on hover/focus */
-.post.card { border: 1px solid transparent; transition: border-color 0.15s, background-color 0.15s; }
+.post.card { border: 1px solid transparent; transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
 .post.card:hover, .post.card:focus-within { border-color: var(--panel-border); background: rgb(255 255 255 / 0.25); }
 .post.boxed { border: 1px solid var(--panel-border); background: rgb(255 255 255 / 0.25); }
 .post-title { position: relative; font: bold 1.35rem/1.3 var(--font-head); color: var(--teal); padding: 0.25rem 0 0 0.45rem; letter-spacing: 0.02em; }
@@ -72,20 +74,23 @@ h1, h2, h3, h4 { margin: 0; }
 
 /* Right inner column mini sections */
 .mini { padding-bottom: 0.9rem; margin-bottom: 1rem; border-bottom: 3px double var(--rule); }
-.mini-head { font: bold 11px var(--font-head); color: var(--teal-dark); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--rule); padding-bottom: 0.15rem; margin-bottom: 0.4rem; }
+.mini-head { font: bold 11px var(--font-head); color: var(--teal-dark); text-transform: lowercase; letter-spacing: 0.02em; border-bottom: 1px solid var(--rule); padding-bottom: 0.15rem; margin-bottom: 0.4rem; }
 .mini p { margin: 0 0 0.4rem; }
 .mini ul { margin: 0; padding-left: 1rem; }
 
 /* Buttons and form controls, in the panel's palette */
+/* Plain buttons: flat fill, thin light border, square corners.
+   .btn = main action; .btn.tan = second action. */
 .btn {
-  font: bold 11px var(--font-body); color: var(--white); background: var(--teal); border: 0;
-  padding: 0.35rem 1rem; cursor: pointer; letter-spacing: 0.04em;
+  font: bold 11px var(--font-body); color: var(--white); background: var(--teal-dark);
+  border: 1px solid var(--teal-dark); padding: 0.4rem 1.1rem; cursor: pointer; letter-spacing: 0.02em;
 }
-.btn { transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
-.btn:hover { background: var(--teal-dark); }
+.btn { transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.btn:hover { background: #2a7891; border-color: #2a7891; }
 .btn:active:not(:disabled), .read-more:active { transform: translateY(1px); }
-.btn.tan { background: var(--tan); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.tan { font-weight: normal; color: var(--text); background: #f6efe9; border-color: var(--edge); }
+.btn.tan:hover { background: #e3eff3; border-color: var(--sky); }
+.btn:disabled, .btn:disabled:hover { color: var(--meta); background: #f6efe9; border-color: var(--edge); cursor: not-allowed; }
 .text-btn { font: 11px var(--font-body); color: var(--teal); background: none; border: 0; cursor: pointer; padding: 0; }
 .text-btn:hover { text-decoration: underline; }
 .text-btn:disabled { color: var(--meta); opacity: 0.6; cursor: default; text-decoration: none; }
@@ -104,7 +109,7 @@ code, .token { font-family: var(--font-mono); font-size: 0.95em; }
 .result-code {
   display: inline-block; max-width: 100%; overflow-wrap: anywhere;
   color: var(--rust); font: bold clamp(1.6rem, 5vw, 2.4rem)/1.2 var(--font-mono);
-  padding: 0.5rem 1rem; margin: 0.3rem 0 0.2rem; background: #fffaf4; border: 1.5px solid #3b2b22;
+  padding: 0.5rem 1rem; margin: 0.3rem 0 0.2rem; background: #fffaf4; border: 1px solid var(--panel-border);
 }
 .res dt { font: bold 12px var(--font-head); color: var(--teal-dark); margin-top: 0.6rem; }
 .res dd { margin: 0; }
@@ -112,9 +117,10 @@ code, .token { font-family: var(--font-mono); font-size: 0.95em; }
 .bar > span { display: block; height: 100%; background: var(--teal); }
 .note { background: var(--cream-dark); border-left: 3px solid var(--tan); padding: 0.4rem 0.6rem; }
 
-/* No italic text anywhere on the site. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  .btn:active:not(:disabled), .read-more:active { transform: none; }
 }
 
+/* No italic text anywhere on the site. */
 em, i, cite, var, address, dfn { font-style: normal; }

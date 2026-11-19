@@ -11,7 +11,7 @@
   <dt>Core type</dt>
   <dd>{r.core}: {r.coreName}, {pct(r.coreP)} · runner-up {r.runnerUp.type} ({pct(r.runnerUp.p)})</dd>
   <dt>Wing</dt>
-  <dd>{r.core}w{r.wing}, {pct(r.wingP)}{#if r.balancedWing} · <strong>balanced</strong>: both neighbours fit about equally{/if}</dd>
+  <dd>{r.core}w{r.wing}, {pct(r.wingP)}{#if r.balancedWing} · <strong>balanced</strong>: both neighbors fit about equally{/if}</dd>
   <dt>Instincts</dt>
   <dd>{r.stacking}, {pct(r.stackingP)}</dd>
   <dt>Tritype</dt>

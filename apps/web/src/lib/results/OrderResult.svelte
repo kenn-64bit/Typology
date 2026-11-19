@@ -4,7 +4,7 @@
   let { r, answered, names }: { r: RankResult; answered: number; names: Record<string, string> } = $props();
 </script>
 
-<Header code={r.order} confidence={r.p} {answered} level="exploratory" />
+<Header code={r.order} confidence={r.p} {answered} />
 <ol class="order">
   {#each [...r.order] as a, i (a)}<li><strong>{a}</strong> · {names[a]} <span class="meta">(average place {r.positions[a]!.toFixed(1)})</span></li>{/each}
 </ol>

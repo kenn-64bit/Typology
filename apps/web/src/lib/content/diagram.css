@@ -2,11 +2,11 @@
 .dg-table { display: grid; border: 1px solid var(--panel-border); background: var(--white); font: 12.5px/1.45 var(--font-body); }
 .dg-row { display: grid; gap: 0.6rem; padding: 0.4rem 0.6rem; border-top: 1px solid var(--panel-border); align-items: baseline; }
 .dg-row:first-child { border-top: 0; }
-.dg-head { background: var(--cream-dark); font: bold 10px var(--font-head); text-transform: uppercase; letter-spacing: 0.08em; color: var(--rust); }
+.dg-head { background: var(--cream-dark); font: bold 10px var(--font-head); text-transform: lowercase; letter-spacing: 0.02em; color: var(--rust); }
 .dg-letter { display: inline-block; min-width: 1.6rem; text-align: center; font: bold 13px var(--font-mono); color: var(--white); background: var(--teal); padding: 0 0.2rem; }
 a.dg-letter:hover { background: var(--teal-dark); text-decoration: none; }
-.dg-label { font: bold 10px var(--font-head); text-transform: uppercase; letter-spacing: 0.08em; color: var(--rust); }
-.dg-note { font: 13px/1.5 Georgia, serif; color: var(--meta); margin: 0.6rem 0 0; }
+.dg-label { font: bold 10px var(--font-head); text-transform: lowercase; letter-spacing: 0.02em; color: var(--rust); }
+.dg-note { font: 12px/1.6 var(--font-body); color: var(--meta); margin: 0.6rem 0 0; }
 .dg-track { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); font: 12px/1.4 var(--font-body); }
 .dg-track li { display: grid; gap: 0.15rem; padding: 0.4rem 0.5rem; border-top: 4px solid var(--rust); position: relative; }
 .dg-track li:nth-child(2) { border-top-color: var(--rust-light); }

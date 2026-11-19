@@ -29,7 +29,7 @@
   });
 
   function deleteData() {
-    if (confirm("Delete all saved results from this browser?")) app.clearAll();
+    if (confirm("Delete all your saved results from this browser? You cannot undo this.")) app.clearAll();
   }
 </script>
 
@@ -115,13 +115,13 @@
     <div class="foot-text">
       <nav aria-label="Footer" class="foot-links"><a href="/">Overview</a> | <a href="/bigfive">Big Five</a> | <a href="/glossary">Glossary</a> | <a href="/references">References</a></nav>
       <div class="help">
-        <p><strong>Feeling depressed or thinking of harming yourself?</strong> You're not alone.</p>
+        <p><strong>If you feel depressed or think about harming yourself, talk to someone now.</strong></p>
         <p class="foot-row"><span>Philippines: NCMH Crisis Hotline <a href="tel:1553">1553</a> · <a href="tel:+639178998727">0917 899 8727</a></span>
           <span>Elsewhere: <a href="https://findahelpline.com" rel="noopener" target="_blank">findahelpline.com</a></span>
           <span>Emergency: call your local emergency number</span></p>
       </div>
-      <p class="foot-row"><span>Results describe preferences, not abilities or mental health; not for diagnosis or hiring.</span>
-        <span>Private mode: data stays in this browser</span>
+      <p class="foot-row"><span>A result describes preferences. It does not measure ability or mental health. Do not use it to diagnose or to hire.</span>
+        <span>Your answers stay in this browser. Nothing goes to a server.</span>
         <button class="foot-btn" onclick={deleteData}>Delete my data</button></p>
     </div>
     <p class="foot-mark" aria-hidden="true">Typology</p>

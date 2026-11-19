@@ -6,7 +6,7 @@
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
 
-<Header code={r.sloan} confidence={r.confidence} {answered} level="strong" />
+<Header code={r.sloan} confidence={r.confidence} {answered} />
 <dl class="res">
   {#each Object.values(r.traits) as t, i (t.trait)}
     {@const pos = SLOAN_POSITIONS[i]!}
@@ -15,4 +15,4 @@
       Letter <strong>{t.letter}</strong> ({t.letter === pos.hi[0] ? pos.hi[1] : pos.lo[1]}), {pct(Math.max(t.pHigh, 1 - t.pHigh))} sure</dd>
   {/each}
 </dl>
-<p class="meta">Percentiles compare you with the model's built-in average, not real population norms.</p>
+<p class="meta">Percentiles compare you with the test's built-in average, not with measured population norms.</p>

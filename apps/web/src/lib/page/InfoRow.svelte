@@ -7,6 +7,6 @@
 </p>
 
 <style>
-  .info-row { margin: 0 0 0.6rem; font: bold 10.5px/1.6 var(--font-head); letter-spacing: 0.08em; text-transform: uppercase; color: var(--meta); }
+  .info-row { margin: 0 0 0.6rem; font: bold 10.5px/1.6 var(--font-head); letter-spacing: 0.02em; text-transform: lowercase; color: var(--meta); }
   .sep { color: var(--tan); margin: 0 0.4em; }
 </style>

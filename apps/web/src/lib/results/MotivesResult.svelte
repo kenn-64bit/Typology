@@ -5,7 +5,7 @@
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
 
-<Header code={r.code} confidence={r.confidence} {answered} level="exploratory" />
+<Header code={r.code} confidence={r.confidence} {answered} />
 <dl class="res">
   {#each Object.entries(r.traits) as [k, t] (k)}
     <dt>{t.name}: {t.percentile}<sup>th</sup> percentile</dt>
@@ -13,4 +13,4 @@
       Leaning <strong>{t.letter}</strong>, {pct(Math.max(t.pHigh, 1 - t.pHigh))} sure</dd>
   {/each}
 </dl>
-{#if r.usedBigFive}<p class="meta">Your Big Five result gave this test a head start.</p>{/if}
+{#if r.usedBigFive}<p class="meta">Your Big Five scores were the starting point for this test.</p>{/if}

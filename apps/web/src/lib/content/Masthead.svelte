@@ -3,7 +3,7 @@
   let { title }: { title: string } = $props();
 </script>
 
-<div class="banner" role="img" aria-label="Decorative banner"></div>
+<div class="banner" aria-hidden="true"></div>
 
 <header class="mast">
   <h1 class="m-title"><span class="m-big">{title}</span></h1>

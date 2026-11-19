@@ -15,7 +15,7 @@
 
 <section class="ev">
   <div class="duo">
-    <div class="ev-head"><SectionHeading icon="info" text="Evidence for each system" /></div>
+    <div class="ev-head"><SectionHeading text="Evidence for each system" /></div>
     {#each EVIDENCE as a (a.href)}
       <section id="ev-{a.href.slice(1)}">
         <h3 class="sub"><a href={a.href}>{a.sys}</a> <span class="badge" title={BADGES[a.key].tip}>{BADGES[a.key].label}</span></h3>
@@ -30,7 +30,7 @@
 <div class="duo">
   {#each REFERENCES as g (g.id)}
     <section id={g.id}>
-      <SectionHeading icon="book" text={g.title} />
+      <SectionHeading text={g.title} />
       <ol class="refs">
         {#each g.refs as r (r.link)}
           <li>{r.text}{#if r.title} <em>{r.title}</em>{/if}{#if r.rest} {r.rest}{/if}
@@ -42,7 +42,7 @@
 </div>
 
 <Divider />
-<p class="note">Links open the source or a public summary of it. Some publisher and practitioner sites sell the tests they describe.</p>
+<p class="note">Each link opens the source or a public summary of it. Some publisher and practitioner sites sell the tests that they describe.</p>
 
 <style>
   .refs { list-style: none; margin: 0; padding: 0; }

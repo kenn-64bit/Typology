@@ -5,7 +5,7 @@
   const max = $derived(Math.max(...r.functions.map(f => f.percentile), 1));
 </script>
 
-<Header code={r.code} confidence={r.confidence} {answered} level="moderate" />
+<Header code={r.code} confidence={r.confidence} {answered} />
 <p><strong>MBTI letters:</strong>
   {#each Object.values(r.letters) as l, i (i)}{l.letter} {Math.round(l.p * 100)}%{i < 3 ? " · " : ""}{/each}</p>
 <p class="meta">As MBTI that reads {r.mbti}, whose conventional stack is {r.mbtiStack[0]}–{r.mbtiStack[1]} (interpretation only).
@@ -16,4 +16,4 @@
     <dd><span class="bar" aria-hidden="true"><span style="width: {(f.percentile / max) * 100}%"></span></span></dd>
   {/each}
 </dl>
-{#if r.usedBigFive}<p class="meta">Your Big Five Extraversion gave the E/I scale a head start.</p>{/if}
+{#if r.usedBigFive}<p class="meta">Your Big Five Extraversion score was the starting point for the E/I scale.</p>{/if}

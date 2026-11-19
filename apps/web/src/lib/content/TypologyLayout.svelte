@@ -27,37 +27,37 @@
 
 <div class="duo">
   <section class="overview">
-    <SectionHeading icon="overview" text="Overview" />
+    <SectionHeading text="Overview" />
     <InfoRow {facts} />
     {@render overview()}
-    <p><button class="link" onclick={() => (open = true)}>Test for {title}</button> · {format}</p>
+    <p><button class="link" onclick={() => (open = true)}>Take the test</button> · {format}</p>
   </section>
   <section>
-    <SectionHeading icon="key" text="Notation" />
+    <SectionHeading text="Notation" />
     {@render notation()}
   </section>
 </div>
 
 <Divider />
 <figure class="fig">
-  <SectionHeading icon="chart" text="What it measures" />
+  <SectionHeading text="What it measures" />
   {@render figure()}
 </figure>
 <Divider />
 
 <div class="duo">
   <section>
-    <SectionHeading icon="puzzle" text="Each part explained" />
+    <SectionHeading text="What each letter means" />
     {@render parts()}
   </section>
   <div>
     <section>
-      <SectionHeading icon="book" text="How to read your result" />
+      <SectionHeading text="How to read your result" />
       {@render read()}
     </section>
     <Divider />
     <section>
-      <SectionHeading icon="warning" text="Common mix-ups" />
+      <SectionHeading text="Common mix-ups" />
       {@render mixups()}
     </section>
   </div>

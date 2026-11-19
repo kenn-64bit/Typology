@@ -21,13 +21,13 @@ class AppState {
       const s = await idbGet<{ v: number } & Partial<Saved>>(KEY);
       if (s?.v === 2) { const { engineStates = {}, results = {} } = s as Saved; this.data = { v: 2, engineStates, results }; } // older saves may carry a bio: dropped
       else if (s) this.data = { ...empty(), engineStates: (s.engineStates as Record<string, string>) ?? {} }; // v1 → v2
-    } catch (e) { this.storageError = `Could not open browser storage: ${String(e)}. Nothing will be saved.`; }
+    } catch (e) { console.error(e); this.storageError = "This browser blocked storage, so your results will not be saved. Private windows often do this."; }
     this.loaded = true;
   }
 
   async save() {
     try { await idbSet(KEY, $state.snapshot(this.data)); this.storageError = null; }
-    catch (e) { this.storageError = `Could not save: ${String(e)}`; }
+    catch (e) { console.error(e); this.storageError = "Your last result was not saved. Check that this browser allows site storage."; }
   }
 
   saveEngineState(id: string, raw: string) { this.data.engineStates[id] = raw; return this.save(); }
