@@ -16,6 +16,22 @@
   const isCurrent = (href: string) => (href === "/" ? page.url.pathname === "/" : page.url.pathname.startsWith(href));
 
   let menuOpen = $state(false);
+  let folderDlg: HTMLDialogElement | undefined = $state();
+  // Folder dialog: "idle" → click → "rising" (one file leaves the folder) → "open" (the file opens as an editor window).
+  let filePhase = $state<"idle" | "rising" | "open">("idle");
+  function openFile() {
+    if (filePhase !== "idle") return;
+    filePhase = "rising";
+    setTimeout(() => { if (filePhase === "rising") filePhase = "open"; }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 520);
+  }
+  // Editor content: one array per line, each segment is [css class, text].
+  const CODE: [string, string][][] = [
+    [["cm", "// Thank you for the nerd that inspired me to make this web application."]],
+    [["cm", "// i sincerely fully appreciate you"]],
+    [["cm", "// Tho im the nerd in charge of this project."]],
+    [["cm", "// i should give credits also to you."]],
+    [["cm", "// - sx4"]],
+  ];
   // close the mobile menu after navigating
   $effect(() => { page.url.pathname; menuOpen = false; });
 
@@ -119,10 +135,50 @@
         <p>A result describes preferences. It does not measure ability or mental health. Do not use it to diagnose or to hire.</p>
         <p>Your answers stay in this browser. Nothing goes to a server.
           <a href="https://www.privacy.gov.ph/data-privacy-act/" target="_blank" rel="noopener">Data Privacy Act of 2012 (Republic Act No. 10173)<span class="sr-only"> (opens in a new tab)</span></a></p>
-        <p class="mark">© Typology</p>
+        <p class="mark"><button class="mark-btn" onclick={() => folderDlg?.showModal()} aria-haspopup="dialog">© Typology</button></p>
       </div>
     </div>
   </footer>
+
+  <!-- Folder dialog: opened from "© Typology". Esc or a click on the backdrop closes it. -->
+  <dialog bind:this={folderDlg} class="folder-dlg" class:wide={filePhase === "open"} aria-label="Typology folder" onclose={() => (filePhase = "idle")} onclick={e => { if (e.target === folderDlg) folderDlg?.close(); }}>
+    <button class="folder-x" onclick={() => folderDlg?.close()} aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3.4 2.3 8 6.9l4.6-4.6 1.1 1.1L9.1 8l4.6 4.6-1.1 1.1L8 9.1l-4.6 4.6-1.1-1.1L6.9 8 2.3 3.4z" fill="currentColor" /></svg></button>
+    {#if filePhase !== "open"}
+    <button class="folder-btn" onclick={openFile} aria-label="Open the file in the folder">
+    <svg class="folder" class:rising={filePhase === "rising"} viewBox="0 0 220 190" aria-hidden="true">
+      <defs>
+        <linearGradient id="fd-front" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#fff4c2" /><stop offset="1" stop-color="#f7d777" /></linearGradient>
+        <linearGradient id="fd-back" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9de8a" /><stop offset="1" stop-color="#eec25a" /></linearGradient>
+        <filter id="fd-shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="8" stdDeviation="6" flood-color="#3b302b" flood-opacity="0.25" /></filter>
+      </defs>
+      <g filter="url(#fd-shadow)">
+        <path class="fd-back" d="M22 40 L30 26 H82 L96 42 H192 Q198 42 198 48 V160 H22 Z" fill="url(#fd-back)" />
+        {#each [0, 1, 2] as i (i)}
+          <g class="fd-paper p{i}">
+            <rect x={44 + i * 10} y="46" width="120" height="100" rx="3" fill="#fff" stroke="#d9cfb8" stroke-width="2" />
+            {#each [0, 1, 2, 3] as l (l)}<line x1={58 + i * 10} x2={(l === 3 ? 120 : 148) + i * 10} y1={64 + l * 14} y2={64 + l * 14} stroke="#cfc6b2" stroke-width="3" stroke-linecap="round" />{/each}
+          </g>
+        {/each}
+        <g class="fd-file">
+          <rect x="64" y="40" width="96" height="112" rx="3" fill="#fff" stroke="#c8922a" stroke-width="2.5" />
+          <rect x="64" y="40" width="96" height="14" rx="3" fill="#e9eef5" />
+          {#each [0, 1, 2, 3, 4] as l (l)}<line x1="74" x2={l % 2 ? 128 : 148} y1={66 + l * 13} y2={66 + l * 13} stroke="#9fb3c8" stroke-width="3" stroke-linecap="round" />{/each}
+        </g>
+        <path class="fd-front" d="M14 82 H86 L100 68 H204 Q211 68 210 75 L198 172 H24 Z" fill="url(#fd-front)" />
+      </g>
+    </svg>
+    </button>
+    {:else}
+      <div class="editor" role="document" aria-label="index.js in a code editor">
+        <div class="ed-tabs" aria-hidden="true"><span class="on">index.js</span></div>
+        <ol class="ed-code">
+          {#each CODE as line, n (n)}
+            <li><span class="ln" aria-hidden="true">{n + 1}</span><span class="fold" aria-hidden="true"></span><code>{#each line as [c, t], k (k)}<span class={c}>{t}</span>{/each}</code></li>
+          {/each}
+        </ol>
+      </div>
+    {/if}
+  </dialog>
 </div>
 
 <style>
@@ -217,6 +273,53 @@
   .fine { font-size: 10.5px; color: var(--c-muted); }
   .fine p { margin: 0 0 4px; }
   .mark { margin-top: 6px !important; font: 11.5px Georgia, "Times New Roman", serif; color: var(--c-ink); }
+
+  .mark-btn { font: inherit; color: inherit; background: none; border: 0; padding: 2px 4px; cursor: pointer; border-radius: 2px; }
+  .mark-btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+
+  /* ---------- folder dialog ---------- */
+  .folder-dlg.wide { width: min(560px, calc(100vw - 32px)); }
+  .folder-dlg { position: fixed; inset: 0; margin: auto; width: min(200px, calc(100vw - 32px)); height: fit-content; padding: 0; border: 0; background: transparent; color: var(--white); overflow: visible; text-align: center; }
+  .folder-dlg::backdrop { background: rgb(40 15 5 / 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .folder-dlg[open] { animation: folder-in var(--dur) var(--ease-out); }
+  @keyframes folder-in { from { opacity: 0; transform: scale(0.96); } }
+  .folder-x { position: absolute; top: -6px; right: -6px; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; background: var(--c-surface); border: 0; border-radius: 50%; color: var(--c-ink); cursor: pointer; box-shadow: 0 2px 8px rgb(40 15 5 / 0.3); }
+  .folder-x:hover { background: var(--white); }
+  .folder-x:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
+  .folder-btn { display: block; margin: 0 auto; padding: 0; background: none; border: 0; cursor: pointer; border-radius: 4px; }
+  .folder-btn:focus-visible { outline: 2px solid var(--white); outline-offset: 6px; }
+  .folder { display: block; width: min(150px, 60vw); margin: 0 auto; overflow: visible; }
+  .fd-back, .fd-front { stroke: #c8922a; stroke-width: 5; stroke-linejoin: round; }
+  /* Papers sit inside the folder; on hover they rise and fan out one after another, and sink back on hover out. */
+  .fd-paper, .fd-file { transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(18px);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms; }
+  .fd-file { opacity: 0; }
+  .p1 { transition-delay: 30ms; } .p2 { transition-delay: 60ms; }
+  .fd-front { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 380ms var(--ease-out); }
+  .folder:hover .fd-paper { transition: transform 420ms cubic-bezier(0.34, 1.4, 0.64, 1); }
+  .folder:hover .p0 { transform: translateY(-34px) rotate(-9deg); transition-delay: 0ms; }
+  .folder:hover .p1 { transform: translateY(-48px) rotate(1deg); transition-delay: 60ms; }
+  .folder:hover .p2 { transform: translateY(-36px) rotate(10deg); transition-delay: 120ms; }
+  .folder:hover .fd-front { transform: skewX(-4deg) scaleY(0.95); }
+  /* Click: the papers drop back, one file rises out and grows; then the editor window takes its place. */
+  .folder.rising .fd-paper { transform: translateY(18px); transition: transform 200ms ease-in; }
+  .folder.rising .fd-file { opacity: 1; transform: translateY(-110px) scale(1.25); transition: transform 480ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 120ms; }
+  .folder.rising .fd-front { transform: skewX(-4deg) scaleY(0.95); }
+
+  /* Editor window (generic code-editor look). */
+  .editor { text-align: left; color: #1e1e1e; background: #f0f0f0; border: 1px solid #8a8a8a; border-radius: 3px; box-shadow: 0 18px 50px rgb(0 0 0 / 0.35); overflow: hidden;
+    font: 12px/1.4 var(--font-body); animation: ed-open 360ms cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: 50% 70%; }
+  @keyframes ed-open { from { opacity: 0; transform: translateY(-40px) scale(0.25); } }
+  .ed-tabs { display: flex; gap: 2px; padding: 8px 44px 0 6px; background: #e8e8e8; }
+  .ed-tabs span { padding: 3px 10px; font-size: 11px; background: #d6dbe3; border: 1px solid #b8bfc9; border-bottom: 0; border-radius: 2px 2px 0 0; color: #444; }
+  .ed-tabs span.on { background: #fff; color: #1e1e1e; border-top: 2px solid #f0a030; }
+  .ed-code { list-style: none; margin: 0; padding: 4px 0 10px; background: #fff; font: 13px/1.6 var(--font-mono); }
+  .ed-code li { display: grid; grid-template-columns: 2.6rem 1.2rem minmax(0, 1fr); align-items: stretch; }
+  .ed-code code { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 10px; }
+  .ln { padding-right: 8px; text-align: right; color: #8a8a8a; background: #f2f2f2; border-right: 1px solid #ddd; }
+  .fold { color: #8a8a8a; text-align: center; font-size: 11px; }
+  .ed-code code { font: inherit; color: #1e1e1e; }
+  .ed-code .cm { color: #008000; }
 
   /* ---------- responsive ---------- */
   @media (max-width: 1600px) and (min-width: 1001px) {
