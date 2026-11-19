@@ -10,7 +10,7 @@ export const REFERENCES: RefGroup[] = [
     { text: "Colledani, D., Anselmi, P., & Robusto, E. (2018).", title: "Using item response theory for the development of a new short form of the EPQ-R.", rest: "Frontiers in Psychology, 9, 1834.", link: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6190847/", label: "PMC" },
     { text: "Donnellan, M. B., et al. (2006).", title: "The Mini-IPIP scales: Tiny-yet-effective measures of the Big Five factors of personality.", rest: "Psychological Assessment, 18(2), 192–203.", link: "https://casrai.org/guides/ipip", label: "IPIP guide" },
     { text: "Forer, B. R. (1949).", title: "The fallacy of personal validation.", rest: "Journal of Abnormal and Social Psychology, 44(1), 118–123.", link: "https://en.wikipedia.org/wiki/Barnum_effect", label: "Overview" },
-    { text: "Gosling, S. D., Rentfrow, P. J., & Swann, W. B. (2003).", title: "A very brief measure of the Big-Five personality domains.", rest: "Journal of Research in Personality, 37(6), 504–528.", link: "https://gosling.psy.utexas.edu/?p=98", label: "TIPI page" },
+    { text: "Gosling, S. D., Rentfrow, P. J., & Swann, W. B. (2003).", title: "A very brief measure of the Big-Five personality domains.", rest: "Journal of Research in Personality, 37(6), 504–528.", link: "https://gosling.psy.utexas.edu/wp-content/uploads/2014/09/JRP-03-tipi.pdf", label: "Author PDF" },
     { text: "Hol, A. M., Vorst, H. C. M., & Mellenbergh, G. J. (2008).", title: "Computerized adaptive testing of personality traits.", rest: "Zeitschrift für Psychologie, 216(1), 12–21.", link: "https://dare.uva.nl/id/68d478f4-0b1e-4acb-806c-1fb5e461b0d0", label: "Record" },
     { text: "Hook, J. N., et al. (2021).", title: "The Enneagram: A systematic review of the literature and directions for future research.", rest: "Journal of Clinical Psychology, 77(4), 865–883.", link: "https://pubmed.ncbi.nlm.nih.gov/33332604/", label: "PubMed" },
     { text: "Johnson, J. A. (2014).", title: "Measuring thirty facets of the Five Factor Model with a 120-item public domain inventory: Development of the IPIP-NEO-120.", rest: "Journal of Research in Personality, 51, 78–89.", link: "https://ejop.psychopen.eu/index.php/ejop/article/download/1671/1671.html?inline=1", label: "Related study" },
@@ -40,3 +40,36 @@ export const REFERENCES: RefGroup[] = [
     { text: "How accurate are popular personality test frameworks at predicting life outcomes?", rest: "ClearerThinking.", link: "https://www.clearerthinking.org/post/how-accurate-are-popular-personality-test-frameworks-at-predicting-life-outcomes-a-detailed-investi", label: "ClearerThinking" },
   ] },
 ];
+
+// Open-access policy. references.test.ts enforces it.
+
+/** Hosts that give free full text without a login. A paper link must use one of these hosts, or the paper must be in FLAGGED. */
+export const OPEN_HOSTS = [
+  "pmc.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "europepmc.org", "arxiv.org", "osf.io", "psyarxiv.com", "zenodo.org",
+  "kar.kent.ac.uk", "dare.uva.nl", "www.psicothema.com", "gosling.psy.utexas.edu", "escholarship.org",
+];
+
+/** Typology websites that open without a login (checked 2026-11-19). Check a new website before you add it here. */
+export const OPEN_SITES = [
+  "wiki.personality-database.com", "research.similarminds.com", "en.wikipedia.org", "content.one.lumenlearning.com",
+  "enneagramuserguide.com", "www.enneagraminstitute.com", "katherine-fauvre.squarespace.com", "sociotype.com",
+  "sites.google.com", "www.colby.edu", "www.clearerthinking.org",
+];
+
+/** Papers with no free full text (checked 2026-11-19 in OpenAlex, Semantic Scholar, Europe PMC and doi.org).
+ *  Key: the start of the citation `text`. Value: the reason. The site owner must decide what to do with each one. */
+export const FLAGGED: Record<string, string> = {
+  "Arnau, R. C.": "Publisher (Wiley) is paywalled. No free copy found. The link goes to a record, not the full text.",
+  "Donnellan, M. B.": "Publisher (APA) is paywalled. No free copy found. The link goes to a page that is not about this paper.",
+  "Forer, B. R.": "Publisher (APA) is paywalled. No free copy found. The link goes to an overview, not the paper.",
+  "Hol, A. M.": "Publisher (Hogrefe) is paywalled. The repository page is a record with no file.",
+  "Hook, J. N.": "Publisher (Wiley) is paywalled. No free copy found. The link goes to an abstract only.",
+  "Johnson, J. A.": "Publisher (Elsevier) is paywalled. No free copy found. The link goes to a different paper.",
+  "Jung, C. G.": "The English translation is under copyright. No free full text found. The link goes to an overview.",
+  "McCrae, R. R.": "Publisher (Wiley) is paywalled. No free copy found. The link goes to an abstract only.",
+  "Newgent, R. A.": "Publisher (Taylor & Francis) is paywalled. No free copy found. The link goes to a summary.",
+  "Pittenger, D. J.": "Publisher (APA) is paywalled. No free copy found. The link goes to a blog summary.",
+  "Soto, C. J.": "Publisher (Elsevier) is paywalled. No free copy found. The link goes to a record, not the full text.",
+};
+
+export const isFlagged = (r: Ref) => Object.keys(FLAGGED).some(k => r.text.startsWith(k));
