@@ -66,6 +66,7 @@
     <ChipRow label="1w2:" href={g}><strong>Core and wing.</strong> Core type 1 with a 2 wing ("w" is for "wing"). The wing is always one of the two numbers next to the core on the circle.</ChipRow>
     <ChipRow label="127:" href={g}><strong>Tritype.</strong> One type from each center, strongest first. The first number is always your core type.</ChipRow>
     <ChipRow label="so/sx/sp:" href={g}><strong>Instinct order.</strong> Strongest first. You give the last instinct the least attention.</ChipRow>
+    <ChipRow label="sx4 (4w5):" href={g}><strong>Short forms.</strong> People often write only part of the code. "sx4 (4w5)" is the strongest instinct and core type, with the core and wing in brackets.</ChipRow>
   {/snippet}
 
   {#snippet figure()}
