@@ -30,7 +30,8 @@
     <SectionHeading text="Overview" />
     <InfoRow {facts} />
     {@render overview()}
-    <p><button class="link" onclick={() => (open = true)}>Take the test</button> · {format}</p>
+    <button class="btn take" onclick={() => (open = true)}>{title} Test</button>
+    <p class="format">{format}</p>
   </section>
   <section>
     <SectionHeading text="Notation" />
@@ -68,6 +69,7 @@
 <style>
   .fig { margin: 0; padding: 0.4rem 0 0.8rem; }
   .overview :global(p) { margin: 0 0 0.6rem; }
-  .link { font: inherit; color: var(--rust); text-decoration: underline; background: none; border: 0; padding: 0; cursor: pointer; }
-  .link:hover { color: var(--rust-dark); }
+  .take { display: block; width: 100%; margin-top: 0.4rem; color: var(--c-ink); background: var(--sky); border-color: var(--sky-dark); }
+  .take:hover { background: var(--sky-dark); border-color: var(--sky-dark); }
+  .overview .format { margin: 0.35rem 0 0; text-align: center; font-size: var(--fs-sm, 0.875rem); }
 </style>

@@ -64,7 +64,7 @@
   <SectionHeading text="How to take the tests" />
   <ol class="steps">
     <li>Start with <a href="/bigfive"><strong>Big Five</strong></a>. The Four Temperaments test can use your Big Five scores. MOTIVES is scored on its own answers.</li>
-    <li>On a system page, select <strong>Take the test</strong>. All the questions show on one page.</li>
+    <li>On a system page, select the <strong>Test</strong> button. All the questions show on one page.</li>
     <li>Answer every question. You can change an answer until you see your result.</li>
     <li>Read your result and the answers that decided it.</li>
     <li>Do the other tests in any order. Your results stay in this browser, so you can stop and come back later.</li>
