@@ -130,6 +130,7 @@ export interface JungResult {
 
 /** MBTI's conventional top-two functions for a 4-letter type (interpretation). */
 export function mbtiStack(type: string): [Func, Func] {
+  if (!/^[EI][SN][TF][JP]$/.test(type)) throw new Error(`mbtiStack needs a resolved 4-letter type, got ${type}`);
   const [ei, sn, tf, jp] = [...type] as [string, string, string, string];
   const judge = `${tf}${jp === "J" ? "e" : "i"}` as Func;        // J/P says which function is extraverted
   const perceive = `${sn}${jp === "J" ? "i" : "e"}` as Func;
@@ -167,7 +168,8 @@ function role(fs: FunctionScore[], pool: Func[]): Role {
   const T = THRESHOLDS.jung;
   const sub = pool.map(f => fs.find(x => x.f === f)!);
   const ps = pMaximum(sub.map(x => ({ mu: x.theta, sd: x.se })));
-  const ranked = sub.map((x, i) => ({ f: x.f, p: ps[i]! })).sort((a, b) => b.p - a.p);
+  const ranked = sub.map((x, i) => ({ f: x.f, p: ps[i]! }))
+    .sort((a, b) => (Math.abs(b.p - a.p) < 1e-9 ? FUNCS.indexOf(a.f) - FUNCS.indexOf(b.f) : b.p - a.p));
   const lead = ranked[0]!;
   return { f: lead.p >= T.resolveP ? lead.f : null, p: lead.p, candidates: ranked.filter(c => c.p >= T.candidateP) };
 }
@@ -177,7 +179,7 @@ function compute(s: JungState): JungResult {
   const letters = Object.fromEntries((Object.keys(SCALES) as Scale[]).map(sc => {
     const e = cat.estimate(s.answers, sc, s.prior[sc] ?? 0);
     const [hi, lo] = SCALES[sc];
-    const letter = Math.abs(e.level - 0.5) < mid ? "X" : e.level >= 0.5 ? hi : lo;
+    const letter = Math.round(Math.abs(e.level - 0.5) * 1e12) / 1e12 < mid ? "X" : e.level >= 0.5 ? hi : lo;
     return [sc, { letter, p: letter === lo ? 1 - e.pHigh : e.pHigh, percentile: e.percentile, theta: e.theta, se: e.se }];
   })) as JungResult["letters"];
   const mbti = `${letters.EI.letter}${letters.SN.letter}${letters.TF.letter}${letters.JP.letter}`;
@@ -259,6 +261,20 @@ export const jungEngine: ExamEngine<JungState, JungResult> = {
     }));
     const fn: Explanation[] = [];
     if (r.dominant.f) fn.push({ output: `Dominant: ${FUNC_NAMES[r.dominant.f]}`, result: r.dominant.f, confidence: r.dominant.p, confidenceEvent: DOM_EVENT, topEvidence: cat.evidence(s.answers, r.dominant.f) });
+    else {
+      const lead = r.dominant.candidates.map(c => c.f);
+      fn.push({
+        output: "Dominant function", result: lead.length ? `unresolved (candidates: ${lead.join(", ")})` : "unresolved",
+        confidence: r.dominant.p, confidenceEvent: DOM_EVENT, topEvidence: lead.length ? cat.evidence(s.answers, lead[0]!) : [],
+      });
+    }
+    if (r.dominant.f && !r.auxiliary.f) {
+      const lead = r.auxiliary.candidates.map(c => c.f);
+      fn.push({
+        output: "Auxiliary function", result: lead.length ? `unresolved (candidates: ${lead.join(", ")})` : "unresolved",
+        confidence: r.auxiliary.p, confidenceEvent: AUX_EVENT, topEvidence: lead.length ? cat.evidence(s.answers, lead[0]!) : [],
+      });
+    }
     if (r.auxiliary.f) fn.push({ output: `Auxiliary: ${FUNC_NAMES[r.auxiliary.f]}`, result: r.auxiliary.f, confidence: r.auxiliary.p, confidenceEvent: AUX_EVENT, topEvidence: cat.evidence(s.answers, r.auxiliary.f) });
     return [...fn, ...scales];
   },

@@ -44,6 +44,7 @@ export function plackettLuce(ranking: readonly string[], worth: Readonly<Record<
   let p = 1, remaining = ranking.reduce((s, o) => s + (worth[o] ?? 0), 0);
   for (const o of ranking.slice(0, -1)) {
     const w = worth[o] ?? 0;
+    if (!(remaining > 0) || !(w > 0)) return 0;
     p *= w / remaining;
     remaining -= w;
   }
@@ -56,7 +57,10 @@ export function plackettLuce(ranking: readonly string[], worth: Readonly<Record<
  */
 export function updateRanking(prior: Posterior, ranking: readonly string[], worthFor: (cls: string) => Record<string, number>): Posterior {
   const post: Posterior = {};
-  for (const c in prior) post[c] = prior[c]! * Math.max(plackettLuce(ranking, worthFor(c)), 1e-12);
+  for (const c in prior) {
+    const l = plackettLuce(ranking, worthFor(c));
+    post[c] = prior[c]! * (Number.isFinite(l) && l > 1e-12 ? l : 1e-12);
+  }
   return normalize(post);
 }
 

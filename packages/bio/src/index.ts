@@ -16,6 +16,8 @@ export function tokensBySlot(list: readonly BioToken[]): Partial<Record<Slot, Bi
 }
 
 // ---- per-engine token formatters ----
+/** Round away IEEE-754 subtraction drift so symmetric boundaries (0.45 / 0.55) compare identically. */
+const clean = (x: number) => Math.round(x * 1e12) / 1e12;
 type Fn = "T" | "F" | "S" | "N";
 type Att = "i" | "e";
 
@@ -51,7 +53,7 @@ export const orderToken = (order: string[]) => order.join("");
 const SLOAN_POLES: [string, string][] = [["S", "R"], ["L", "C"], ["O", "U"], ["A", "E"], ["I", "N"]];
 export type SloanStrength = "middle" | "borderline" | "clear" | "strong";
 export function sloanStrength(level: number): SloanStrength {
-  const T = THRESHOLDS.sloan, d = Math.abs(level - 0.5);
+  const T = THRESHOLDS.sloan, d = clean(Math.abs(level - 0.5));
   return d < T.middle ? "middle" : d < T.borderline ? "borderline" : d >= T.strong ? "strong" : "clear";
 }
 export function sloanToken(levels: number[]): string {
@@ -70,11 +72,11 @@ export function sloanToken(levels: number[]): string {
 // MOTIVES: fixed order M-O-T-I-V-E-S, [high, low]. Inputs are score LEVELS Φ(θ) in [0, 1], never sign certainty.
 export const MOTIVES: [string, string][] = [["M", "A"], ["O", "C"], ["T", "H"], ["I", "W"], ["V", "D"], ["E", "R"], ["S", "G"]];
 export function motivesLetter(level: number, [hi, lo]: readonly [string, string]): string {
-  const T = THRESHOLDS.motives;
-  if (level >= T.strong) return hi;
-  if (level <= 1 - T.strong) return lo;
-  if (level >= T.medium) return hi.toLowerCase();
-  if (level <= 1 - T.medium) return lo.toLowerCase();
+  const T = THRESHOLDS.motives, d = clean(level - 0.5);
+  if (d >= clean(T.strong - 0.5)) return hi;
+  if (-d >= clean(T.strong - 0.5)) return lo;
+  if (d >= clean(T.medium - 0.5)) return hi.toLowerCase();
+  if (-d >= clean(T.medium - 0.5)) return lo.toLowerCase();
   return "X";
 }
 /**
@@ -82,9 +84,9 @@ export function motivesLetter(level: number, [hi, lo]: readonly [string, string]
  * `candidates` lists the traits within that gap of the leader (all tied leaders when unresolved).
  */
 export function motivesDominance(levels: number[]): { index: number | null; candidates: number[] } {
-  const d = levels.map(x => Math.abs(x - 0.5));
+  const d = levels.map(x => clean(Math.abs(x - 0.5)));
   const top = Math.max(...d);
-  const candidates = d.map((v, i) => [v, i] as const).filter(([v]) => top - v < THRESHOLDS.motives.dominanceGap).map(([, i]) => i);
+  const candidates = d.map((v, i) => [v, i] as const).filter(([v]) => clean(top - v) < THRESHOLDS.motives.dominanceGap).map(([, i]) => i);
   const lead = candidates.length === 1 ? candidates[0]! : null;
   const index = lead !== null && motivesLetter(levels[lead]!, MOTIVES[lead]!) !== "X" ? lead : null;
   return { index, candidates: index === null && motivesLetter(levels[candidates[0]!]!, MOTIVES[candidates[0]!]!) === "X" ? [] : candidates };

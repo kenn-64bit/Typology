@@ -153,3 +153,95 @@ describe("fixed form (engine-jung)", () => {
     expect(E.next(s)).toBeNull();
   });
 });
+
+/** Exact 48-answer respondent reconstructed from Images 2, 3, 4, and 5. */
+function image2To5State() {
+  const ans: Record<string, number> = {
+    ei1: 5, ei2: 5, ei3: 1, ei4: 5, ei5: 1, ei6: 5,
+    sn1: 5, sn2: 5, sn3: 5, sn4: 5, sn5: 1, sn6: 5,
+    tf1: 1, tf2: 5, tf3: 5, tf4: 1, tf5: 5, tf6: 5,
+    jp1: 5, jp2: 5, jp3: 5, jp4: 4, jp5: 4, jp6: 3,
+    ne1: 5, ne2: 5, ne3: 5,
+    fi1: 5, fi2: 5, fi3: 4,
+    si1: 5, si2: 5, si3: 4,
+    ti1: 5, ti2: 5, ti3: 3,
+    se1: 5, se2: 5, se3: 3,
+    ni1: 5, ni2: 5, ni3: 3,
+    fe1: 5, fe2: 5, fe3: 2,
+    te1: 5, te2: 5, te3: 1,
+  };
+  let s = E.init({});
+  for (const [id, x] of Object.entries(ans)) s = E.answer(s, id, x);
+  return s;
+}
+
+describe("QA audit: Jung Images 2–5 mismatches, explanations, quality notes, and boundaries", () => {
+  it("test_jung_image2_to_5_unresolved_dominant_explain_includes_function_evidence", () => {
+    // Images 2–5: hero result is "no clear main function" (code: "unresolved"), yet explain() omits all 24 function
+    // answers and returns only the 4 separate MBTI preference scales.
+    const s = image2To5State();
+    const r = E.result(s);
+    expect(r.code).toBe("unresolved");
+    const ex = E.explain(s);
+    expect(ex.some(e => /function|dominant|Ne/i.test(e.output))).toBe(true);
+  });
+
+  it("test_jung_image4_explain_low_pole_S_and_I_ranks_supporting_answers_positive", () => {
+    // Image 4 shows e/i = I (100%) and n/s = S (96%), yet topEvidence lists E-supporting ei1 (+0.46) and
+    // N-supporting sn1/sn3 (+0.50) at the top while S/I-supporting answers appear below with negative deltas.
+    const ex = E.explain(image2To5State());
+    const ei = ex.find(e => e.output === "E / I")!;
+    const sn = ex.find(e => e.output === "N / S")!;
+    expect(ei.result).toBe("I");
+    expect(sn.result).toBe("S");
+    expect(ei.topEvidence[0]!.itemId).not.toBe("ei1");
+    expect(["sn1", "sn3"]).not.toContain(sn.topEvidence[0]!.itemId);
+  });
+
+  it("test_jung_image4_jp_resolved_preference_note_and_tf_polarized_conflict", () => {
+    // Images 2–5: J/P resolves to J, yet notes claim "J/P ... sits near the middle", while T/F is X from 3 extreme T
+    // answers cancelling 3 extreme F answers with no conflict note.
+    const r = E.result(image2To5State());
+    expect(r.letters.JP.letter).toBe("J");
+    expect(r.letters.TF.letter).toBe("X");
+    const jpNote = r.meta.quality.find(q => q.output === "J/P");
+    expect(jpNote?.message ?? "").not.toMatch(/sits near the middle/);
+    expect(r.meta.quality.some(q => q.output === "T/F")).toBe(true);
+  });
+
+  it("test_jung_mbtiStack_rejects_unresolved_X_letter", () => {
+    // Images 2–3 produce mbti = "ISXJ"; exported mbtiStack("ISXJ") must not return invalid function code "Xe".
+    expect(() => mbtiStack("ISXJ")).toThrow();
+  });
+
+  it("test_jung_image2_candidates_threshold_0_10_filters_functions", () => {
+    // Matches Images 2 & 3 breakdown: Ne (42%), Fi (14%), Si (14%) are candidates (>= 0.10); Ti/Se/Ni (7%), Fe (5%), Te (4%) excluded.
+    const r = E.result(image2To5State());
+    expect(r.mbti).toBe("ISXJ");
+    expect(r.mbtiStack).toBeNull();
+    expect(r.dominant.candidates.map(c => c.f)).toEqual(["Ne", "Fi", "Si"]);
+    expect(Math.round(r.functions.find(f => f.f === "Ne")!.pTop * 100)).toBe(42);
+    expect(r.functions.map(f => f.percentile)).toEqual([97, 91, 91, 86, 86, 86, 81, 77]);
+  });
+
+  it("test_jung_all_16_mbti_stacks_valid_functions_and_opposite_axes", () => {
+    for (const ei of ["E", "I"]) for (const sn of ["S", "N"]) for (const tf of ["T", "F"]) for (const jp of ["J", "P"]) {
+      const [dom, aux] = mbtiStack(`${ei}${sn}${tf}${jp}`);
+      expect(FUNCS).toContain(dom);
+      expect(FUNCS).toContain(aux);
+      expect(dom[1]).toBe(ei.toLowerCase());
+      expect(aux[1]).not.toBe(dom[1]);
+      const isJudge = (f: string) => f[0] === "T" || f[0] === "F";
+      expect(isJudge(dom)).not.toBe(isJudge(aux));
+    }
+  });
+
+  it("test_jung_empty_state_all_roles_and_preferences_unresolved", () => {
+    const s0 = E.init({});
+    const r = E.result(s0);
+    expect(r.code).toBe("unresolved");
+    expect(r.mbti).toBe("XXXX");
+    expect(r.meta.unresolved).toEqual(["dominant function", "E/I preference", "N/S preference", "T/F preference", "J/P preference"]);
+    expect(r.meta.quality.map(q => q.code)).toEqual(["incomplete"]);
+  });
+});

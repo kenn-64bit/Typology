@@ -100,8 +100,9 @@ export function priorFromBigFive(profile: Readonly<Record<string, unknown>>): Re
 
 const traitOf = (s: MotivesState, t: Trait): MotivesTrait => {
   const e = cat.estimate(s.answers, t, s.prior[t]);
-  const letter = motivesLetter(e.level, MOTIVES[TRAITS.indexOf(t)]!);
-  const lean = letter === "X" ? null : e.level >= 0.5 ? "high" : "low";
+  // Case follows the displayed percentile so a shown "80th" is always uppercase (MO-01).
+  const letter = motivesLetter(e.percentile / 100, MOTIVES[TRAITS.indexOf(t)]!);
+  const lean = letter === "X" ? null : e.percentile >= 50 ? "high" : "low";
   return {
     name: TRAIT_NAMES[t].join(" / "), theta: e.theta, se: e.se, percentile: e.percentile, level: e.level,
     lean, strength: letter === "X" ? "middle" : letter === letter.toUpperCase() ? "strong" : "medium",
@@ -110,6 +111,7 @@ const traitOf = (s: MotivesState, t: Trait): MotivesTrait => {
 };
 const finished = (s: MotivesState) => s.answers.length > 0 && cat.next(s.answers, s.prior) === null;
 const SIGN_EVENT = "score is above the model midpoint (θ > 0)";
+const LOW_EVENT = "score is below the model midpoint (θ < 0)";
 
 function resultMeta(s: MotivesState, traits: Record<Trait, MotivesTrait>, dominantTied: boolean): ResultMeta {
   const byId = new Map(ITEMS.map(i => [i.id, i]));
@@ -151,7 +153,7 @@ export const motivesEngine: ExamEngine<MotivesState, MotivesResult> = {
   },
   result(s) {
     const traits = Object.fromEntries(TRAITS.map(t => [t, traitOf(s, t)])) as MotivesResult["traits"];
-    const levels = TRAITS.map(t => traits[t].level);
+    const levels = TRAITS.map(t => traits[t].percentile / 100);
     const dom = motivesDominance(levels);
     const ps = TRAITS.map(t => traits[t].pHigh);
     return {
@@ -168,7 +170,8 @@ export const motivesEngine: ExamEngine<MotivesState, MotivesResult> = {
       return {
         output: r.name,
         result: r.lean ? `${r.letter} (${r.percentile}th model percentile)` : `X, no clear lean (${r.percentile}th model percentile)`,
-        confidence: r.pHigh, confidenceEvent: SIGN_EVENT, topEvidence: cat.evidence(s.answers, t, s.prior[t]),
+        confidence: r.lean === "low" ? 1 - r.pHigh : r.pHigh,
+        confidenceEvent: r.lean === "low" ? LOW_EVENT : SIGN_EVENT, topEvidence: cat.evidence(s.answers, t, s.prior[t]),
       };
     });
   },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FALLBACK, importableBigFive, quadrant, RANK_ID, temperamentEngine as E, TEMPS } from "./index.ts";
-import type { Temp } from "@typo/bio";
+import { temperamentToken, type Temp } from "@typo/bio";
 
 /** Answer the whole form at once (any order), as the UI does. lean: +1 high, −1 low, 0 neutral (raw 3). */
 function run(profile: Record<string, unknown>, lean: { E: number; N: number }, ranking: Temp[]) {
@@ -130,5 +130,75 @@ describe("saved-state validation (X-07)", () => {
     expect(() => E.deserialize(bad(o => { o.ranking = ["choleric", "choleric", "sanguine", "phlegmatic"]; }))).toThrow();
     expect(() => E.deserialize(bad(o => { o.fromBigFive = { E: { theta: 1, se: -1 }, N: { theta: 0, se: 1 } }; o.answers = []; }))).toThrow();
     expect(() => E.deserialize(bad(o => { o.v = 7; }))).toThrow();
+  });
+});
+
+describe("QA audit: Temperament no-match, deserialization, symmetry, and explanations", () => {
+  it("test_temperament_empty_state_does_not_fabricate_named_blend", () => {
+    // With 0 answers, no Big Five import, and no ranking, all four quadrants equal 0.25 and traitTop is null;
+    // the engine must not conclude "chol-mel" solely from TEMPS array declaration order.
+    const s0 = E.init({});
+    const r = E.result(s0);
+    expect(r.traitTop).toBeNull();
+    expect(r.meta.unresolved).toContain("trait-derived quadrant");
+    expect(r.token).toBe("unresolved");
+  });
+
+  it("test_temperament_deserialize_null_and_invalid_bigfive_version_rejected_cleanly", () => {
+    // deserialize("null") must throw a validation Error (not unguarded TypeError reading .v),
+    // and non-string bigFiveVersion must be rejected so Dependency.scoringVersion stays a string.
+    expect(() => E.deserialize("null")).toThrow(/Unrecognised temperament state/);
+    const nonStringVer = JSON.stringify({
+      v: 3, fromBigFive: { E: { theta: 1, se: 0.4 }, N: { theta: 1, se: 0.4 } },
+      bigFiveVersion: 12345, answers: [], ranking: null,
+    });
+    expect(() => E.deserialize(nonStringVer)).toThrow();
+  });
+
+  it("test_temperament_near_line_boundary_40th_and_60th_exact_0_10_not_strictly_inside", () => {
+    // THRESHOLDS.temperament.nearLine = 0.1 with strict `< near`: exact 40th and 60th percentiles sit at distance 0.10
+    // (not < 0.10), yet IEEE-754 `60/100 - 0.5 = 0.09999999999999998` makes `< 0.1` true.
+    const hi = E.result(run(bf(0.2533, 1.5, 0.4), { E: 0, N: 0 }, RANK));
+    const lo = E.result(run(bf(-0.2533, 1.5, 0.4), { E: 0, N: 0 }, RANK));
+    expect(hi.E.percentile).toBe(60);
+    expect(lo.E.percentile).toBe(40);
+    expect(hi.nearLine).toBe(false);
+    expect(lo.nearLine).toBe(false);
+  });
+
+  it("test_temperament_explain_bigfive_import_credits_imported_traits_with_nonzero_evidence", () => {
+    // When Big Five E=2, N=2 overrides a conflicting phlegmatic-first ranking to produce chol [dom],
+    // the Big Five evidence that decided choleric must carry positive delta ahead of the opposing ranking.
+    const s = run(bf(2, 2, 0.3, "bigfive-2"), { E: 0, N: 0 }, ["phlegmatic", "melancholic", "sanguine", "choleric"]);
+    const [ex] = E.explain(s);
+    expect(ex!.result).toBe("chol [dom]");
+    const bfEv = ex!.topEvidence.find(e => e.itemId === "bigfive")!;
+    expect(bfEv.delta).toBeGreaterThan(0);
+    expect(ex!.topEvidence[0]!.itemId).toBe("bigfive");
+  });
+
+  it("test_temperament_blend_cut_0_2_exact_boundary_dom_vs_blend", () => {
+    // THRESHOLDS.temperament.blendCut = 0.2: runner-up < 0.2 -> [dom], runner-up >= 0.2 -> blend.
+    expect(temperamentToken({ phlegmatic: 0.8001, melancholic: 0.1999, sanguine: 0, choleric: 0 })).toBe("phleg [dom]");
+    expect(temperamentToken({ phlegmatic: 0.8, melancholic: 0.2, sanguine: 0, choleric: 0 })).toBe("phleg-mel");
+  });
+
+  it("test_temperament_fallback_reverse_key_conflict_emits_quality_note", () => {
+    let s = E.init({});
+    for (const v of E.form(s)) {
+      if (v.id === RANK_ID) s = E.answer(s, v.id, RANK);
+      else s = E.answer(s, v.id, v.id.startsWith("te") ? 5 : 3);
+    }
+    const r = E.result(s);
+    expect(r.meta.quality.some(q => q.code === "reverse-key-conflict" && q.output === "Extraversion")).toBe(true);
+  });
+
+  it("test_temperament_ranking_flips_borderline_quadrant_winner", () => {
+    // E slightly high (theta = 0.02), N high (theta = 1.5): traitTop is choleric, but ranking melancholic 1st flips top.
+    const r = E.result(run(bf(0.02, 1.5, 0.5, "bigfive-2"), { E: 0, N: 0 }, ["melancholic", "choleric", "phlegmatic", "sanguine"]));
+    expect(r.traitTop).toBe("choleric");
+    expect(r.top).toBe("melancholic");
+    expect(r.token).toBe("mel-chol");
+    expect(r.agreement).toEqual({ rankOfTraitTop: 2, status: "partly", firstChoice: "melancholic" });
   });
 });

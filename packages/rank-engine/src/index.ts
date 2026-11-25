@@ -84,6 +84,9 @@ export function createRankEngine(cfg: {
     const p = post(s); const [a, b] = top(p);
     const sum = summarizeRanking(p, cfg.aspects);
     const answered = s.answers.length, total = cfg.tasks.length;
+    // A partial "X first" needs X to have actually been ranked first at least once: the model's position penalties
+    // alone can push an always-second aspect over firstP, which no answer supports.
+    const first = !sum.order && sum.first && s.answers.some(x => x.ranking[0] === sum.first!.aspect) ? sum.first : null;
     const quality: QualityNote[] = [];
     // Response-fit note: rankings that point to different orders. Context can legitimately cause this.
     if (answered >= 2 && !sum.order) {
@@ -94,7 +97,7 @@ export function createRankEngine(cfg: {
     const meta: ResultMeta = {
       engine: cfg.meta.id, scoringVersion: cfg.meta.scoringVersion ?? cfg.meta.version,
       completion: { answered, total, complete: answered === total },
-      unresolved: sum.order ? [] : [sum.first ? "positions after first" : "order"],
+      unresolved: sum.order ? [] : [first ? "positions after first" : "order"],
       quality,
       uncertainty: [
         ...sum.candidates.map(c => ({ output: c.order, event: ORDER_EVENT, kind: "model-probability" as const, value: c.p, calibrated: false as const })),
@@ -104,7 +107,7 @@ export function createRankEngine(cfg: {
     };
     return {
       order: a!.cls, p: a!.p, runnerUp: { order: b!.cls, p: b!.p },
-      resolved: sum.order, first: sum.order ? null : sum.first, candidates: sum.candidates,
+      resolved: sum.order, first, candidates: sum.candidates,
       positions: sum.positions, marginals: sum.marginals, tasks: answered, meta,
     };
   };
@@ -133,14 +136,31 @@ export function createRankEngine(cfg: {
     result,
     explain(s): Explanation[] {
       const r = result(s);
+      const full = post(s);
+      // Statistic the explanation is about: the published order, P(first aspect leads) for a partial result,
+      // or the most probable order otherwise.
+      const pFirst = (p: Posterior, x: string) => Object.entries(p).reduce((m, [c, v]) => m + (c[0] === x ? v : 0), 0);
+      const partial = !r.resolved && r.first ? r.first.aspect : null;
+      const stat = (p: Posterior) => (partial ? pFirst(p, partial) : p[r.order] ?? 0);
+      const fullStat = stat(full);
       const ev = s.answers.map(a => {
-        const without = post(s, a.itemId)[r.order] ?? 1e-12;
+        const without = stat(post(s, a.itemId)) || 1e-12;
         const t = byId.get(a.itemId)!;
         const names = a.ranking.map(id => t.options.find(o => o.id === id)!.text);
-        return { itemId: a.itemId, answer: `${t.text} You ranked first: “${names[0]}”`, delta: Math.round(Math.log(r.p / without) * 100) / 100 };
-      }).sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta)).slice(0, 3);
-      return [{ output: cfg.meta.name, result: r.resolved ?? (r.first ? `${r.first.aspect} first, rest unresolved` : `unresolved (most likely ${r.order})`),
-        confidence: r.p, confidenceEvent: ORDER_EVENT, topEvidence: ev, runnerUp: { result: r.runnerUp.order, confidence: r.runnerUp.p } }];
+        return { itemId: a.itemId, answer: `${t.text} You ranked first: “${names[0]}”`, delta: Math.round(Math.log(fullStat / without) * 100) / 100 };
+      }).sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+      const supporting = r.resolved || partial ? ev.filter(x => x.delta > 0) : [];
+      const topEv = (supporting.length ? supporting : ev).slice(0, 3);
+      const ranked = top(full);
+      const tiedOrders = ranked.filter(x => x.p >= r.p - 1e-9).map(x => x.cls);
+      const below = ranked.find(x => x.p < r.p - 1e-9);
+      const unresolvedText = tiedOrders.length === 1 ? `unresolved (most likely ${r.order})`
+        : tiedOrders.length <= 4 ? `unresolved (tied: ${tiedOrders.join(", ")})` : "unresolved (tied)";
+      if (partial) return [{ output: cfg.meta.name, result: `${partial} first, rest unresolved`, confidence: r.first!.p,
+        confidenceEvent: "aspect is in first position (expert model)", topEvidence: topEv }];
+      return [{ output: cfg.meta.name, result: r.resolved ?? unresolvedText,
+        confidence: r.p, confidenceEvent: ORDER_EVENT, topEvidence: topEv,
+        ...(below ? { runnerUp: { result: below.cls, confidence: below.p } } : {}) }];
     },
     serialize: s => JSON.stringify(s),
     deserialize(raw) {

@@ -26,4 +26,13 @@ describe("bayes", () => {
     for (let i = 0; i < 3; i++) p = updateRanking(p, ["V", "L", "E", "F"], worthFor);
     expect(top(p)[0]!.cls).toBe("VLEF");
   });
+  it("test_bayes_updateRanking_zero_worth_clamps_to_floor_without_NaN", () => {
+    // updateRanking clamps plackettLuce with 1e-12 floor, so zero/missing worths must not poison the posterior with NaN/0.
+    const p = updateRanking(uniform(["AB", "BA"]), ["X", "Y"], cls => ({ [cls[0]!]: 2, [cls[1]!]: 1 }));
+    expect(p.AB).toBeCloseTo(0.5, 6);
+    expect(p.BA).toBeCloseTo(0.5, 6);
+  });
+  it("test_bayes_prune_all_illegal_returns_zeros_without_NaN", () => {
+    expect(prune(uniform(["a", "b"]), () => false)).toEqual({ a: 0, b: 0 });
+  });
 });

@@ -1,5 +1,5 @@
 // Graded response model + EAP + Fisher information (SPEC §4.1). Framework-free utility.
-export const GRID: number[] = Array.from({ length: 81 }, (_, i) => -4 + i * 0.1);
+export const GRID: number[] = Array.from({ length: 81 }, (_, i) => (i - 40) / 10);
 const normPdf = (x: number) => Math.exp(-0.5 * x * x);
 
 /** P(x = k | θ) for categories 1..5 (returned as indices 0..4). */
@@ -23,8 +23,15 @@ export function eap(answers: GrmAnswer[], priorMean = 0): { theta: number; se: n
     }
     return l;
   });
-  const z = post.reduce((s, v) => s + v, 0);
-  const mean = GRID.reduce((s, t, i) => s + t * post[i]!, 0) / z;
+  // The grid is symmetric around 0; summing mirrored pairs keeps a symmetric posterior's mean exactly 0.
+  const n = GRID.length;
+  let z = 0, m = 0;
+  for (let i = 0; i < n >> 1; i++) {
+    z += post[i]! + post[n - 1 - i]!;
+    m += GRID[i]! * post[i]! + GRID[n - 1 - i]! * post[n - 1 - i]!;
+  }
+  if (n % 2) z += post[n >> 1]!; // GRID[mid] = 0 adds nothing to the mean
+  const mean = m / z;
   const sd = Math.sqrt(GRID.reduce((s, t, i) => s + (t - mean) ** 2 * post[i]!, 0) / z);
   return { theta: mean, se: sd };
 }

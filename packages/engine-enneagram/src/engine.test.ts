@@ -193,3 +193,120 @@ describe("answer replacement, order and validation (X-07, X-08)", () => {
     expect(r.meta.completion).toEqual({ answered: 32, total: 32, complete: true });
   });
 });
+
+describe("QA audit: Enneagram Images 6–7 mismatches, explanations, quality notes, and boundaries", () => {
+  it("test_enneagram_image6_7_partial_instinct_explain_matches_sx_first_confidence_and_evidence", () => {
+    // When instincts resolve partially to "sx first, rest unresolved" (in1=sx/sp/so, in2=so/sx/sp, in3=sx/sp/so, in4=sx/so/sp),
+    // explain() must not rank so-first in2 (+0.57) ahead of sx-first in1 (-0.13) or report full-order confidence instead of P(sx first).
+    let s = E.init({});
+    const inst: Record<string, string[]> = {
+      "inst:in1": ["sx", "sp", "so"],
+      "inst:in2": ["so", "sx", "sp"],
+      "inst:in3": ["sx", "sp", "so"],
+      "inst:in4": ["sx", "so", "sp"],
+    };
+    for (const v of E.form(s)) {
+      if (v.id === PICK_ID) s = E.answer(s, v.id, 8);
+      else if (v.format === "rank") s = E.answer(s, v.id, inst[v.id]!);
+      else s = E.answer(s, v.id, [3, 4, 5].includes(Number(v.id[2])) ? 5 : 3);
+    }
+    const r = E.result(s);
+    expect(r.stacking).toBeNull();
+    expect(r.stackingFirst).toBe("sx");
+    const exInst = E.explain(s).find(e => e.output === "Instincts")!;
+    expect(exInst.result).toBe("sx first, rest unresolved");
+    expect(exInst.topEvidence[0]!.itemId).not.toBe("inst:in2");
+    expect(exInst.confidence).toBeGreaterThanOrEqual(0.6);
+  });
+
+  it("test_enneagram_image6_7_tied_core_candidates_no_arbitrary_most_likely_or_tied_runner_up", () => {
+    // Images 6 & 7: Types 3, 4, and 5 have identical statement answers (tied ~21%), yet explain() declares one "most likely"
+    // from floating-point/key order and calls an equally supported type "Runner-up".
+    let s = E.init({});
+    const inst: Record<string, string[]> = {
+      "inst:in1": ["sx", "sp", "so"],
+      "inst:in2": ["so", "sp", "sx"],
+      "inst:in3": ["sx", "sp", "so"],
+      "inst:in4": ["sx", "so", "sp"],
+    };
+    for (const v of E.form(s)) {
+      if (v.id === PICK_ID) s = E.answer(s, v.id, 8);
+      else if (v.format === "rank") s = E.answer(s, v.id, inst[v.id]!);
+      else {
+        const t = Number(v.id[2]);
+        s = E.answer(s, v.id, [3, 4, 5].includes(t) ? 5 : t === 8 ? (v.id.endsWith("a") ? 3 : 5) : 3);
+      }
+    }
+    const exCore = E.explain(s).find(e => e.output === "Core type (statements)")!;
+    expect(exCore.result).not.toMatch(/most likely [345]$/);
+    if (exCore.runnerUp) expect(exCore.runnerUp.confidence).toBeLessThan(exCore.confidence - 1e-9);
+  });
+
+  it("test_enneagram_explain_wing_and_tritype_by_elimination_includes_deciding_evidence", () => {
+    // EN-02 elimination: Core 1 answered 5; neighbour 2 and tritype 2/5 answered Neutral (3) while 9, 3, 4, 6, 7 answered 1.
+    // Wing resolves to 2 (wingP > 0.97) and tritype to 1(25), so explain() must include non-empty deciding evidence.
+    let s = E.init({});
+    for (const v of E.form(s)) {
+      if (v.id === PICK_ID) s = E.answer(s, v.id, 1);
+      else if (v.format === "rank") s = E.answer(s, v.id, ["sp", "so", "sx"]);
+      else {
+        const t = Number(v.id[2]);
+        s = E.answer(s, v.id, t === 1 ? 5 : t === 2 || t === 5 ? 3 : 1);
+      }
+    }
+    const r = E.result(s);
+    expect(r.core).toBe(1);
+    expect(r.wing).toBe(2);
+    const exWing = E.explain(s).find(e => e.output === "Wing")!;
+    const exTri = E.explain(s).find(e => e.output === "Tritype (heuristic)")!;
+    expect(exWing.topEvidence.length).toBeGreaterThan(0);
+    expect(exTri.topEvidence.length).toBeGreaterThan(0);
+  });
+
+  it("test_enneagram_conflicting_instinct_rankings_emit_ranking_conflict_quality_note", () => {
+    // Consistent with rank-engine (AP/Temporistics), unresolved conflicting instinct rankings should emit ranking-conflict.
+    const r = E.result(uniform(3, 8, [["sp", "so", "sx"], ["sx", "so", "sp"], ["so", "sx", "sp"], ["sp", "sx", "so"]]));
+    expect(r.stacking).toBeNull();
+    expect(r.meta.quality.map(q => q.code)).toContain("ranking-conflict");
+  });
+
+  it("test_enneagram_wing_boundary_below_and_above_0_75", () => {
+    // THRESHOLDS.ennea.wingP = 0.75: single-item 4 vs 3 gives wingP ≈ 0.691 < 0.75 (null), two 4s vs 3s gives ≈ 0.834 >= 0.75.
+    const make = (nFour: number) => {
+      let s = E.init({}), c = 0;
+      for (const v of E.form(s)) {
+        if (v.id === PICK_ID) s = E.answer(s, v.id, 1);
+        else if (v.format === "rank") s = E.answer(s, v.id, ["sp", "so", "sx"]);
+        else {
+          const t = Number(v.id[2]);
+          s = E.answer(s, v.id, t === 1 ? 5 : t === 2 ? (++c <= nFour ? 4 : 3) : t === 9 ? 3 : 1);
+        }
+      }
+      return E.result(s);
+    };
+    const below = make(1), above = make(2);
+    expect(below.wingP).toBeLessThan(0.75);
+    expect(below.wing).toBeNull();
+    expect(above.wingP).toBeGreaterThanOrEqual(0.75);
+    expect(above.wing).toBe(2);
+  });
+
+  it("test_enneagram_tritype_single_unresolved_center_and_order_ratio_boundaries", () => {
+    // Core 1, Heart resolved to 3, Head tied (5,6,7 all 1) -> "13?"; both centers tied -> "1??".
+    const oneKnown = E.result(run({ core: 1, wing: 9, tri: [3, 0], stacking: ["sp", "so", "sx"] }));
+    expect(oneKnown.tritype).toBe("13?");
+    const noneKnown = E.result(run({ core: 1, wing: 9, tri: [0, 0], stacking: ["sp", "so", "sx"] }));
+    expect(noneKnown.tritype).toBe("1??");
+  });
+
+  it("test_enneagram_empty_state_incomplete_and_unresolved", () => {
+    const s0 = E.init({});
+    const r = E.result(s0);
+    expect(r.core).toBeNull();
+    expect(r.selfPick).toBeNull();
+    expect(r.stacking).toBeNull();
+    expect(r.meta.unresolved).toEqual(["core type", "instinct order"]);
+    expect(r.meta.quality.map(q => q.code)).toEqual(["incomplete"]);
+    expect(E.bioTokens(s0)).toEqual([]);
+  });
+});

@@ -15,11 +15,11 @@ export interface StepDef {
 /** §2.6 table order: 1 → 2 → 3 → 4 → 5a → 5b → 5c → 6 → 7. */
 export const STEPS: StepDef[] = [
   { id: "bigfive", num: "1", title: "Big Five", engine: "bigfive", slots: ["sloan"], example: "/R/LOA[I]", estItems: "40", evidence: "strong",
-    blurb: "Five well-studied traits, written as a SLOAN code. Its Extraversion and Neuroticism feed later steps." },
+    blurb: "Five well-studied traits, written as a SLOAN code. Its Extraversion and Neuroticism can feed the Temperament step." },
   { id: "motives", num: "2", title: "MOTIVES", engine: "motives", slots: ["motives"], example: "A|O|XIVRg", estItems: "28", evidence: "exploratory",
-    blurb: "Seven bipolar traits in the fixed order M-O-T-I-V-E-S. Uses your Big Five result as a head start." },
+    blurb: "Seven bipolar traits in the fixed order M-O-T-I-V-E-S, scored from its own statements only." },
   { id: "temperament", num: "3", title: "Temperament", engine: "temperament", slots: ["temperament"], example: "phleg [dom]", estItems: "1 or 9", evidence: "exploratory",
-    blurb: "Derived from Big Five Extraversion × Neuroticism, plus two confirm items (pure or blend)." },
+    blurb: "Extraversion × Neuroticism quadrant (from Big Five or its own items), plus one description ranking; shows one quadrant or a blend." },
   { id: "jung", num: "4", title: "Jung functions", engine: "jung", slots: ["jung"], example: "IT(N) (TiNi)", estItems: "48", evidence: "moderate",
     blurb: "Classic Jungian code from function-attitude scores, with MBTI letters shown separately." },
   { id: "ennea-core", num: "5a", title: "Enneagram core + wing", engine: "enneagram", slots: ["tritype"], example: "··· (1w2)", estItems: "28", evidence: "mixed",

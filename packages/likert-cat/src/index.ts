@@ -61,14 +61,18 @@ export function createLikertCat(cfg: { items: LikertItem[]; scales: readonly str
   /** §5: the answers that moved a scale most (leave-one-out shift in θ). */
   function evidence(answers: LikertAnswer[], scale: string, priorMean = 0, k = 3) {
     const full = estimate(answers, scale, priorMean).theta;
-    return answers.filter(a => scaleOf(a.itemId) === scale).map(a => {
+    const rows = answers.filter(a => scaleOf(a.itemId) === scale).map(a => {
       const it = byId.get(a.itemId)!;
       return {
         itemId: it.id,
         answer: `“${it.text}” — ${LIKERT_LABELS[a.x - 1]}${it.reverse ? " (reverse-keyed)" : ""}`,
         delta: Math.round((full - estimate(answers, scale, priorMean, a.itemId).theta) * 100) / 100,
       };
-    }).sort((p, q) => Math.abs(q.delta) - Math.abs(p.delta)).slice(0, k);
+    }).sort((p, q) => Math.abs(q.delta) - Math.abs(p.delta));
+    // When the scale leans to one side, show the answers that support that side (an opposing outlier can move θ
+    // further than any one of several agreeing answers, but it did not decide the result). Sorted by |delta| still.
+    const supporting = Math.abs(full) > 1e-9 ? rows.filter(r => Math.sign(full) * r.delta > 0) : [];
+    return (supporting.length ? supporting : rows).slice(0, k);
   }
 
   const view = (it: LikertItem): ItemView => ({

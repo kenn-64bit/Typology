@@ -150,11 +150,16 @@ describe("fixed-form fixtures", () => {
 
 describe("level-strength formatter (BF-01)", () => {
   it("strength depends on level only: same θ with different SD gives the same strength and token", () => {
-    for (const theta of [-1.5, -0.6, -0.2, 0, 0.1, 0.5, 1.2]) {
+    // Fixed weak tautology: previously asserted `sloanToken(x) === sloanToken(x)`. Justified by THRESHOLDS.sloan
+    // (middle < 0.05, borderline < 0.15, strong >= 0.35 on |Φ(θ) - 0.5|).
+    const cases: [number, string][] = [
+      [-1.5, "/R/XXXX"], [-0.6, "RXXXX"], [-0.2, "[R]XXXX"], [0, "XXXXX"], [0.1, "XXXXX"], [0.5, "SXXXX"], [1.2, "/S/XXXX"],
+    ];
+    for (const [theta, expectedToken] of cases) {
       const level = pAboveMedian(theta, 1);
       const certainties = [0.2, 0.5, 1].map(se => pAboveMedian(theta, se));
       expect(new Set(certainties).size).toBeGreaterThan(theta === 0 ? 0 : 1); // certainty does move…
-      expect(sloanToken([level, 0.5, 0.5, 0.5, 0.5])).toBe(sloanToken([level, 0.5, 0.5, 0.5, 0.5])); // …the formatter input does not
+      expect(sloanToken([level, 0.5, 0.5, 0.5, 0.5])).toBe(expectedToken);   // …token matches THRESHOLDS.sloan
     }
     expect(sloanStrength(0.52)).toBe("middle");
     expect(sloanStrength(0.6)).toBe("borderline");
@@ -195,5 +200,110 @@ describe("answer order, replacement and saved-state validation (X-07, X-08)", ()
   it("result carries a scoring version for dependants", () => {
     expect(E.result(fixed(pick)).meta.scoringVersion).toBe("bigfive-2");
     expect(E.meta.scoringVersion).toBe("bigfive-2");
+  });
+});
+
+describe("QA audit: boundaries, explanations, quality notes, and Image 1", () => {
+  it("test_bigfive_sloan_middle_boundary_0_45_and_0_55_symmetric_borderline", () => {
+    // THRESHOLDS.sloan.middle = 0.05: |level - 0.5| < 0.05 is middle, >= 0.05 is borderline.
+    expect(sloanStrength(0.55)).toBe("borderline");
+    expect(sloanStrength(0.45)).toBe("borderline");
+  });
+
+  it("test_bigfive_explain_low_pole_confidence_matches_concluded_side_image1", () => {
+    // Image 1 shows Extraversion R (24th model percentile) with "92% model chance of this side".
+    // When 7 items endorse R (keyed 2) and 1 item (e1) endorses S (keyed 5), explain() concludes R
+    // and must report the concluded side's probability (~1 - pHigh) and rank supporting R evidence ahead of opposing S.
+    const s = fixed(i => {
+      if (i.trait !== "E") return 3;
+      if (i.id === "e1") return 5;
+      return i.reverse ? 4 : 2;
+    });
+    const r = E.result(s);
+    const exE = E.explain(s).find(x => x.output === "Extraversion")!;
+    expect(r.traits.E.letter).toBe("R");
+    expect(exE.result).toMatch(/^R /);
+    expect(exE.confidence).toBeCloseTo(1 - r.traits.E.pHigh, 6);
+    expect(exE.topEvidence[0]!.itemId).not.toBe("e1");
+  });
+
+  it("test_bigfive_percentile_85_matches_strong_sloan_threshold", () => {
+    // THRESHOLDS.sloan.strong = 0.35 documents "≤15th or ≥85th" as strong.
+    // Keyed [2,2,2,5,5,5,5,5] produces percentile === 85, so strength must match the displayed 85th percentile.
+    const keyedHigh = [2, 2, 2, 5, 5, 5, 5, 5];
+    let k = 0;
+    const s = fixed(i => {
+      if (i.trait !== "A") return 3;
+      const keyed = keyedHigh[k++]!;
+      return i.reverse ? 6 - keyed : keyed;
+    });
+    const a = E.result(s).traits.A;
+    expect(a.percentile).toBe(85);
+    expect(a.strength).toBe("strong");
+  });
+
+  it("test_bigfive_reverse_key_conflict_note_not_claiming_middle_when_clear_lean", () => {
+    // Forward [5,5,5,5] (mean 5.0 >= 3.75) and reverse [4,4,4,3] (mean 3.75 >= 3.75) yields S, clear (73rd pct).
+    let rev = 0;
+    const s = fixed(i => {
+      if (i.trait !== "E") return 3;
+      if (!i.reverse) return 5;
+      rev++;
+      return rev === 4 ? 3 : 4;
+    });
+    const r = E.result(s);
+    expect(r.traits.E.letter).toBe("S");
+    expect(r.traits.E.strength).toBe("clear");
+    const note = r.meta.quality.find(q => q.code === "reverse-key-conflict" && q.output === "Extraversion");
+    expect(note?.message ?? "").not.toMatch(/sits near the middle/);
+  });
+
+  it("test_bigfive_image1_profile_produces_RLO_slash_A_slash_I_slash", () => {
+    // Image 1 observed output: RLO/A/I/ (E: R clear, N: L clear, C: O clear, A: A strong, I: I strong, merged slashes).
+    const keyedByTrait: Record<string, number[]> = {
+      E: [2, 2, 2, 2, 2, 2, 3, 3], // ~24th model percentile -> R clear
+      N: [4, 4, 4, 4, 4, 4, 4, 5], // ~80th model percentile -> L clear
+      C: [3, 3, 4, 4, 4, 4, 4, 4], // ~68th model percentile -> O clear
+      A: [4, 4, 5, 5, 5, 5, 5, 5], // ~90th model percentile -> /A/ strong
+      O: [5, 5, 5, 5, 5, 5, 5, 4], // ~96th model percentile -> /I/ strong
+    };
+    const idx: Record<string, number> = { E: 0, N: 0, C: 0, A: 0, O: 0 };
+    const s = fixed(i => {
+      const keyed = keyedByTrait[i.trait]![idx[i.trait]++]!;
+      return i.reverse ? 6 - keyed : keyed;
+    });
+    const r = E.result(s);
+    expect(r.sloan).toBe("RLO/A/I/");
+    expect([r.traits.E.strength, r.traits.N.strength, r.traits.C.strength, r.traits.A.strength, r.traits.O.strength])
+      .toEqual(["clear", "clear", "clear", "strong", "strong"]);
+    expect(E.bioTokens(s)).toEqual([{ slot: "sloan", text: "RLO/A/I/", confidence: r.confidence, source: "test" }]);
+  });
+
+  it("test_bigfive_sloan_thresholds_low_and_high_poles_borderline_clear_strong", () => {
+    expect(sloanToken([0.15, 0.35, 0.44, 0.65, 0.85])).toBe("/R/C[U]A/I/");
+    expect(sloanStrength(0.1501)).toBe("clear");
+    expect(sloanStrength(0.8499)).toBe("clear");
+    expect(sloanStrength(0.3499)).toBe("clear");
+    expect(sloanStrength(0.3501)).toBe("borderline");
+    expect(sloanStrength(0.6499)).toBe("borderline");
+    expect(sloanStrength(0.6501)).toBe("clear");
+  });
+
+  it("test_bigfive_empty_state_all_traits_unresolved_and_incomplete", () => {
+    const s0 = E.init({});
+    const r = E.result(s0);
+    expect(r.sloan).toBe("XXXXX");
+    expect(r.meta.completion).toEqual({ answered: 0, total: 40, complete: false });
+    expect(r.meta.unresolved).toEqual(["Extraversion", "Neuroticism", "Conscientiousness", "Agreeableness", "Openness"]);
+    expect(r.meta.quality.map(q => q.code)).toEqual(["incomplete"]);
+    expect(E.bioTokens(s0)).toEqual([]);
+  });
+
+  it("test_bigfive_answer_rejects_wrong_types_and_bounds", () => {
+    const s0 = E.init({});
+    for (const bad of [0, 6, -1, 2.5, Number.NaN, Number.POSITIVE_INFINITY, "4" as never, null as never, [] as never]) {
+      expect(() => E.answer(s0, "e1", bad)).toThrow();
+    }
+    expect(() => E.answer(s0, "unknown", 3)).toThrow(/Unknown item/);
   });
 });

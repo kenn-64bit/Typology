@@ -105,4 +105,16 @@ describe("saved-state helpers", () => {
     expect(cleanOutdated({ temperament: true, jung: "yes", gone: true }, { temperament: {}, jung: {} })).toEqual({ temperament: true });
     expect(cleanOutdated(null, {})).toEqual({});
   });
+  it("test_web_integration_enneagram_pick_is_echoed_only_not_scored_in_core", async () => {
+    // Clarifies line 47 (`not.toEqual(r)`): changing Enneagram `pick` changes echoed `selfPick`, never `core` or `coreP` (EN-01).
+    const e = await load("enneagram");
+    const { answers } = fill(e, {});
+    const alt = new Map(answers);
+    alt.set("pick", answers.get("pick") === 1 ? 2 : 1);
+    const r1 = submit(e, {}, answers) as unknown as { core: unknown; coreP: number; selfPick: { type: number } };
+    const r2 = submit(e, {}, alt) as unknown as { core: unknown; coreP: number; selfPick: { type: number } };
+    expect(r2.selfPick.type).not.toBe(r1.selfPick.type);
+    expect(r2.core).toBe(r1.core);
+    expect(r2.coreP).toBe(r1.coreP);
+  });
 });

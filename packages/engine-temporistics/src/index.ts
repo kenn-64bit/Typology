@@ -13,15 +13,15 @@ const t = (id: string, text: string, N: string, V: string, B: string, P: string)
 
 /**
  * Original wording. Every task is ranked from "most like me" to "least like me" (first = highest priority).
- * tp4 and tp6 were rewritten to reduce dependence on religion, distress, current deadlines or owning keepsakes (TP-02).
+ * tp3, tp4 and tp6 were rewritten to reduce dependence on religion, distress, current deadlines or owning keepsakes (TP-02).
  */
 export const TEMPO_TASKS: RankTask[] = [
   t("tp1", "When you face a big decision, what do you look at most?",
     "What is happening right now", "What it means in the bigger picture", "Where it will lead", "What has worked before"),
   t("tp2", "Which kinds of conversation do you enjoy most?",
     "What's going on today", "Timeless questions with no final answer", "Plans and what could be", "Stories and memories"),
-  t("tp3", "When you feel lost, what steadies you most?",
-    "Focusing on the next small step", "Remembering what never changes", "Picturing where I'm heading", "Looking back at how far I've come"),
+  t("tp3", "When you step back to get your bearings, what helps you most?",
+    "Noticing what is in front of me now", "Thinking about what stays the same over time", "Picturing where things are going", "Recalling how things got to this point"),
   t("tp4", "In general, which kind of question do you find hardest to put down?",
     "What needs doing right now", "What really matters in the long run", "Where things are heading next", "How things came to be the way they are"),
   t("tp5", "Which saying sounds most like you?",

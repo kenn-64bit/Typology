@@ -135,7 +135,7 @@ function metaOf(s: TemperamentState, r: Omit<TemperamentResult, "meta">): Result
   return {
     engine: "temperament", scoringVersion: TEMPERAMENT_SCORING_VERSION,
     completion: { answered, total, complete: answered === total },
-    unresolved: r.traitTop ? [] : ["trait-derived quadrant"],
+    unresolved: [...(r.traitTop ? [] : ["trait-derived quadrant"]), ...(r.token === "unresolved" ? ["temperament"] : [])],
     quality,
     uncertainty: [
       ...TEMPS.map(t => ({ output: t, event: `quadrant is ${t} (E/N sign posteriors × ranking weights)`, kind: "model-probability" as const, value: r.probs[t], calibrated: false as const })),
@@ -178,14 +178,16 @@ export const temperamentEngine: ExamEngine<TemperamentState, TemperamentResult> 
   progress(s) { const p = quadrant(s); return [{ output: "temperament", confidence: p[topOf(p)[0]!], done: isDone(s) }]; },
   result(s) {
     const probs = quadrant(s), traitProbs = quadrant(s, false);
-    const [top] = topOf(probs); const [t1, t2] = topOf(traitProbs);
+    const [top, second] = topOf(probs); const [t1, t2] = topOf(traitProbs);
+    // A tie at the top (e.g. nothing answered) names no quadrant rather than picking one by declaration order.
+    const tied = probs[top!] - probs[second!] <= TIE;
     const traitTop = traitProbs[t1!] - traitProbs[t2!] > TIE ? t1! : null;
     const { E, N } = axes(s);
     const near = THRESHOLDS.temperament.nearLine;
     const base = {
-      probs, traitProbs, token: temperamentToken(probs), top: top!, pTop: probs[top!], traitTop,
+      probs, traitProbs, token: tied ? "unresolved" : temperamentToken(probs), top: top!, pTop: probs[top!], traitTop,
       agreement: agreementOf(traitTop, s.ranking),
-      nearLine: Math.abs(E.percentile / 100 - 0.5) < near || Math.abs(N.percentile / 100 - 0.5) < near,
+      nearLine: Math.abs(E.percentile - 50) < Math.round(near * 100) || Math.abs(N.percentile - 50) < Math.round(near * 100),
       E, N, source: s.fromBigFive ? "bigfive" as const : "own-items" as const, ranking: s.ranking,
     };
     return { ...base, meta: metaOf(s, base) };
@@ -193,18 +195,20 @@ export const temperamentEngine: ExamEngine<TemperamentState, TemperamentResult> 
   explain(s): Explanation[] {
     const r = temperamentEngine.result(s); const second = topOf(r.probs)[1]!;
     const ev = s.fromBigFive
-      ? [{ itemId: "bigfive", answer: `Your Big Five result: Extraversion ${r.E.percentile}th, Neuroticism ${r.N.percentile}th model percentile`, delta: 0 }]
+      ? [{ itemId: "bigfive", answer: `Your Big Five result: Extraversion ${r.E.percentile}th, Neuroticism ${r.N.percentile}th model percentile`,
+          delta: Math.round(Math.log(r.traitProbs[r.top] / 0.25) * 100) / 100 }]
       : [...cat.evidence(s.answers, "E", 0, 1), ...cat.evidence(s.answers, "N", 0, 1)];
     const rk = s.ranking ? [{ itemId: RANK_ID, answer: `You ranked the ${s.ranking[0]} description first`,
       delta: Math.round(Math.log(r.probs[r.top] / r.traitProbs[r.top]) * 100) / 100 }] : [];
     return [{
       output: "Temperament", result: r.token, confidence: r.pTop, confidenceEvent: `quadrant is ${r.top} (model, uncalibrated)`,
-      topEvidence: [...rk, ...ev].slice(0, 3), runnerUp: { result: second, confidence: r.probs[second] },
+      topEvidence: [...rk, ...ev].sort((a, b) => Number(b.delta > 0) - Number(a.delta > 0) || Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 3), runnerUp: { result: second, confidence: r.probs[second] },
     }];
   },
   serialize: s => JSON.stringify(s),
   deserialize(raw) {
     const s = JSON.parse(raw) as Omit<TemperamentState, "v"> & { v: number };
+    if (!s || typeof s !== "object" || Array.isArray(s)) throw new Error("Unrecognised temperament state");
     if (s.v === 2) Object.assign(s, { v: 3, bigFiveVersion: null }); // v2 → v3: import version unknown
     if (s.v !== 3 || !Array.isArray(s.answers)) throw new Error("Unrecognised temperament state");
     const ids = new Set(FALLBACK.map(i => i.id)), seen = new Set<string>();
@@ -212,6 +216,8 @@ export const temperamentEngine: ExamEngine<TemperamentState, TemperamentResult> 
       if (!ids.has(a?.itemId) || seen.has(a.itemId) || !Number.isInteger(a.x) || a.x < 1 || a.x > 5) throw new Error("Invalid temperament answer");
       seen.add(a.itemId);
     }
+    if (s.bigFiveVersion !== null && typeof s.bigFiveVersion !== "string") throw new Error("Invalid Big Five scoring version");
+    if (s.fromBigFive === null && s.bigFiveVersion !== null) throw new Error("Big Five scoring version without a Big Five import");
     if (s.fromBigFive !== null) {
       for (const k of ["E", "N"] as const) {
         const e = s.fromBigFive?.[k];

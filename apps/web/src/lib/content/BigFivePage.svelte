@@ -35,7 +35,7 @@
     <p>The Big Five is the model that most personality psychologists use today. It did not come from one person's theory. Researchers collected thousands of words that people use to describe each other, such as "talkative", "moody" and "tidy". Then they measured which words people apply together. In study after study, the words formed five groups. These groups are the five traits.</p>
     <p>Each trait is a scale, like height. Most people score near the middle, and few score at the ends. So the Big Five does not sort you into a type. It gives your position on five scales.</p>
     <p>SLOAN is a short way to write those five positions, with one letter per trait. The letter shows which side of the middle you are on. Marks around the letter show how far from the middle you are.</p>
-    <p>The MOTIVES, Four Temperaments and Jungian tests use your Big Five scores. Take this test first.</p>
+    <p>The Four Temperaments test can use your Big Five Extraversion and Neuroticism scores, so you may want to take this test first. The MOTIVES and Jungian tests are scored independently.</p>
   {/snippet}
 
   {#snippet notation()}

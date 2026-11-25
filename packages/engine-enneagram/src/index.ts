@@ -3,7 +3,7 @@
 // Hard rules: the wing is a neighbouring type, stacking is a full order, tritype has one type per center
 // with the core first. Research status: mixed for core type, little research for the rest.
 import { THRESHOLDS, type BioToken, type ExamEngine, type Explanation, type ItemView, type QualityNote, type Response, type ResultMeta } from "@typo/engine-sdk";
-import { normalize, permutations, top, uniform, type Posterior } from "@typo/bayes";
+import { normalize, permutations, top, type Posterior } from "@typo/bayes";
 import { rankPosterior, summarizeRanking, type RankSummary } from "@typo/rank-engine";
 import { instinctToken, tritypeToken } from "@typo/bio";
 import { INSTINCT_TASKS, PARAGRAPHS, STATEMENTS, TYPE_NAMES } from "./content.ts";
@@ -50,16 +50,18 @@ export interface EnneaState { v: 2; answers: Answer[] }
  * validated incremental likelihood exists for it, so it never enters this posterior.
  */
 export function corePosterior(s: EnneaState, skip?: string): Posterior {
-  let p = uniform(TYPES.map(String));
-  // Sorted by item id so the product, and the result, is identical for any answer order.
+  // Log-likelihoods summed per type and normalized once, so identically answered types get identical probabilities.
+  const logL: Record<string, number> = Object.fromEntries(TYPES.map(t => [String(t), 0]));
+  // Sorted by item id so the sum, and the result, is identical for any answer order.
   for (const a of [...s.answers].sort((x, y) => x.itemId.localeCompare(y.itemId))) {
     if (a.itemId === skip || !a.itemId.startsWith("s:")) continue;
     const own = stmtType(a.itemId), x = (a.r as number) - 1;
-    const next: Posterior = {};
-    for (const c in p) next[c] = p[c]! * (Number(c) === own ? L.enneaOwn[x]! : L.enneaOther[x]!);
-    p = normalize(next);
+    for (const c in logL) logL[c]! += Math.log(Number(c) === own ? L.enneaOwn[x]! : L.enneaOther[x]!);
   }
-  return p;
+  const m = Math.max(...Object.values(logL));
+  const p: Posterior = {};
+  for (const c in logL) p[c] = Math.exp(logL[c]! - m);
+  return normalize(p);
 }
 const instinctPost = (s: EnneaState, skip?: string) =>
   rankPosterior(STACKINGS, s.answers.filter(a => a.itemId.startsWith("inst:") && a.itemId !== skip)
@@ -156,6 +158,11 @@ function metaOf(s: EnneaState, r: Omit<EnneaResult, "meta">, sum: RankSummary): 
   const quality: QualityNote[] = [];
   if (stmts.length > 1 && stmts.every(x => x === stmts[0])) quality.push({ code: "straight-line",
     message: `Every statement got the same answer, so the statements give no evidence for one type over another. Your description pick is shown separately and does not decide the core type.` });
+  const inst = s.answers.filter(a => a.itemId.startsWith("inst:"));
+  if (inst.length >= 2 && !r.stacking) {
+    const firsts = new Set(inst.map(a => (a.r as string[])[0]));
+    quality.push({ code: "ranking-conflict", message: `Your instinct rankings point in different directions${firsts.size > 1 ? ` (${firsts.size} different first choices)` : ""}, so no single order fits them well. That can reflect real differences between situations, not careless answers.` });
+  }
   if (answered < total) quality.push({ code: "incomplete", message: `${total - answered} of ${total} questions were not answered.` });
   const unresolved = [
     ...(r.core === null ? ["core type"] : []),
@@ -185,6 +192,16 @@ function describe(a: Answer): string {
   if (a.itemId === PICK_ID) return `You picked the type ${a.r} description as the best fit`;
   const t = INSTINCT_TASKS.find(x => `inst:${x.id}` === a.itemId)!;
   return `${t.text} You ranked first: “${t.options.find(o => o.id === (a.r as string[])[0])!.text}”`;
+}
+
+/**
+ * Top 3 evidence rows by |delta|, dropping zero shifts. With a concluded result (`preferSupporting`), answers that
+ * moved toward it lead; opposing answers appear only when nothing supports it.
+ */
+function rank<E extends { delta: number }>(rows: E[], preferSupporting: boolean, k = 3): E[] {
+  const moved = rows.filter(x => x.delta !== 0).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const supporting = preferSupporting ? moved.filter(x => x.delta > 0) : [];
+  return (supporting.length ? supporting : moved).slice(0, k);
 }
 
 /** Validates one stored answer against its form item (X-07). */
@@ -225,26 +242,54 @@ export const enneagramEngine: ExamEngine<EnneaState, EnneaResult> = {
   result: compute,
   explain(s): Explanation[] {
     const r = compute(s); const full = corePosterior(s);
-    const focus = r.core ?? r.coreCandidates[0]!.type;
-    const coreEv = s.answers.filter(a => a.itemId.startsWith("s:"))
-      .map(a => ({ itemId: a.itemId, answer: describe(a), delta: shift(full[String(focus)]!, corePosterior(s, a.itemId)[String(focus)]!) }))
-      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 3);
-    const about = (types: number[]) => s.answers.filter(a => a.itemId.startsWith("s:") && types.includes(stmtType(a.itemId)) && (a.r as number) >= 4)
-      .map(a => ({ itemId: a.itemId, answer: describe(a), delta: 0 })).slice(0, 3);
-    const ip = instinctPost(s); const best = r.stackingCandidates[0]?.order ?? top(ip)[0]!.cls;
+    const ranked = top(full).map(x => ({ type: Number(x.cls), p: x.p }));
+    const lead = ranked[0]!;
+    const tied = ranked.filter(x => x.p >= lead.p - 1e-9).map(x => x.type).sort((a, b) => a - b);
+    const focus = r.core ?? lead.type;
+    const stmts = s.answers.filter(a => a.itemId.startsWith("s:"));
+    // Leave-one-out log-shift of a statistic of the core posterior, over every statement answer.
+    const looStmt = (stat: (p: Posterior) => number) => {
+      const f = stat(full);
+      return stmts.map(a => ({ itemId: a.itemId, answer: describe(a), delta: shift(f, stat(corePosterior(s, a.itemId))) }));
+    };
+    const coreEv = rank(looStmt(p => p[String(focus)]!), tied.length === 1);
+    const coreResult = r.core !== null ? `${r.core} (${r.coreName})`
+      : tied.length === TYPES.length ? "unresolved (all types equal)"
+      : tied.length > 1 ? `unresolved (tied: ${tied.join(", ")})` : `unresolved (most likely ${focus})`;
+    const below = ranked.find(x => x.p < lead.p - 1e-9);
     const out: Explanation[] = [
-      { output: "Core type (statements)", result: r.core === null ? `unresolved (most likely ${focus})` : `${r.core} (${r.coreName})`, confidence: r.coreP, confidenceEvent: EVENTS.core, topEvidence: coreEv,
-        runnerUp: { result: String(r.runnerUp.type), confidence: r.runnerUp.p } },
+      { output: "Core type (statements)", result: coreResult, confidence: r.coreP, confidenceEvent: EVENTS.core, topEvidence: coreEv,
+        ...(below ? { runnerUp: { result: String(below.type), confidence: below.p } } : {}) },
     ];
     if (r.selfPick) out.push({ output: "Description you picked", result: String(r.selfPick.type), confidence: r.selfPick.statementP,
       confidenceEvent: "statement-based probability of the picked type", topEvidence: s.answers.filter(a => a.itemId === PICK_ID).map(a => ({ itemId: a.itemId, answer: describe(a), delta: 0 })) });
-    if (r.core !== null) out.push(
-      { output: "Wing", result: r.wing === null ? `${r.core}w? (balanced)` : `${r.core}w${r.wing}`, confidence: r.wingP, confidenceEvent: EVENTS.wing, topEvidence: about(r.wing ? [r.wing] : wingsOf(r.core)) },
-      { output: "Tritype (heuristic)", result: r.tritype!, confidence: Math.min(...r.tritypeCenters.map(c => c.share)), confidenceEvent: `lowest ${EVENTS.center}`,
-        topEvidence: about(r.tritypeCenters.flatMap(c => (c.type ? [c.type] : []))) });
-    out.push({ output: "Instincts", result: r.stacking ?? (r.stackingFirst ? `${r.stackingFirst} first, rest unresolved` : "unresolved"), confidence: r.stackingP, confidenceEvent: EVENTS.stacking,
-      topEvidence: s.answers.filter(a => a.itemId.startsWith("inst:")).map(a => ({ itemId: a.itemId, answer: describe(a), delta: shift(ip[best]!, instinctPost(s, a.itemId)[best]!) }))
-        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 3) });
+    if (r.core !== null) {
+      const core = r.core;
+      const [w1, w2] = wingsOf(core);
+      const lean = r.wing ?? (full[String(w1)]! >= full[String(w2)]! ? w1 : w2);
+      const wingShare = (p: Posterior) => p[String(lean)]! / (p[String(w1)]! + p[String(w2)]!);
+      const centerShare = (p: Posterior, c: Center, t: number) => p[String(t)]! / CENTERS[c].reduce((m, x) => m + p[String(x)]!, 0);
+      const triEv = r.tritypeCenters.filter(c => c.type !== null).flatMap(c => looStmt(p => centerShare(p, c.center, c.type!)));
+      out.push(
+        { output: "Wing", result: r.wing === null ? `${core}w? (balanced)` : `${core}w${r.wing}`, confidence: r.wingP, confidenceEvent: EVENTS.wing,
+          topEvidence: rank(looStmt(wingShare), r.wing !== null) },
+        { output: "Tritype (heuristic)", result: r.tritype!, confidence: Math.min(...r.tritypeCenters.map(c => c.share)), confidenceEvent: `lowest ${EVENTS.center}`,
+          topEvidence: rank(triEv, true) });
+    }
+    const ip = instinctPost(s);
+    const instAnswers = s.answers.filter(a => a.itemId.startsWith("inst:"));
+    let instConf = r.stackingP, instEvent: string = EVENTS.stacking, instEv;
+    if (r.stacking === null && r.stackingFirst !== null) {
+      const first = r.stackingFirst;
+      const pFirst = (post: Posterior) => Object.entries(post).reduce((m, [c, v]) => m + (c.split("/")[0] === first ? v : 0), 0);
+      instConf = pFirst(ip); instEvent = EVENTS.first;
+      instEv = rank(instAnswers.map(a => ({ itemId: a.itemId, answer: describe(a), delta: shift(instConf, pFirst(instinctPost(s, a.itemId))) })), true);
+    } else {
+      const best = r.stackingCandidates[0]?.order ?? top(ip)[0]!.cls;
+      instEv = rank(instAnswers.map(a => ({ itemId: a.itemId, answer: describe(a), delta: shift(ip[best]!, instinctPost(s, a.itemId)[best]!) })), r.stacking !== null);
+    }
+    out.push({ output: "Instincts", result: r.stacking ?? (r.stackingFirst ? `${r.stackingFirst} first, rest unresolved` : "unresolved"), confidence: instConf, confidenceEvent: instEvent,
+      topEvidence: instEv });
     return out;
   },
   serialize: s => JSON.stringify(s),

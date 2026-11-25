@@ -103,10 +103,25 @@ export function likertQualityNotes(
   for (const sc of scales) {
     if (sc.forward.length < rule.minPerSide || sc.reverse.length < rule.minPerSide) continue;
     const f = mean(sc.forward), r = mean(sc.reverse);
+    const keyed = [...sc.forward, ...sc.reverse.map(x => 6 - x)];
+    const keyedMean = mean(keyed);
+    const nearMiddle = Math.abs(keyedMean - 3) <= 0.25;
     const both = f >= rule.agreeMean && r >= rule.agreeMean ? "agreed" : f <= rule.disagreeMean && r <= rule.disagreeMean ? "disagreed" : null;
-    if (both) notes.push({
+    if (both) {
+      notes.push({
+        code: "reverse-key-conflict", output: sc.output,
+        message: nearMiddle
+          ? `${sc.output}: you mostly ${both} with statements on both sides of this trait. The score sits near the middle partly because those answers cancel out.`
+          : `${sc.output}: you mostly ${both} with statements on both sides of this trait. The result still leans one way, but those opposing answers pulled the score back toward the middle.`,
+      });
+      continue;
+    }
+    // Polarized cancellation: strong answers pointing to both poles of the same trait, averaging out near the middle.
+    const sd = Math.sqrt(keyed.reduce((s, x) => s + (x - keyedMean) ** 2, 0) / keyed.length);
+    const high = keyed.filter(x => x >= 4).length, low = keyed.filter(x => x <= 2).length;
+    if (high >= 2 && low >= 2 && Math.abs(keyedMean - 3) <= 0.5 && sd >= 1.5) notes.push({
       code: "reverse-key-conflict", output: sc.output,
-      message: `${sc.output}: you mostly ${both} with statements on both sides of this trait. The score sits near the middle partly because those answers cancel out.`,
+      message: `${sc.output}: some of your answers point strongly to one side of this trait and others point strongly to the opposite side. The score sits near the middle because those answers cancel out, not because your answers were neutral.`,
     });
   }
   return notes;

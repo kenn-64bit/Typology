@@ -93,17 +93,20 @@ function traitResult(s: BigFiveState, t: Trait): TraitResult {
   const e = estimate(s, t);
   const pHigh = pAboveMedian(e.theta, e.se);
   const level = pAboveMedian(e.theta, 1); // Φ(θ)
-  const strength = sloanStrength(level);
-  const lean = strength === "middle" ? null : level >= 0.5 ? "high" : "low";
+  // Strength and side come from the displayed percentile so "85th" always reads as strong (BF-01).
+  const percentile = Math.round(100 * level);
+  const strength = sloanStrength(percentile / 100);
+  const lean = strength === "middle" ? null : percentile >= 50 ? "high" : "low";
   const [hi, lo] = SLOAN_LETTERS[t];
   return {
     trait: t, name: TRAIT_NAMES[t], theta: e.theta, se: e.se,
-    percentile: Math.round(100 * level), level, strength, lean,
+    percentile, level, strength, lean,
     pHigh, letter: lean === "high" ? hi : lean === "low" ? lo : "X", items: e.n, done: traitDone(s, t),
   };
 }
 
 export const SIGN_EVENT = "score is above the model midpoint (θ > 0)";
+export const LOW_EVENT = "score is below the model midpoint (θ < 0)";
 
 function resultMeta(s: BigFiveState, traits: Record<Trait, TraitResult>): ResultMeta {
   const raw = (t: Trait, rev: boolean) => answersFor(s, t).filter(r => r.item.reverse === rev).map(r => r.a.x);
@@ -196,7 +199,7 @@ export const bigFiveEngine: ExamEngine<BigFiveState, BigFiveResult> & {
     const confidence = TRAITS.reduce((m, t) => m + Math.max(traits[t].pHigh, 1 - traits[t].pHigh), 0) / 5;
     return {
       traits,
-      sloan: sloanToken(TRAITS.map(t => traits[t].level)),
+      sloan: sloanToken(TRAITS.map(t => traits[t].percentile / 100)),
       confidence, meta: resultMeta(s, traits),
       published: {
         E: { theta: traits.E.theta, se: traits.E.se },
@@ -209,7 +212,7 @@ export const bigFiveEngine: ExamEngine<BigFiveState, BigFiveResult> & {
   explain(s) {
     return TRAITS.map((t): Explanation => {
       const r = traitResult(s, t);
-      const top = answersFor(s, t).map(({ a, item }) => {
+      const rows = answersFor(s, t).map(({ a, item }) => {
         const delta = r.theta - estimate(s, t, a.itemId).theta;
         const keyed = item.reverse ? reverseScore(a.x) : a.x;
         return {
@@ -217,12 +220,16 @@ export const bigFiveEngine: ExamEngine<BigFiveState, BigFiveResult> & {
           answer: `“${item.text}” — ${LIKERT_LABELS[a.x - 1]}${item.reverse ? " (reverse-keyed)" : ""}`,
           delta: Math.round(delta * 100) / 100, keyed,
         };
-      }).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 3)
-        .map(({ itemId, answer, delta }) => ({ itemId, answer, delta }));
+      }).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+      // With a clear lean, show the answers that pushed toward the concluded side (still by |delta|).
+      const dir = r.lean === "high" ? 1 : r.lean === "low" ? -1 : 0;
+      const supporting = dir ? rows.filter(x => dir * x.delta > 0) : [];
+      const top = (supporting.length ? supporting : rows).slice(0, 3).map(({ itemId, answer, delta }) => ({ itemId, answer, delta }));
       return {
         output: r.name,
         result: r.lean ? `${r.letter} (${r.percentile}th model percentile)` : `X, no clear lean (${r.percentile}th model percentile)`,
-        confidence: r.pHigh, confidenceEvent: SIGN_EVENT, topEvidence: top,
+        confidence: r.lean === "low" ? 1 - r.pHigh : r.pHigh,
+        confidenceEvent: r.lean === "low" ? LOW_EVENT : SIGN_EVENT, topEvidence: top,
       };
     });
   },

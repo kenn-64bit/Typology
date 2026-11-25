@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { motivesDominance, motivesToken } from "@typo/bio";
+import { motivesDominance, motivesLetter, motivesToken } from "@typo/bio";
 import { motivesEngine as E, ITEMS, priorFromBigFive, TRAITS } from "./index.ts";
 
 /** Adaptive run as a respondent leaning to the high (+1) or low (−1) pole of each trait, or neutral (0). */
@@ -136,5 +136,88 @@ describe("fixed form (engine-motives)", () => {
     for (const v of [...form].reverse()) s = E.answer(s, v.id, 4);
     expect(E.next(s)).toBeNull();
     expect(E.bioTokens(s)).toHaveLength(1);
+  });
+});
+
+describe("QA audit: MOTIVES boundary rules, dominance ties, explanations, and incomplete inputs", () => {
+  it("test_motives_letter_strong_low_boundary_0_2_returns_uppercase_pole", () => {
+    // THRESHOLDS.motives.strong = 0.8: "Uppercase at ≥ strong (or ≤ 1 − strong)", i.e. level <= 0.20 -> uppercase low pole.
+    expect(motivesLetter(0.8, ["M", "A"])).toBe("M");
+    expect(motivesLetter(0.2, ["M", "A"])).toBe("A");
+  });
+
+  it("test_motives_dominance_gap_0_05_consistent_across_equal_gaps", () => {
+    // THRESHOLDS.motives.dominanceGap = 0.05: two pairs separated by the exact same 0.05 level gap must behave identically.
+    const a = motivesDominance([0.65, 0.60, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    const b = motivesDominance([0.70, 0.65, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    expect(b.index).toBe(a.index);
+  });
+
+  it("test_motives_explain_low_pole_confidence_and_supporting_evidence", () => {
+    // 3 low-pole answers (keyed 1) + 1 opposing high-pole answer (m1 = 5) on M -> Ascetic ('a').
+    // explain() concludes 'a' so confidence must be 1 - pHigh and supporting items must lead topEvidence.
+    const s = fixed(i => {
+      if (i.scale !== "M") return 3;
+      if (i.id === "m1") return 5;
+      return i.reverse ? 5 : 1;
+    });
+    const r = E.result(s);
+    const exM = E.explain(s)[0]!;
+    expect(r.traits.M.lean).toBe("low");
+    expect(exM.result).toMatch(/^[aA] /);
+    expect(exM.confidence).toBeCloseTo(1 - r.traits.M.pHigh, 6);
+    expect(exM.topEvidence[0]!.itemId).not.toBe("m1");
+  });
+
+  it("test_motives_percentile_80_matches_uppercase_strong_threshold", () => {
+    // Keyed [1, 4, 5, 5] yields percentile === 80 (>= 80th rule), so letter must be uppercase 'M'.
+    const seq = [1, 4, 5, 5];
+    let k = 0;
+    const s = fixed(i => {
+      if (i.scale !== "M") return 3;
+      const keyed = seq[k++]!;
+      return i.reverse ? 6 - keyed : keyed;
+    });
+    expect(E.result(s).traits.M.percentile).toBe(80);
+    expect(E.result(s).traits.M.letter).toBe("M");
+  });
+
+  it("test_motives_boundaries_medium_0_4_and_0_6_and_low_pole_dominance_bars", () => {
+    expect(motivesLetter(0.199, ["M", "A"])).toBe("A");
+    expect(motivesLetter(0.4, ["M", "A"])).toBe("a");
+    expect(motivesLetter(0.401, ["M", "A"])).toBe("X");
+    expect(motivesLetter(0.599, ["M", "A"])).toBe("X");
+    expect(motivesLetter(0.6, ["M", "A"])).toBe("m");
+    expect(motivesLetter(0.8, ["M", "A"])).toBe("M");
+    const r = E.result(fixed(i => (i.scale === "S" ? (i.reverse ? 5 : 1) : 3)));
+    expect(r.code).toBe("XXXXXX|G|");
+    expect(r.dominant).toEqual({ trait: "S", candidates: ["S"] });
+  });
+
+  it("test_motives_empty_and_partial_state_unresolved_traits_and_incomplete_note", () => {
+    const s0 = E.init({});
+    const r0 = E.result(s0);
+    expect(r0.code).toBe("XXXXXXX");
+    expect(r0.meta.unresolved).toHaveLength(7);
+    expect(r0.meta.quality.map(q => q.code)).toEqual(["incomplete"]);
+    expect(E.bioTokens(s0)).toEqual([]);
+
+    const s1 = E.answer(s0, "m1", 5);
+    const r1 = E.result(s1);
+    expect(r1.meta.completion).toEqual({ answered: 1, total: 28, complete: false });
+    expect(r1.meta.unresolved).toHaveLength(6);
+  });
+
+  it("test_motives_prior_from_bigfive_all_mapped_traits_formula", () => {
+    const p = priorFromBigFive({
+      bigfive: { traits: { O: { theta: 2 }, C: { theta: -1 }, A: { theta: 0.8 }, E: { theta: 1.4 }, N: { theta: -0.6 } } },
+    })!;
+    expect(p.M).toBe(0);
+    expect(p.O).toBeCloseTo(1.0, 9);
+    expect(p.T).toBeCloseTo(-0.5, 9);
+    expect(p.I).toBeCloseTo(0.4, 9);
+    expect(p.V).toBeCloseTo(0.5 * (2.0 / Math.SQRT2), 9);
+    expect(p.E).toBe(0);
+    expect(p.S).toBe(0);
   });
 });

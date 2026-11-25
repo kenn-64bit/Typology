@@ -16,7 +16,7 @@
   {#if r.resolved}
     <p class="rs-p">This order has a {pct(r.p)} model chance. The model is uncalibrated.</p>
   {:else if r.first}
-    <p class="rs-p"><b>{names[r.first.aspect]}</b> comes first in most of your rankings ({pct(r.first.p)} model chance). The order of the other three is unclear.</p>
+    <p class="rs-p"><b>{names[r.first.aspect]}</b> leads the model's first-position estimate ({pct(r.first.p)} model chance). The order of the other three is unclear.</p>
   {:else}
     <p class="rs-p">Your rankings do not point to one order. The most likely orders are {r.candidates.map(c => `${c.order} (${pct(c.p)})`).join(", ") || r.order}.</p>
   {/if}

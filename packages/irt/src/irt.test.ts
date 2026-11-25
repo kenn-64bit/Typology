@@ -19,4 +19,9 @@ describe("GRM", () => {
     expect(info(0, 1.5, b)).toBeGreaterThan(info(3.5, 1.5, b));
   });
   it("pAboveMedian", () => { expect(pAboveMedian(0, 1)).toBeCloseTo(0.5, 6); expect(pAboveMedian(2, 1)).toBeCloseTo(0.977, 2); });
+  it("test_irt_eap_empty_answers_zero_prior_exact_zero_mean", () => {
+    // Symmetric N(0, 1) prior with 0 answers has exact posterior mean 0 (no grid floating-point drift).
+    expect(eap([], 0).theta).toBe(0);
+    expect(pAboveMedian(eap([], 0).theta, eap([], 0).se)).toBe(0.5);
+  });
 });

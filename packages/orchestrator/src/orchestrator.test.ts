@@ -22,4 +22,12 @@ describe("orchestrator", () => {
     const o = new Orchestrator({});
     expect(o.bio({ done: {}, tokens: [{ slot: "sloan", text: "/R/", confidence: 1, source: "test" }] })).toBe("··· ··· ··· ··· ··· ··· /R/ ···");
   });
+  it("test_orchestrator_step_blurbs_match_independent_prior_and_single_ranking_rules", () => {
+    // Under THRESHOLDS.priorPolicy = "independent" (X-04/X-10), MOTIVES does not use Big Five,
+    // and Temperament asks 1 description ranking (not "two confirm items").
+    const motives = STEPS.find(s => s.id === "motives")!;
+    const temp = STEPS.find(s => s.id === "temperament")!;
+    expect(motives.blurb).not.toMatch(/Big Five/i);
+    expect(temp.blurb).not.toMatch(/two confirm items/i);
+  });
 });
